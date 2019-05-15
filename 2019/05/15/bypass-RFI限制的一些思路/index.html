@@ -6,12 +6,12 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>bypass-RFI的一些思路 | 七友のBlog</title>
+  <title>bypass-RFI限制的一些思路 | 七友のBlog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码123&amp;lt;?phpinclude($_GET[&quot;shell&quot;]);?&amp;gt; 我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url">
 <meta name="keywords" content="一些姿势,文件包含">
 <meta property="og:type" content="article">
-<meta property="og:title" content="bypass-RFI的一些思路">
+<meta property="og:title" content="bypass-RFI限制的一些思路">
 <meta property="og:url" content="http://yoursite.com/2019/05/15/bypass-RFI限制的一些思路/index.html">
 <meta property="og:site_name" content="七友のBlog">
 <meta property="og:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码123&amp;lt;?phpinclude($_GET[&quot;shell&quot;]);?&amp;gt; 我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url">
@@ -22,9 +22,9 @@
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514224804-47be592e-7657-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222633-460cdae0-7654-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190515001220-0d01bde2-7663-1.png">
-<meta property="og:updated_time" content="2019-05-15T02:28:33.984Z">
+<meta property="og:updated_time" content="2019-05-15T07:38:29.160Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="bypass-RFI的一些思路">
+<meta name="twitter:title" content="bypass-RFI限制的一些思路">
 <meta name="twitter:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码123&amp;lt;?phpinclude($_GET[&quot;shell&quot;]);?&amp;gt; 我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url">
 <meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png">
   
@@ -155,7 +155,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      bypass-RFI的一些思路
+      bypass-RFI限制的一些思路
     </h1>
   
 
