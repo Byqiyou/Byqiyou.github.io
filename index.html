@@ -138,6 +138,129 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-mysql中延时注入的5种姿势" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/06/26/mysql中延时注入的5种姿势/">MySQL中延时注入的5种姿势</a>
+    </h1>
+  
+
+        
+        <a href="/2019/06/26/mysql中延时注入的5种姿势/" class="archive-article-date">
+  	<time datetime="2019-06-26T02:11:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-06-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>延时注入无论是在实战中还是在CTF中还是比较常见的，下面我总结一下延时注入的一些套路</p>
+<h1 id="利用方法"><a href="#利用方法" class="headerlink" title="利用方法"></a>利用方法</h1><h2 id="sleep"><a href="#sleep" class="headerlink" title="sleep"></a>sleep</h2><p>最简单直接准确的方式是用<code>sleep</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select sleep(5);</span><br><span class="line">+----------+</span><br><span class="line">| sleep(5) |</span><br><span class="line">+----------+</span><br><span class="line">|        0 |</span><br><span class="line">+----------+</span><br><span class="line">1 row in set (5.00 sec)</span><br></pre></td></tr></table></figure></p>
+<h2 id="benchmark"><a href="#benchmark" class="headerlink" title="benchmark"></a>benchmark</h2><p>通过执行多次表达式，以达到延时的效果。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select benchmark(10000000,md5(1));</span><br><span class="line">+----------------------------+</span><br><span class="line">| benchmark(10000000,md5(1)) |</span><br><span class="line">+----------------------------+</span><br><span class="line">|                          0 |</span><br><span class="line">+----------------------------+</span><br><span class="line">1 row in set (2.20 sec)</span><br></pre></td></tr></table></figure></p>
+<h2 id="reDos"><a href="#reDos" class="headerlink" title="reDos"></a>reDos</h2><blockquote>
+<p>利用正则表达式的回溯机制</p>
+</blockquote>
+<h3 id="正则表达式的两种引擎"><a href="#正则表达式的两种引擎" class="headerlink" title="正则表达式的两种引擎"></a>正则表达式的两种引擎</h3><p>正则表达式的常见引擎可以大致分为两种：</p>
+<ol>
+<li>DFA（确定型有穷自动机）</li>
+<li>NFA（非确定型有穷自动机）</li>
+</ol>
+<p>特点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DFA的特点是只对字符串扫描一次，并且会保证返回一个目标字符串里面的最长匹配，不支持字符串进行回溯</span><br><span class="line">NFA最大的特点是回溯机制，会对字符串进行多次扫描匹配</span><br></pre></td></tr></table></figure></p>
+<p>他们匹配的过程为:</p>
+<ul>
+<li>DFA：用字符串去匹配正表达式，从开始状态一个一个去匹配字符，如果字符匹配正确就会吞入这字符，如果匹配不上则会吐出这个字符，然后继续往下匹配，直到正则表达式全部匹配完成或者匹配失败</li>
+<li>NFA：用正则表达式去匹配字符，每吞入一个字符就会和正则表达式做比较，如果匹配正确就会继续往下匹配，如果匹配失败，则会进行回溯，尝试其它状态，直到正则表达式全部匹配完成或者匹配失败</li>
+</ul>
+<p>由于<code>NFA</code>存在回溯机制，所以<code>NFA</code>效率会低于<code>DFA</code>，但是<code>NFA</code>的功能却比<code>DFA</code>的多，所以现在大多数编程语言中都是使用<code>NFA</code>作为正则引擎。</p>
+<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><p>我们用一个这样子的正则表达式<code>&lt;a&gt;(.*)&lt;/a&gt;</code>去匹配<code>&lt;a&gt;testtesttest&lt;/a&gt;</code>，这个正表达式一上来就匹配到了<code>&lt;a&gt;</code>，到后面由于<code>（.*）</code>（贪婪模式）的存在，正则引擎会着急地吞掉后面的所有字符，不过由于该正则表达式还有要匹配的内容即<code>&lt;/a&gt;</code>，所以正则表达式会尝试匹配<code>&lt;</code>，它在字符串末尾匹配不成功，所以它每次回溯一个字符，继续尝试匹配<code>&lt;</code>，直到匹配到<code>&lt;/a&gt;</code>的<code>&lt;</code>，然后它再继续匹配<code>/</code>，以此类推下去。</p>
+<p>图为正则表达式的执行过程，可以明显发现该正则表达式回溯了4次。<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190627131932-259b5412-989b-1.gif" alt></p>
+<p>如果正则表达式的回溯次数过多时候，就会占用服务器大量的资源从而造成<code>reDos</code>的情况。</p>
+<h3 id="小试一波"><a href="#小试一波" class="headerlink" title="小试一波"></a>小试一波</h3><p>—————————–分割线————————————————–</p>
+<p>2019/6/28更新，我之前一直以为mysql的<code>reDos</code>是因为它的正则引擎是<code>nfa</code>，但是通过查了一波资料和本地操作，发现并不是这样子的，mysql并没有回溯，而是由于填充了大量的字符和大量的<code>pattern</code>，导致mysql消耗大量的资源从而出现延时的情况，我们用<code>php</code>和<code>mysql</code>对比一下就知道了，用同样的正则表达式，php延时了，而mysql并没有延时。<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190629073909-eccc5744-99fd-1.png" alt="image.png"></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190629073922-f49c7404-99fd-1.png" alt="image.png"></p>
+<p>—————————–分割线————————————————–</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select rpad(&apos;a&apos;,10000000,&apos;a&apos;) regexp concat(repeat(&apos;(a.*)+&apos;,1000),&apos;b&apos;);</span><br><span class="line">+-----------------------------------------------------------------+</span><br><span class="line">| rpad(&apos;a&apos;,10000000,&apos;a&apos;) regexp concat(repeat(&apos;(a.*)+&apos;,1000),&apos;b&apos;) |</span><br><span class="line">+-----------------------------------------------------------------+</span><br><span class="line">|                                                            NULL |</span><br><span class="line">+-----------------------------------------------------------------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br></pre></td></tr></table></figure>
+<p>但是我们发现并没有延时，细心的同学可能会发现那个有一个<code>warning</code>，我们把警告打开一下看看是哪里出问题了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; \W</span><br><span class="line">Show warnings enabled.</span><br><span class="line">mysql&gt; select rpad(&apos;a&apos;,10000000,&apos;a&apos;) regexp concat(repeat(&apos;(a.*)+&apos;,1000),&apos;b&apos;);</span><br><span class="line">+-----------------------------------------------------------------+</span><br><span class="line">| rpad(&apos;a&apos;,10000000,&apos;a&apos;) regexp concat(repeat(&apos;(a.*)+&apos;,1000),&apos;b&apos;) |</span><br><span class="line">+-----------------------------------------------------------------+</span><br><span class="line">|                                                            NULL |</span><br><span class="line">+-----------------------------------------------------------------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br><span class="line"></span><br><span class="line">Warning (Code 1301): Result of rpad() was larger than max_allowed_packet (1048576) - truncated</span><br></pre></td></tr></table></figure></p>
+<p>发现是<code>mysql</code>设置允许接受的最大数据包大小是<code>1M</code>，而我们上面填充的字符明显超过了<code>1M</code>，所以会出现一个<code>warning</code>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show VARIABLES like &apos;max_allowed_packet&apos;;</span><br><span class="line">+--------------------+---------+</span><br><span class="line">| Variable_name      | Value   |</span><br><span class="line">+--------------------+---------+</span><br><span class="line">| max_allowed_packet | 1048576 |</span><br><span class="line">+--------------------+---------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br></pre></td></tr></table></figure></p>
+<p>然后我们我要匹配把字符改小一点尝试一波，可以明显地发现延时了3.29秒<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select rpad(&apos;a&apos;,100000,&apos;a&apos;) regexp concat(repeat(&apos;(a.*)+&apos;,1000),&apos;b&apos;);</span><br><span class="line">+---------------------------------------------------------------+</span><br><span class="line">| rpad(&apos;a&apos;,100000,&apos;a&apos;) regexp concat(repeat(&apos;(a.*)+&apos;,1000),&apos;b&apos;) |</span><br><span class="line">+---------------------------------------------------------------+</span><br><span class="line">|                                                             0 |</span><br><span class="line">+---------------------------------------------------------------+</span><br><span class="line">1 row in set (3.29 sec)</span><br></pre></td></tr></table></figure></p>
+<p>或者我们也可以把<code>max_allowed_packet</code>改大一点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set global max_allowed_packet = 20*1024*1024;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line">...中间省略...</span><br><span class="line">mysql&gt; select rpad(&apos;a&apos;,1000000,&apos;a&apos;) regexp concat(repeat(&apos;(a.*)+&apos;,1000),&apos;b&apos;);</span><br><span class="line">+----------------------------------------------------------------+</span><br><span class="line">| rpad(&apos;a&apos;,1000000,&apos;a&apos;) regexp concat(repeat(&apos;(a.*)+&apos;,1000),&apos;b&apos;) |</span><br><span class="line">+----------------------------------------------------------------+</span><br><span class="line">|                                                              0 |</span><br><span class="line">+----------------------------------------------------------------+</span><br><span class="line">1 row in set (31.99 sec)</span><br></pre></td></tr></table></figure></p>
+<p>成功延时了31秒。</p>
+<h2 id="笛卡尔积"><a href="#笛卡尔积" class="headerlink" title="笛卡尔积"></a>笛卡尔积</h2><h3 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h3><p>笛卡儿积（来自百度百科）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">笛卡尔乘积是指在数学中，两个集合X和Y的笛卡尓积（Cartesian product），又称直积，表示为X × Y，第一个对象是X的成员而第二个对象是Y的所有可能有序对的其中一个成员</span><br></pre></td></tr></table></figure></p>
+<p>举个例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">假设集合A=&#123;a, b&#125;，集合B=&#123;0, 1, 2&#125;，那么这两个集合的笛卡尔积为&#123;(a, 0), (a, 1), (a, 2), (b, 0), (b, 1), (b, 2)&#125;。</span><br></pre></td></tr></table></figure></p>
+<p>在mysql中如果多表查询使用不恰当时就会出现笛卡儿积现象，在多表查询中如果两张或者多张表的数据量都比较大的话，就会占用很大空间资源从而出现延时的情况。</p>
+<h3 id="小试一波-1"><a href="#小试一波-1" class="headerlink" title="小试一波"></a>小试一波</h3><p>既然我们已经了解笛卡尔积会造成占用大量资源的情况，那我们现在mysql来尝试一波吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select count(*) from information_schema.tables A, information_schema.tables B,information_schema.tables C;</span><br><span class="line">+----------+</span><br><span class="line">| count(*) |</span><br><span class="line">+----------+</span><br><span class="line">| 80621568 |</span><br><span class="line">+----------+</span><br><span class="line">1 row in set (3.39 sec)</span><br></pre></td></tr></table></figure></p>
+<p>可以很明显地看到延时了3s，我们还可以延时更久<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select count(*) from information_schema.tables A, information_schema.tables B,information_schema.columns C;</span><br><span class="line">+-----------+</span><br><span class="line">| count(*)  |</span><br><span class="line">+-----------+</span><br><span class="line">| 891689472 |</span><br><span class="line">+-----------+</span><br><span class="line">1 row in set (36.99 sec)</span><br></pre></td></tr></table></figure></p>
+<h2 id="利用mysql的共享锁"><a href="#利用mysql的共享锁" class="headerlink" title="利用mysql的共享锁"></a>利用mysql的共享锁</h2><h3 id="get-lock"><a href="#get-lock" class="headerlink" title="get_lock"></a>get_lock</h3><p>先来看一波<code>get_lock</code>的语法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">get_lock(key, timeout)</span><br></pre></td></tr></table></figure></p>
+<p><code>get_lock</code>会按照<code>key</code>来加锁，当其它的客户端（session）再以同样的<code>key</code>加锁时就会处于等待状态，如果在等待期间（timeout）内获取到锁，则返回1；如果在timeout时间后获取不到锁，则返回0；如果发生错误，则返回一个<code>NULL</code>。</p>
+<h3 id="mysql-pconnect"><a href="#mysql-pconnect" class="headerlink" title="mysql_pconnect"></a>mysql_pconnect</h3><p>不过这种方法比较局限，在<code>php</code>中它必须用<code>mysql_pconnect()</code>函数连接数据库才可以</p>
+<p><code>mysql_pconnect</code>的定义（来自<code>w3cschool</code>）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql_pconnect() 函数打开一个到 MySQL 服务器的持久连接。</span><br></pre></td></tr></table></figure></p>
+<p><code>mysql_pconnect()</code>和 <code>mysql_connect()</code>非常相似，但有两个主要区别：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. 当连接的时候本函数将先尝试寻找一个在同一个主机上用同样的用户名和密码已经打开的（持久）连接，如果找到，则返回此连接标识而不打开新连接。</span><br><span class="line">2. 其次，当脚本执行完毕后到 SQL 服务器的连接不会被关闭，此连接将保持打开以备以后使用（mysql_close() 不会关闭由 mysql_pconnect() 建立的连接）。</span><br></pre></td></tr></table></figure></p>
+<h3 id="小试一波-2"><a href="#小试一波-2" class="headerlink" title="小试一波"></a>小试一波</h3><p>session A<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select get_lock(&quot;test&quot;,5);</span><br><span class="line">+--------------------+</span><br><span class="line">| get_lock(&quot;test&quot;,5) |</span><br><span class="line">+--------------------+</span><br><span class="line">|                  1 |</span><br><span class="line">+--------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure></p>
+<p>session B<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select get_lock(&quot;test&quot;,5);</span><br><span class="line">+--------------------+</span><br><span class="line">| get_lock(&quot;test&quot;,5) |</span><br><span class="line">+--------------------+</span><br><span class="line">|                  0 |</span><br><span class="line">+--------------------+</span><br><span class="line">1 row in set (5.00 sec)</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190627122236-311119b0-9893-1.png" alt="image.png"></p>
+<p>可以明显地看到另外一个<code>session</code>延时了5秒。</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://www.jianshu.com/p/458c246d79d4" title="https://www.jianshu.com/p/458c246d79d4" target="_blank" rel="noopener">https://www.jianshu.com/p/458c246d79d4</a><br><a href="http://www.w3school.com.cn/php/func_mysql_pconnect.asp" title="http://www.w3school.com.cn/php/func_mysql_pconnect.asp" target="_blank" rel="noopener">http://www.w3school.com.cn/php/func_mysql_pconnect.asp</a><br><a href="https://www.cnblogs.com/cobbliu/p/3817370.html" title="https://www.cnblogs.com/cobbliu/p/3817370.html" target="_blank" rel="noopener">https://www.cnblogs.com/cobbliu/p/3817370.html</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">一些姿势</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">SQL注入</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/06/26/mysql中延时注入的5种姿势/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-bypass-RFI限制的一些思路" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1505,11 +1628,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">xss</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">web安全</a>
+                <a href="javascript:void(0)" class="js-tag color1">SQL注入</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1518,6 +1637,14 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">python</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">xss</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">web安全</a>
               </li>
             
             <div class="clearfix"></div>
