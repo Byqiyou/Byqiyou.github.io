@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190713005510-cf74b1aa-a4c5-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190713014728-1d6e49a0-a4cd-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190712154011-4783cdd2-a478-1.png">
-<meta property="og:updated_time" content="2019-07-15T13:56:54.883Z">
+<meta property="og:updated_time" content="2019-07-16T06:59:32.821Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="浅析Redis中SSRF的利用">
 <meta name="twitter:description" content="SSRF介绍SSRF，服务器端请求伪造，服务器请求伪造，是由攻击者构造的漏洞，用于形成服务器发起的请求。通常，SSRF攻击的目标是外部网络无法访问的内部系统。这里我们要介绍的是关于redis中SSRF的利用，如果有什么错误的地方还请师傅们不吝赐教/握拳。 前置知识文章中的数据包构造会涉及到redis的RESP协议，所以我们这里先科普一下，了解RESP协议的师傅可以跳过=。= RESP协议Redis">
@@ -196,7 +196,7 @@
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713085931-794d2d5e-a509-1.png" alt="image.png"><br>hex转储看一下</p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713090053-a9d401f0-a509-1.png" alt="image.png"></p>
 <p>正如我们前面所说的，客户端向将命令作为<code>Bulk Strings</code>的RESP数组发送到Redis服务器，然后服务器根据命令实现回复给客户端一种RESP类型。<br>我们就拿上面的数据包分析，首先是<code>*3</code>，代表数组的长度为3（可以简单理解为用空格为分隔符将命令分割为[“set”,”name”,”test”]）；<code>$4</code>代表字符串的长度，<code>0d0a</code>即<code>\r\n</code>表示结束符；<code>+OK</code>表示服务端执行成功后返回的字符串</p>
-<h1 id="Redis配合gohper协议进行SSRF"><a href="#Redis配合gohper协议进行SSRF" class="headerlink" title="Redis配合gohper协议进行SSRF"></a>Redis配合gohper协议进行SSRF</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><code>Gopher</code> 协议是 HTTP 协议出现之前，在 Internet 上常见且常用的一个协议，不过现在gopher协议用得已经越来越少了<br><code>Gopher</code> 协议可以说是SSRF中的万金油，。利用此协议可以攻击内网的 redis、ftp等等，也可以发送 GET、POST 请求。这无疑极大拓宽了 SSRF 的攻击面。</p>
+<h1 id="Redis配合gopher协议进行SSRF"><a href="#Redis配合gopher协议进行SSRF" class="headerlink" title="Redis配合gopher协议进行SSRF"></a>Redis配合gopher协议进行SSRF</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><code>Gopher</code> 协议是 HTTP 协议出现之前，在 Internet 上常见且常用的一个协议，不过现在gopher协议用得已经越来越少了<br><code>Gopher</code> 协议可以说是SSRF中的万金油，。利用此协议可以攻击内网的 redis、ftp等等，也可以发送 GET、POST 请求。这无疑极大拓宽了 SSRF 的攻击面。</p>
 <h2 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">能未授权或者能通过弱口令认证访问到Redis服务器</span><br></pre></td></tr></table></figure>
 <h2 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h2><p>redis常见的SSRF攻击方式大概有这几种：</p>
 <ol>
@@ -425,8 +425,8 @@
 <nav id="article-nav">
   
   
-    <a href="/2019/07/12/redis-rce分析/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">redis-rce分析</div>
+    <a href="/2019/06/26/mysql中延时注入的5种姿势/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">MySQL中延时注入的5种姿势</div>
       <i class="icon-circle-right"></i>
     </a>
   
