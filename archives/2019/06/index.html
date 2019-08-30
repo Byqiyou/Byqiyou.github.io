@@ -28,7 +28,7 @@
     </style>
 
     <script src="/libs/jquery/jquery-2.2.0.min.js"></script>
-</head>
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
 
 
 <body>
@@ -406,7 +406,10 @@ $('.bg-cover').css('background-image', 'url(/medias/banner/'+'5.jpg)');
                             <div class="summary block-with-text">
                                 
                                     前言延时注入无论是在实战中还是在CTF中还是比较常见的，下面我总结一下延时注入的一些套路
-利用方法sleep最简单直接准确的方式是用sleepmysql&gt; select sleep(5);+----------+| sleep(5) 
+利用方法sleep最简单直接准确的方式是用sleep
+mysql&gt; select sleep(5);
++----------+
+| sleep(
                                 
                             </div>
                             <div class="publish-info">

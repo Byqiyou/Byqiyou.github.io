@@ -28,7 +28,7 @@
     </style>
 
     <script src="/libs/jquery/jquery-2.2.0.min.js"></script>
-</head>
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
 
 
 <body>
@@ -533,7 +533,10 @@ webCheckIn简单地看一下它过滤，大概有3个点：
                             <div class="summary block-with-text">
                                 
                                     前言延时注入无论是在实战中还是在CTF中还是比较常见的，下面我总结一下延时注入的一些套路
-利用方法sleep最简单直接准确的方式是用sleepmysql&gt; select sleep(5);+----------+| sleep(5) 
+利用方法sleep最简单直接准确的方式是用sleep
+mysql&gt; select sleep(5);
++----------+
+| sleep(
                                 
                             </div>
                             <div class="publish-info">
@@ -596,8 +599,12 @@ webCheckIn简单地看一下它过滤，大概有3个点：
                             <div class="summary block-with-text">
                                 
                                     前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。
-绕过思路假设我们有一个这样的代码&lt;?phpinclude($_GET["shell"]);?&gt;
-我们发现通过phpinfo发现allow_url
+绕过思路假设我们有一个这样的代码
+&lt;?php
+include($_GET["shell"]);
+?>
+
+我们发现通过phpinfo发现allow_ur
                                 
                             </div>
                             <div class="publish-info">
