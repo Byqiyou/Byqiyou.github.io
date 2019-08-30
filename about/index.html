@@ -502,7 +502,7 @@ $('.bg-cover').css('background-image', 'url(/medias/banner/' + new Date().getDay
         xAxis: [
             {
                 type: 'category',
-                data: ["一些姿势","ctf","工具","xss","SQL注入","文件包含","web安全","代码审计","python","Redis"]
+                data: ["一些姿势","ctf","xss","工具","代码审计","文件包含","SQL注入","SSRF","python","Redis"]
             }
         ],
         yAxis: [
@@ -644,5 +644,10 @@ $(function () {
     <script async src="/libs/others/busuanzi.pure.mini.js"></script>
 
 
+{% if theme.fireworks %}
+   <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas> 
+   <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script> 
+   <script type="text/javascript" src="/js/src/fireworks.js"></script>
+{% endif %}
 </body>
 </html>

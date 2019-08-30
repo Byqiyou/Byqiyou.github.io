@@ -327,19 +327,10 @@ $('.bg-cover').css('background-image', 'url(/medias/banner/' + new Date().getDay
                 </a>
                 
                 
-                <a href="/tags/SQL注入/" title="SQL注入: 1">
-                    <span class="chip center-align waves-effect waves-light
-                             chip-default "
-                            data-tagname="SQL注入" style="background-color: #FEF9E7;">SQL注入
-                        <span class="tag-length">1</span>
-                    </span>
-                </a>
-                
-                
                 <a href="/tags/xss/" title="xss: 2">
                     <span class="chip center-align waves-effect waves-light
                              chip-active "
-                            data-tagname="xss" style="background-color: #F8F9F9;">xss
+                            data-tagname="xss" style="background-color: #FEF9E7;">xss
                         <span class="tag-length">2</span>
                     </span>
                 </a>
@@ -348,7 +339,16 @@ $('.bg-cover').css('background-image', 'url(/medias/banner/' + new Date().getDay
                 <a href="/tags/web安全/" title="web安全: 1">
                     <span class="chip center-align waves-effect waves-light
                              chip-default "
-                            data-tagname="web安全" style="background-color: #82E0AA;">web安全
+                            data-tagname="web安全" style="background-color: #F8F9F9;">web安全
+                        <span class="tag-length">1</span>
+                    </span>
+                </a>
+                
+                
+                <a href="/tags/SQL注入/" title="SQL注入: 1">
+                    <span class="chip center-align waves-effect waves-light
+                             chip-default "
+                            data-tagname="SQL注入" style="background-color: #82E0AA;">SQL注入
                         <span class="tag-length">1</span>
                     </span>
                 </a>
@@ -550,5 +550,10 @@ $(function () {
     <script async src="/libs/others/busuanzi.pure.mini.js"></script>
 
 
+{% if theme.fireworks %}
+   <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas> 
+   <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script> 
+   <script type="text/javascript" src="/js/src/fireworks.js"></script>
+{% endif %}
 </body>
 </html>
