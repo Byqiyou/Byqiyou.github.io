@@ -531,7 +531,7 @@
             <span class="token keyword">print</span> <span class="token string">"[+] the host is\033[91m Closed or filtered\033[0m"</span>
             sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
         <span class="token keyword">elif</span> send<span class="token punctuation">.</span>haslayer<span class="token punctuation">(</span><span class="token string">"TCP"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
-            <span class="token keyword">if</span> send<span class="token punctuation">[</span><span class="token string">"TCP"</span><span class="token punctuation">]</span><span class="token punctuation">.</span>window <span class="token operator">></span><span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> send<span class="token punctuation">[</span><span class="token string">"TCP"</span><span class="token punctuation">]</span><span class="token punctuation">.</span>window <span class="token operator">&gt;</span><span class="token number">0</span><span class="token punctuation">:</span>
                 <span class="token keyword">print</span> <span class="token string">"[+] %s %d \033[92m Open \033[0m"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>host<span class="token punctuation">,</span> port<span class="token punctuation">)</span>
             <span class="token keyword">elif</span> send<span class="token punctuation">[</span><span class="token string">"TCP"</span><span class="token punctuation">]</span><span class="token punctuation">.</span>window <span class="token operator">==</span><span class="token number">0</span><span class="token punctuation">:</span>
                 <span class="token keyword">print</span> <span class="token string">"[+] %s %d \033[91m Closed \033[0m"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>host<span class="token punctuation">,</span> port<span class="token punctuation">)</span>
@@ -901,9 +901,9 @@
 绕过思路假设我们有一个这样的代码
 &lt;?php
 include($_GET["shell"]);
-?>
+?&gt;
 
-我们发现通过phpinfo发现allow_ur
+我们发现通过phpinfo发现allow
                         
                     </div>
                     <div class="publish-info">
