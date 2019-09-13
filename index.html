@@ -457,7 +457,8 @@ $(function () {
                     <div class="card-content article-content">
                         <div class="summary block-with-text">
                             
-                                前言前几天打了一下由tokyowesterns举办的TWCTF，说实话web狗太难了，phpnote这题虽然有一点意识到他们用的windows做环境，但是我们一直没有get到Windows-Defender这个点，所有没有解出，赛后问了一下
+                                前言前几天打了一下由tokyowesterns举办的TWCTF，感觉phpnote这题还是不错的，一个全新的知识点，比赛的时候没有解出来，赛后问了一下梅子酒才知道这个是用windows-defender测信道攻击，下面记录一下解题过程
+前置
                             
                         </div>
                         <div class="publish-info">
@@ -705,9 +706,9 @@ mysql&gt; select sleep(5);
 绕过思路假设我们有一个这样的代码
 &lt;?php
 include($_GET["shell"]);
-?&gt;
+?>
 
-我们发现通过phpinfo发现allow
+我们发现通过phpinfo发现allow_ur
                             
                         </div>
                         <div class="publish-info">

