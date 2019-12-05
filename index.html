@@ -20,9 +20,8 @@
     <meta name="theme-color" content="#3F51B5">
     
     
-    <meta name="keywords" content="路漫漫其修远兮，吾将上下而求索">
+    <meta name="keywords" content>
     <meta name="description" content="路漫漫其修远兮，吾将上下而求索">
-<meta name="keywords" content="路漫漫其修远兮，吾将上下而求索">
 <meta property="og:type" content="website">
 <meta property="og:title" content="七友">
 <meta property="og:url" content="https://byqiyou.github.io/index.html">
@@ -56,7 +55,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -195,10 +194,10 @@
 
 前言当我们通过各种方法拿到一个服务器的权限的时候，我们下一步要做的就是后渗透了，而后门持久化也是我们后渗透很重要的一部分，下面我来总结一下windows下常见的后门持久化的方法
 
-后门持久化我的操作环境是：
-
-无AV、管理员权限（提权、免杀等是后门持久化的铺垫，当然有的方法也并不是全部需要这些铺垫）
-操作系统：...
+                
+                    
+                    
+       ...
     
 
         <a href="/2019/10/02/windows中常见后门持久化方法总结/" class="post-more waves-effect waves-button">
@@ -504,9 +503,9 @@ include($_GET["shell"]);
 
 我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off
 
-用常规的方法直接包含一个远程文件肯定是不行的
-
-所以我们得想办法绕过allow_ur...
+                
+                    
+    ...
     
 
         <a href="/2019/05/15/bypass-RFI限制的一些思路/" class="post-more waves-effect waves-button">
@@ -701,7 +700,7 @@ LD_PRELOAD是Linux系统的一个环境变量，用于动态库的加载，动�
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -804,10 +803,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);

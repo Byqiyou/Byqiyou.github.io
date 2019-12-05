@@ -62,7 +62,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -234,11 +234,29 @@ NFA最大的特点是回溯机制，会对字符串进行多次扫描匹配
 </ul>
 <p>由于<code>NFA</code>存在回溯机制，所以<code>NFA</code>效率会低于<code>DFA</code>，但是<code>NFA</code>的功能却比<code>DFA</code>的多，所以现在大多数编程语言中都是使用<code>NFA</code>作为正则引擎。</p>
 <h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><p>我们用一个这样子的正则表达式<code>&lt;a&gt;(.*)&lt;/a&gt;</code>去匹配<code>&lt;a&gt;testtesttest&lt;/a&gt;</code>，这个正表达式一上来就匹配到了<code>&lt;a&gt;</code>，到后面由于<code>（.*）</code>（贪婪模式）的存在，正则引擎会着急地吞掉后面的所有字符，不过由于该正则表达式还有要匹配的内容即<code>&lt;/a&gt;</code>，所以正则表达式会尝试匹配<code>&lt;</code>，它在字符串末尾匹配不成功，所以它每次回溯一个字符，继续尝试匹配<code>&lt;</code>，直到匹配到<code>&lt;/a&gt;</code>的<code>&lt;</code>，然后它再继续匹配<code>/</code>，以此类推下去。</p>
-<p>图为正则表达式的执行过程，可以明显发现该正则表达式回溯了4次。<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190627131932-259b5412-989b-1.gif" alt=""></p>
+<p>图为正则表达式的执行过程，可以明显发现该正则表达式回溯了4次。<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190627131932-259b5412-989b-1.gif" alt="" title="">
+                </div>
+                <div class="image-caption"></div>
+            </figure><p></p>
 <p>如果正则表达式的回溯次数过多时候，就会占用服务器大量的资源从而造成<code>reDos</code>的情况。</p>
 <h3 id="小试一波"><a href="#小试一波" class="headerlink" title="小试一波"></a>小试一波</h3><p>———————————————————–分割线——————————————————————————————–</p>
-<p>2019/6/28更新，我之前一直以为mysql的<code>reDos</code>是因为它的正则引擎是<code>nfa</code>，但是通过查了一波资料和本地操作，发现并不是这样子的，mysql并没有回溯，而是由于填充了大量的字符和大量的<code>pattern</code>，导致mysql消耗大量的资源从而出现延时的情况，我们用<code>php</code>和<code>mysql</code>对比一下就知道了，用同样的正则表达式，php延时了，而mysql并没有延时。<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190629073909-eccc5744-99fd-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190629073922-f49c7404-99fd-1.png" alt="image.png"></p>
+<p>2019/6/28更新，我之前一直以为mysql的<code>reDos</code>是因为它的正则引擎是<code>nfa</code>，但是通过查了一波资料和本地操作，发现并不是这样子的，mysql并没有回溯，而是由于填充了大量的字符和大量的<code>pattern</code>，导致mysql消耗大量的资源从而出现延时的情况，我们用<code>php</code>和<code>mysql</code>对比一下就知道了，用同样的正则表达式，php延时了，而mysql并没有延时。<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190629073909-eccc5744-99fd-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190629073922-f49c7404-99fd-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>———————————————————–分割线——————————————————————————————–<br>那我们在mysql中尝试一波吧。</p>
 <pre><code>mysql&gt; select rpad('a',10000000,'a') regexp concat(repeat('(a.*)+',1000),'b');
 +-----------------------------------------------------------------+
@@ -333,7 +351,13 @@ mysql&gt; select rpad('a',1000000,'a') regexp concat(repeat('(a.*)+',1000),'b');
 |                  0 |
 +--------------------+
 1 row in set (5.00 sec)
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190627122236-311119b0-9893-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190627122236-311119b0-9893-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>可以明显地看到另外一个<code>session</code>延时了5秒。</p>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://www.jianshu.com/p/458c246d79d4" title="https://www.jianshu.com/p/458c246d79d4" target="_blank" rel="noopener">https://www.jianshu.com/p/458c246d79d4</a><br><a href="http://www.w3school.com.cn/php/func_mysql_pconnect.asp" title="http://www.w3school.com.cn/php/func_mysql_pconnect.asp" target="_blank" rel="noopener">http://www.w3school.com.cn/php/func_mysql_pconnect.asp</a><br><a href="https://www.cnblogs.com/cobbliu/p/3817370.html" title="https://www.cnblogs.com/cobbliu/p/3817370.html" target="_blank" rel="noopener">https://www.cnblogs.com/cobbliu/p/3817370.html</a></p>
 <script>
@@ -373,8 +397,8 @@ mysql&gt; select rpad('a',1000000,'a') regexp concat(repeat('(a.*)+',1000),'b');
     
     <footer>
         <a href="https://byqiyou.github.io">
-            <img src="/img/avatar.jpg" alt="七友">
-            七友
+            <img src="/img/avatar.jpg" alt="">
+            
         </a>
     </footer>
 </blockquote>
@@ -546,7 +570,7 @@ mysql&gt; select rpad('a',1000000,'a') regexp concat(repeat('(a.*)+',1000),'b');
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -649,10 +673,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);

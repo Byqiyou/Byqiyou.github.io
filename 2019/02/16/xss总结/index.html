@@ -60,7 +60,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -306,7 +306,19 @@ onscroll=alert("xss");&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;
 <pre><code>&lt;img src="x" onerror=document.location=`//www.baidu.com`&gt;
 </code></pre><p>5.使用<code>\\</code></p>
 <pre><code>但是要注意在windows下\本身就有特殊用途，是一个path 的写法，所以\\在Windows下是file协议，在linux下才会是当前域的协议
-</code></pre><p>Windows下<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190208102122-3a40fff4-2b48-1.gif" alt=""><br>Linux下<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190208103630-5775e02e-2b4a-1.gif" alt=""><br>6.使用中文逗号代替英文逗号<br>如果你在你在域名中输入中文句号浏览器会自动转化成英文的逗号</p>
+</code></pre><p>Windows下<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190208102122-3a40fff4-2b48-1.gif" alt="" title="">
+                </div>
+                <div class="image-caption"></div>
+            </figure><br>Linux下<br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190208103630-5775e02e-2b4a-1.gif" alt="" title="">
+                </div>
+                <div class="image-caption"></div>
+            </figure><br>6.使用中文逗号代替英文逗号<br>如果你在你在域名中输入中文句号浏览器会自动转化成英文的逗号<p></p>
 <pre><code>&lt;img src="x" onerror="document.location=`http://www。baidu。com`"&gt;//会自动跳转到百度
 </code></pre><h1 id="如何防止xss"><a href="#如何防止xss" class="headerlink" title="如何防止xss"></a>如何防止xss</h1><ul>
 <li>过滤一些危险字符，以及转义<code>&amp; &lt; &gt; " ' /</code>等危险字符</li>
@@ -353,8 +365,8 @@ onscroll=alert("xss");&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;
     
     <footer>
         <a href="https://byqiyou.github.io">
-            <img src="/img/avatar.jpg" alt="七友">
-            七友
+            <img src="/img/avatar.jpg" alt="">
+            
         </a>
     </footer>
 </blockquote>
@@ -526,7 +538,7 @@ onscroll=alert("xss");&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -629,10 +641,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);

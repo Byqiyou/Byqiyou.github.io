@@ -74,7 +74,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -245,7 +245,13 @@ qiyou@ubuntu:~/Desktop$ whoami
 root
 </code></pre><p>可以看到uid和gid都变为了0，权限也变为了root</p>
 <p>我们可以用ldd查询一下依赖关系，可以发现id.so(我们编译的动态链接库)在其它动态链接库之前提前被加载了，也就是说我们的恶意代码中的函数覆盖了原本的动态链接库的函数</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330005303-1e7ffcda-5243-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330005303-1e7ffcda-5243-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h3 id="配合putenv-mail"><a href="#配合putenv-mail" class="headerlink" title="配合putenv+mail"></a>配合putenv+mail</h3><p>putenv官方手册是这么解释的：</p>
 <pre><code>putenv ( string $setting ) : bool
 添加setting到服务器环境。环境变量仅在当前请求的持续时间内存在。在请求结束时，环境将恢复到其原始状态。
@@ -257,13 +263,32 @@ root
 <li>Getshell</li>
 </ol>
 <p>那么php中的某个函数怎么去找呢，参考了<a href="https://www.tr0y.wang/2018/04/18/PHPDisalbedfunc/index.html" title="该文章" target="_blank" rel="noopener">该文章</a>，发现mail()函数可以使用，而mail()函数执行默认是会调用外部程序sendmail的，看一下php.ini就会发现默认调用<code>sendmail -t -i</code></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330011754-96d9fcb4-5246-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330011754-96d9fcb4-5246-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <blockquote>
 <p>PS：如果没有安装sendmail的话可以用<code>apt-get install sendmail</code>安装sendmail</p>
 </blockquote>
-<p>我们可以用strace查看一下mail函数调用的过程，可以很明显看出来执行了<code>sendmail -t -i</code><br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330023106-d0f82628-5250-1.png" alt="image.png"></p>
+<p>我们可以用strace查看一下mail函数调用的过程，可以很明显看出来执行了<code>sendmail -t -i</code><br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330023106-d0f82628-5250-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <p>然后我们可以使用 <code>readelf -Ws /usr/sbin/sendmail</code> 可以查看senmail都调用了哪一些函数，然后从中选几个即可，这里我们选择<code>getuid</code></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330013011-4deed608-5248-1.png" alt="image.png"><br>然后就可以编写我们的动态连接程序<br>test.c</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330013011-4deed608-5248-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后就可以编写我们的动态连接程序<br>test.c</p>
 <pre class=" language-c"><code class="language-c"><span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
 <span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
 <span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
@@ -287,8 +312,20 @@ gcc --share test -o test.so
 <span class="token delimiter">?></span>
 </code></pre>
 <p>执行一波，然后用strace查看调用过程是否执行了我们的<code>ls &gt; test</code>，可以发现成执行了我们的命令</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030422-76438ea2-5255-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330025044-8eb6eefe-5253-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030422-76438ea2-5255-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330025044-8eb6eefe-5253-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h3 id="配合putenv-error-log"><a href="#配合putenv-error-log" class="headerlink" title="配合putenv+error_log"></a>配合putenv+error_log</h3><p>0ctf2019的<code>Wallbreaker Easy</code>中ban了mail函数，但是<code>error_log</code>没有ban掉，故我们可以用<code>error_log</code>来bypass disabled_functions</p>
 <p>error_log的一些参数</p>
 <pre><code>error_log(error,type,destination,headers)
@@ -300,14 +337,38 @@ gcc --share test -o test.so
 <span class="token function">error_log</span><span class="token punctuation">(</span><span class="token string">"test"</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token delimiter">?></span>
 </code></pre>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030223-2f5a5796-5255-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030310-4b46e942-5255-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330090346-ab7e1f1a-5287-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030223-2f5a5796-5255-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330030310-4b46e942-5255-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330090346-ab7e1f1a-5287-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h2 id="利用ImageMagick"><a href="#利用ImageMagick" class="headerlink" title="利用ImageMagick"></a>利用ImageMagick</h2><h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><p>这个搭建环境有一丝丝繁琐，不过没关系，按照我以下步骤来应该问题不大QAQ</p>
 <pre class=" language-sh"><code class="language-sh">1：apt-get update&&apt-get install imagemagick
 2：convert -version //如果安装成功会返回imagemagick版本号
 </code></pre>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330121909-f6e6dfbc-52a2-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330121909-f6e6dfbc-52a2-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>安装几个依赖</p>
 <pre><code>apt-get install php-pear php-dev
 apt-get install libmagickwand-dev
@@ -326,12 +387,24 @@ apt-get install libmagickwand-dev
 
 7.然后php -r "phpinfo();"|grep imagick，看有没有安装成功
 </code></pre>
-<p>成功安装<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330122537-de3708b0-52a3-1.png" alt="image.png"></p>
+<p>成功安装<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330122537-de3708b0-52a3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <p>然后安装ffmpeg</p>
 <pre class=" language-sh"><code class="language-sh">apt-get install ffmpeg
 ffmpeg -v 看看是否安装成功
 </code></pre>
-<p>成功安装<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330122857-55adcbd6-52a4-1.png" alt="image.png"></p>
+<p>成功安装<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330122857-55adcbd6-52a4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <h3 id="如何利用"><a href="#如何利用" class="headerlink" title="如何利用"></a>如何利用</h3><p>那么我们应该如何利用呢，参考了飘零师傅的分析，可以知道当Imagick处理的文件是如下后缀的时候，就会调用外部程序ffmpeg去处理该文件</p>
 <pre><code>wmv,mov,m4v,m2v,mp4,mpg,mpeg,mkv,avi,3g2,3gp
 </code></pre><p>我们来写一个小demo来验证一下是否正确<br>img.php</p>
@@ -340,7 +413,13 @@ ffmpeg -v 看看是否安装成功
 <span class="token delimiter">?></span>
 </code></pre>
 <p>我们strace一下看看执行的过程，可以发现在执行的过程中调用了ffmpeg</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330123601-52125e32-52a5-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330123601-52125e32-52a5-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h3 id="配合-attribute-函数"><a href="#配合-attribute-函数" class="headerlink" title="配合__attribute__函数"></a>配合<code>__attribute__</code>函数</h3><p><strong> PS: <code>__attribute__</code>的介绍</strong></p>
 <pre><code>__attribute__可以设置函数属性(Function Attribute)、变量属性(Variable Attribute)和类型属性(Type Attribute)。__attribute__前后都有两个下划线，并且后面会紧跟一对原括弧，括弧里面是相应的__attribute__参数
 
@@ -367,7 +446,13 @@ gcc --share poc -o poc.so
 <span class="token variable">$img</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Imagick</span><span class="token punctuation">(</span><span class="token string">'img.mp4'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token delimiter">?></span>
 </code></pre>
-<p>运行一波，发现我们的命令执行成功了<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330131614-f0c0b768-52aa-1.png" alt="image.png"></p>
+<p>运行一波，发现我们的命令执行成功了<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330131614-f0c0b768-52aa-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <h2 id="利用imap-open-CVE-2018-19518"><a href="#利用imap-open-CVE-2018-19518" class="headerlink" title="利用imap_open (CVE-2018-19518)"></a>利用imap_open (CVE-2018-19518)</h2><p>php imap扩展用于在PHP中执行邮件收发操作。其imap_open函数会调用rsh来连接远程shell，而debian/ubuntu中默认使用ssh来代替rsh的功能（也就是说，在debian系列系统中，执行rsh命令实际执行的是ssh命令）。<br>因为ssh命令中可以通过设置<code>-oProxyCommand=</code>来调用第三方命令，攻击者通过注入注入这个参数，最终将导致命令执行漏洞。</p>
 <p><strong> ssh的-oProxyCommand 参数 </strong><br>SSH 命令中用到了许多命令，其中我们可以使用 -o 参数来设置连接期间可用的各种选项。在建立SSH连接之前，我们可以设置 <code>ProxyCommand</code>参数，如下所示：</p>
 <pre class=" language-sh"><code class="language-sh">qiyou@ubuntu:~/test$ ls
@@ -390,9 +475,21 @@ test.txt
 <span class="token function">imap_open</span><span class="token punctuation">(</span><span class="token string">'{'</span><span class="token punctuation">.</span><span class="token variable">$server</span><span class="token punctuation">.</span><span class="token string">':143/imap}INBOX'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">"\n\nError: "</span><span class="token punctuation">.</span><span class="token function">imap_last_error</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token delimiter">?></span>
 </code></pre>
-<p>执行一波，可以发现执行成功了，要想写webshell的话直接把我们的exp改一下就ok了，这里就不多赘述了<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330100258-f0e06182-528f-1.png" alt="image.png"></p>
+<p>执行一波，可以发现执行成功了，要想写webshell的话直接把我们的exp改一下就ok了，这里就不多赘述了<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330100258-f0e06182-528f-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>被0ctf锤哭了，膜RR师傅Orz，比赛的时候没有做出来，赛后没有时间复现，等到想要复现的时候环境已经关了，只能是本地复现了，顺便总结了一下。</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330134911-8ad0aa9e-52af-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190330134911-8ad0aa9e-52af-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://www.tr0y.wang/2018/04/18/PHPDisalbedfunc/index.html" title="https://www.tr0y.wang/2018/04/18/PHPDisalbedfunc/index.html" target="_blank" rel="noopener">https://www.tr0y.wang/2018/04/18/PHPDisalbedfunc/index.html</a><br><a href="https://www.jianshu.com/p/137ae1400337" title="https://www.jianshu.com/p/137ae1400337" target="_blank" rel="noopener">https://www.jianshu.com/p/137ae1400337</a><br><a href="https://blog.csdn.net/haoel/article/details/1602108" title="https://blog.csdn.net/haoel/article/details/1602108" target="_blank" rel="noopener">https://blog.csdn.net/haoel/article/details/1602108</a><br><a href="https://github.com/Bo0oM/PHP_imap_open_exploit/blob/master/exploit.php" title="https://github.com/Bo0oM/PHP_imap_open_exploit/blob/master/exploit.php" target="_blank" rel="noopener">https://github.com/Bo0oM/PHP_imap_open_exploit/blob/master/exploit.php</a></p>
 <script>
         document.querySelectorAll('.github-emoji')
@@ -431,8 +528,8 @@ test.txt
     
     <footer>
         <a href="https://byqiyou.github.io">
-            <img src="/img/avatar.jpg" alt="七友">
-            七友
+            <img src="/img/avatar.jpg" alt="">
+            
         </a>
     </footer>
 </blockquote>
@@ -604,7 +701,7 @@ test.txt
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -707,10 +804,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);

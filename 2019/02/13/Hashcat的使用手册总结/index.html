@@ -69,7 +69,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -413,7 +413,13 @@ b | 0x00 - 0xff                    可能是用来匹配像空格这种密码的
 <pre><code>CPU：Intel(R) Core(TM) i5-7300HQ CPU @ 2.50GHz
 显卡：GTX 1050 Ti
 </code></pre><h2 id="7位数字破解"><a href="#7位数字破解" class="headerlink" title="7位数字破解"></a>7位数字破解</h2><pre><code>hashcat64.exe -a 3 -m 0 --force 25c3e88f81b4853f2a8faacad4c871b6 ?d?d?d?d?d?d?d
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190128211124-36baa378-22fe-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190128211124-36baa378-22fe-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h2 id="7位小写字母破解："><a href="#7位小写字母破解：" class="headerlink" title="7位小写字母破解："></a>7位小写字母破解：</h2><pre><code>hashcat64.exe -a 3 -m 0 --force 7a47c6db227df60a6d67245d7d8063f3 ?l?l?l?l?l?l?l
 </code></pre><h2 id="1-8位数字破解："><a href="#1-8位数字破解：" class="headerlink" title="1-8位数字破解："></a>1-8位数字破解：</h2><pre><code>hashcat64.exe -a 3 -m 0 --force 4488cec2aea535179e085367d8a17d75 --increment --increment-min 1 --increment-max 8 ?d?d?d?d?d?d?d?d
 </code></pre><h2 id="1-8位小写字母-数字破解"><a href="#1-8位小写字母-数字破解" class="headerlink" title="1-8位小写字母+数字破解"></a>1-8位小写字母+数字破解</h2><pre><code>hashcat64.exe -a 3 -m 0 --force ab65d749cba1656ca11dfa1cc2383102 --increment --increment-min 1 --increment-max 8 ?h?h?h?h?h?h?h?h
@@ -426,16 +432,34 @@ hashcat64.exe -a 3 d37fc9ee39dd45a7717e3e3e9415f65d --increment --increment-min 
 </code></pre><h2 id="字典破解"><a href="#字典破解" class="headerlink" title="字典破解"></a>字典破解</h2><pre><code>-a 0是指定字典破解模式，-o是输出结果到文件中
 hashcat64.exe -a 0 ede900ac1424436b55dc3c9f20cb97a8 password.txt -o result.txt
 </code></pre><h2 id="批量破解"><a href="#批量破解" class="headerlink" title="批量破解"></a>批量破解</h2><pre><code>hashcat64.exe -a 0 hash.txt password.txt -o result.txt
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190128214002-36ab009a-2302-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190128214002-36ab009a-2302-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h2 id="字典组合破解："><a href="#字典组合破解：" class="headerlink" title="字典组合破解："></a>字典组合破解：</h2><pre><code>hashcat64.exe -a 1 25f9e794323b453885f5181f1b624d0b pwd1.txt pwd2.txt
 </code></pre><h2 id="字典-掩码破解"><a href="#字典-掩码破解" class="headerlink" title="字典+掩码破解"></a>字典+掩码破解</h2><pre><code>hashcat64.exe -a 6 9dc9d5ed5031367d42543763423c24ee password.txt ?l?l?l?l?l
-</code></pre><h2 id="Mysql4-1-5的PASSWORD函数"><a href="#Mysql4-1-5的PASSWORD函数" class="headerlink" title="Mysql4.1/5的PASSWORD函数"></a>Mysql4.1/5的PASSWORD函数</h2><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129111353-e7ea461a-2373-1.png" alt="image.png"></p>
+</code></pre><h2 id="Mysql4-1-5的PASSWORD函数"><a href="#Mysql4-1-5的PASSWORD函数" class="headerlink" title="Mysql4.1/5的PASSWORD函数"></a>Mysql4.1/5的PASSWORD函数</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129111353-e7ea461a-2373-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <pre><code>hashcat64.exe -a 3 -m 300 --force 6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 ?d?d?d?d?d?d
 </code></pre><h2 id="sha512crypt-6-SHA512-Unix-破解"><a href="#sha512crypt-6-SHA512-Unix-破解" class="headerlink" title="sha512crypt $6$, SHA512 (Unix)破解"></a>sha512crypt $6$, SHA512 (Unix)破解</h2><p>可以<code>cat /etc/shadow</code>获取</p>
 <pre><code>hashcat64.exe -a 3 -m 1800 --force $6$mxuA5cdy$XZRk0CvnPFqOgVopqiPEFAFK72SogKVwwwp7gWaUOb7b6tVwfCpcSUsCEk64ktLLYmzyew/xd0O0hPG/yrm2X. ?l?l?l?l
 </code></pre><p>不用整理用户名，使用–username</p>
 <pre><code>hashcat64.exe -a 3 -m 1800 --force qiyou:$6$QDq75ki3$jsKm7qTDHz/xBob0kF1Lp170Cgg0i5Tslf3JW/sm9k9Q916mBTyilU3PoOsbRdxV8TAmzvdgNjrCuhfg3jKMY1 ?l?l?l?l?l --username
-</code></pre><h2 id="Windows-NT-hash，LM-hash破解"><a href="#Windows-NT-hash，LM-hash破解" class="headerlink" title="Windows NT-hash，LM-hash破解"></a>Windows NT-hash，LM-hash破解</h2><p>可以用<code>saminside</code>获取<code>NT-hash,LM-hash</code>的值<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129105751-ab0ebcf0-2371-1.png" alt="image.png"></p>
+</code></pre><h2 id="Windows-NT-hash，LM-hash破解"><a href="#Windows-NT-hash，LM-hash破解" class="headerlink" title="Windows NT-hash，LM-hash破解"></a>Windows NT-hash，LM-hash破解</h2><p>可以用<code>saminside</code>获取<code>NT-hash,LM-hash</code>的值<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129105751-ab0ebcf0-2371-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <pre><code>NT-hash:
 hashcat64.exe -a 3 -m 1000 209C6174DA490CAEB422F3FA5A7AE634 ?l?l?l?l?l
 LM-hash:
@@ -449,9 +473,22 @@ hashcat64.exe -a 3 -m 3000 F0D412BD764FFE81AAD3B435B51404EE ?l?l?l?l?l
 <pre><code>获取rar文件的hash值：rar2john.exe 1.rar
 结果：
 1.rar:$rar5$16$639e9ce8344c680da12e8bdd4346a6a3$15$a2b056a21a9836d8d48c2844d171b73d$8$04a52d2224ad082e
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129204720-047d9804-23c4-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129204720-047d9804-23c4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <pre><code>hashcat64.exe -a 3 -m 13000 --force $rar5$16$639e9ce8344c680da12e8bdd4346a6a3$15$a2b056a21a9836d8d48c2844d171b73d$8$04a52d2224ad082e ?d?d?d?d?d?d
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129163411-a6de7830-23a0-1.png" alt="image.png"><br>注意：</p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129163411-a6de7830-23a0-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>注意：</p>
 <pre><code>hashcat 支持 RAR3-hp 和 RAR5，官方示例如下：
 
 -m参数    类型        示例 hash
@@ -459,18 +496,48 @@ hashcat64.exe -a 3 -m 3000 F0D412BD764FFE81AAD3B435B51404EE ?l?l?l?l?l
 13000     RAR5        $rar5$16$74575567518807622265582327032280$15$f8b4064de34ac02ecabfe
 </code></pre><h2 id="zip密码破解"><a href="#zip密码破解" class="headerlink" title="zip密码破解"></a>zip密码破解</h2><pre><code>用zip2john获取文件的hash值：zip2john.exe 1.zip
 结果：1.zip:$zip2$*0*3*0*554bb43ff71cb0cac76326f292119dfd*ff23*5*24b28885ee*d4fe362bb1e91319ab53*$/zip2$:::::1.zip-1.txt
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129204743-120aca1e-23c4-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129204743-120aca1e-23c4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <pre><code>hashcat64.exe -a 3 -m 13600 $zip2$*0*3*0*554bb43ff71cb0cac76326f292119dfd*ff23*5*24b28885ee*d4fe362bb1e91319ab53*$/zip2$ --force ?d?d?d?d?d?d
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129164533-3d55655c-23a2-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129164533-3d55655c-23a2-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h2 id="破解office密码"><a href="#破解office密码" class="headerlink" title="破解office密码"></a>破解office密码</h2><pre><code>获取office的hash值：python office2john.py 11.docx
 结果：11.docx:$office$*2013*100000*256*16*e4a3eb62e8d3576f861f9eded75e0525*9eeb35f0849a7800d48113440b4bbb9c*577f8d8b2e1c5f60fed76e62327b38d28f25230f6c7dfd66588d9ca8097aabb9
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129204911-467e16b6-23c4-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129204911-467e16b6-23c4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <pre><code>hashcat64.exe -a 3 -m 9600 $office$*2013*100000*256*16*e4a3eb62e8d3576f861f9eded75e0525*9eeb35f0849a7800d48113440b4bbb9c*577f8d8b2e1c5f60fed76e62327b38d28f25230f6c7dfd66588d9ca8097aabb9 --force ?d?d?d?d?d?d
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129165754-f7280e66-23a3-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129165754-f7280e66-23a3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h2 id="破解WIFI密码"><a href="#破解WIFI密码" class="headerlink" title="破解WIFI密码"></a>破解WIFI密码</h2><p>首先先把我们的握手包转化为<code>hccapx</code>格式，现在最新版的<code>hashcat</code>只支持<code>hccapx</code>格式了，以前的<code>hccap</code>格式已经不支持了</p>
 <pre><code>官方在线转化https://hashcat.net/cap2hccapx/
 </code></pre><pre><code>hashcat64.exe -a 3 -m 2500 1.hccapx 1391040?d?d?d?d
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129172412-a3e3e92e-23a7-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190129172412-a3e3e92e-23a7-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h1 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h1><ol>
 <li>对于破解过的hash值，用<code>hashcat64.exe hash --show</code>查看结果</li>
 <li>所有的hash破解结果都在hashcat.potfile文件中</li>
@@ -523,8 +590,8 @@ hashcat64.exe -a 3 -m 3000 F0D412BD764FFE81AAD3B435B51404EE ?l?l?l?l?l
     
     <footer>
         <a href="https://byqiyou.github.io">
-            <img src="/img/avatar.jpg" alt="七友">
-            七友
+            <img src="/img/avatar.jpg" alt="">
+            
         </a>
     </footer>
 </blockquote>
@@ -696,7 +763,7 @@ hashcat64.exe -a 3 -m 3000 F0D412BD764FFE81AAD3B435B51404EE ?l?l?l?l?l
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -799,10 +866,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);

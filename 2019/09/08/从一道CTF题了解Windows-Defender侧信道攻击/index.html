@@ -62,7 +62,7 @@
           <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
-          <h5 class="nickname">七友</h5>
+          <h5 class="nickname"></h5>
           <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
         </hgroup>
       </div>
@@ -204,15 +204,33 @@
 <p>来自WIKI</p>
 </blockquote>
 <p><code>Windows Defender</code>（Windows 10创意者更新后名为<code>Windows Defender Antivirus</code>），曾用名<code>Microsoft AntiSpyware</code>，最初是用来移除、隔离和预防间谍软件的程序，可以运行在Windows XP以及更高版本的操作系统上，并已经内置在<code>Windows Vista</code>以及以后的版本中。<code>Windows Defender</code>的定义库更新很频繁。在Windows 8及之后的系统中取代<code>Microsoft Security Essentials</code>，成为一款全面反病毒软件。</p>
-<h3 id="关于-mpengine-dll"><a href="#关于-mpengine-dll" class="headerlink" title="关于 mpengine.dll"></a>关于 mpengine.dll</h3><p><code>TokyoWesterns</code>在PPT上是这么描述的<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190909232234-a61c12ca-d315-1.png" alt="image.png"></p>
+<h3 id="关于-mpengine-dll"><a href="#关于-mpengine-dll" class="headerlink" title="关于 mpengine.dll"></a>关于 mpengine.dll</h3><p><code>TokyoWesterns</code>在PPT上是这么描述的<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190909232234-a61c12ca-d315-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <p><code>mpengine.dll</code>是<code>Windows Defender</code>核心的ddl文件，其中它包含了JS引擎，它继承了JS的一些基础语法，其中它支持eval函数，但是它会对eval函数的参数进行检测，如果发现恶意数据则会进行拦截</p>
 <h3 id="Windows-Defender触发机制"><a href="#Windows-Defender触发机制" class="headerlink" title="Windows-Defender触发机制"></a>Windows-Defender触发机制</h3><p>在WCTF2019上<code>TokyoWesterns</code>出了一个关于<code>Windows Defender</code>侧信道攻击的题目，赛后分享的PPT地址为：<a href="https://westerns.tokyo/wctf2019-gtf/wctf2019-gtf-slides.pdf" target="_blank" rel="noopener">链接</a></p>
-<p>Defender对文件的检测行为如下（摘自TokyoWesterns的PPT）：<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908221400-e78b2e22-d242-1.png" alt="image.png"></p>
+<p>Defender对文件的检测行为如下（摘自TokyoWesterns的PPT）：<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908221400-e78b2e22-d242-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <p>所以我们第一步是要找到能触发<code>Windows Defender</code>检测机制的文件，<code>EICAR</code>测试文件可以做到这一点，关于EICAR测试文件的解释如下（<a href="http://docs.trendmicro.com/all/ent/de/v1.5/zh-cn/de_1.5_olh/ctm_ag/ctm1_ag_ch8/t_test_eicar_file.htm" target="_blank" rel="noopener">参考链接</a>）：</p>
 <pre><code>欧洲计算机防病毒研究所 (EICAR) 开发了一种测试病毒，可用于测试您的防病毒设备。此脚本是一个惰性文本文件。二进制特征码包含在多数防病毒产品供应商的病毒码文件中。它本质上不是病毒，并且不包含任何程序代码。
 </code></pre><p>我们可以从上面的参考链接中下载到这样的一个EICAR测试文件</p>
 <pre><code>X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
-</code></pre><p>然后我们在本地测试一下看看会不会拦截<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908214839-5cd883ea-d23f-1.png" alt="image.png"></p>
+</code></pre><p>然后我们在本地测试一下看看会不会拦截<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908214839-5cd883ea-d23f-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
 <p>可以明显看到被拦截了，但是如果把这个字符破坏掉就不会被拦截，所以我们可以利用<code>Windows Defender</code>这一点来进行侧信道攻击</p>
 <h2 id="phpnote"><a href="#phpnote" class="headerlink" title="phpnote"></a>phpnote</h2><p>从注释中得到</p>
 <pre><code>http://phpnote.chal.ctf.westerns.tokyo/?action=source
@@ -428,7 +446,13 @@ data <span class="token operator">=</span> <span class="token string">''</span>
     <span class="token keyword">print</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span>
 </code></pre>
 <p>跑一会，<code>secret</code>就跑出来了</p>
-<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190909233328-2be928d8-d317-1.png" alt="image.png"></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190909233328-2be928d8-d317-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
 <p>然后再用<code>secret</code>签名一下数据就能getflag了</p>
 <pre><code>$secret = "2532bd172578d19923e5348420e02320";
 $note = new Note(true);
@@ -477,8 +501,8 @@ var_dump(verify($data,hash_hmac('sha256', $data, $secret)));
     
     <footer>
         <a href="https://byqiyou.github.io">
-            <img src="/img/avatar.jpg" alt="七友">
-            七友
+            <img src="/img/avatar.jpg" alt="">
+            
         </a>
     </footer>
 </blockquote>
@@ -650,7 +674,7 @@ var_dump(verify($data,hash_hmac('sha256', $data, $secret)));
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2015 - 2019</span>
+        <p><span> &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -753,10 +777,10 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '死鬼去哪里了！';
+            document.title = 'Leave';
             clearTimeout(titleTime);
         } else {
-            document.title = '(つェ⊂)咦!又好了!';
+            document.title = 'Come back';
             titleTime = setTimeout(function() {
                 document.title = OriginTitile;
             },2000);
