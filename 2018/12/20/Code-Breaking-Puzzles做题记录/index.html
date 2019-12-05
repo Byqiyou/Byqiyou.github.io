@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Code-Breaking-Puzzles做题记录 | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="ctf,代码审计">
+    <meta name="description" content="文章首发于先知社区https://xz.aliyun.com/t/3623  传送门：https://code-breaking.com  function PHP函数利用技巧 pcrewaf PHP正则特性 phpmagic PHP写文件技巧 phplimit PHP代码执行限制绕过 nodechr Javascript字符串特性  1.easy - function&amp;lt;?php $act">
+<meta name="keywords" content="ctf,代码审计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Code-Breaking-Puzzles做题记录">
+<meta property="og:url" content="https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/index.html">
+<meta property="og:site_name" content="七友">
+<meta property="og:description" content="文章首发于先知社区https://xz.aliyun.com/t/3623  传送门：https://code-breaking.com  function PHP函数利用技巧 pcrewaf PHP正则特性 phpmagic PHP写文件技巧 phplimit PHP代码执行限制绕过 nodechr Javascript字符串特性  1.easy - function&amp;lt;?php $act">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215175639-b78733c6-004f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215175719-cf670570-004f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215195500-4007efe6-0060-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215175811-ee3aa3bc-004f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180103-54ff9b3e-0050-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215201327-d3c742e8-0062-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180121-5f9bd224-0050-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180201-775945b8-0050-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180507-e69ed62c-0050-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180514-ea606424-0050-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180528-f2fd4af2-0050-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180618-107d17ce-0051-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180706-2d128720-0051-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180801-4e69462a-0051-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180825-5c5603c2-0051-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215180900-7132ab38-0051-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215181715-98893016-0052-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215181306-04007e40-0052-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215181731-a1c399be-0052-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215191314-6a367202-005a-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215191754-11386b46-005b-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215194640-16261d0c-005f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215194703-23cd9624-005f-1.png">
+<meta property="og:updated_time" content="2019-05-14T16:29:53.551Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Code-Breaking-Puzzles做题记录">
+<meta name="twitter:description" content="文章首发于先知社区https://xz.aliyun.com/t/3623  传送门：https://code-breaking.com  function PHP函数利用技巧 pcrewaf PHP正则特性 phpmagic PHP写文件技巧 phplimit PHP代码执行限制绕过 nodechr Javascript字符串特性  1.easy - function&amp;lt;?php $act">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215175639-b78733c6-004f-1.png">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">七友</h5>
+          <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Code-Breaking-Puzzles做题记录</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Code-Breaking-Puzzles做题记录</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2018-12-20T02:09:58.000Z" itemprop="datePublished" class="page-time">
+  2018-12-20
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#1-easy-function"><span class="post-toc-number">1.</span> <span class="post-toc-text">1.easy - function</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#2-easy-pcrewaf"><span class="post-toc-number">2.</span> <span class="post-toc-text">2.easy - pcrewaf</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#3-easy-phpmagic"><span class="post-toc-number">3.</span> <span class="post-toc-text">3.easy - phpmagic</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#4-easy-phplimit"><span class="post-toc-number">4.</span> <span class="post-toc-text">4.easy - phplimit</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#5-easy-nodechr"><span class="post-toc-number">5.</span> <span class="post-toc-text">5.easy - nodechr</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#后记："><span class="post-toc-number">6.</span> <span class="post-toc-text">后记：</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-Code-Breaking-Puzzles做题记录"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Code-Breaking-Puzzles做题记录</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2018-12-20 10:09:58" datetime="2018-12-20T02:09:58.000Z"  itemprop="datePublished">2018-12-20</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <blockquote>
+<p>文章首发于先知社区<a href="https://xz.aliyun.com/t/3623" target="_blank" rel="noopener">https://xz.aliyun.com/t/3623</a></p>
+</blockquote>
+<p>传送门：<a href="https://code-breaking.com" title="https://code-breaking.com" target="_blank" rel="noopener">https://code-breaking.com</a></p>
+<ol>
+<li>function PHP函数利用技巧</li>
+<li>pcrewaf PHP正则特性</li>
+<li>phpmagic PHP写文件技巧</li>
+<li>phplimit PHP代码执行限制绕过</li>
+<li>nodechr Javascript字符串特性</li>
+</ol>
+<h1 id="1-easy-function"><a href="#1-easy-function" class="headerlink" title="1.easy - function"></a>1.easy - function</h1><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token variable">$action</span> <span class="token operator">=</span> <span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'action'</span><span class="token punctuation">]</span> <span class="token operator">?</span><span class="token operator">?</span> <span class="token string">''</span><span class="token punctuation">;</span>
+<span class="token variable">$arg</span> <span class="token operator">=</span> <span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'arg'</span><span class="token punctuation">]</span> <span class="token operator">?</span><span class="token operator">?</span> <span class="token string">''</span><span class="token punctuation">;</span>
+
+<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">preg_match</span><span class="token punctuation">(</span><span class="token string">'/^[a-z0-9_]*$/isD'</span><span class="token punctuation">,</span> <span class="token variable">$action</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">show_source</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+    <span class="token variable">$action</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">,</span> <span class="token variable">$arg</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>看到<code>$action('',$arg)</code>这里有两个参数，可以想到<code>create_function</code>匿名函数代码注入。那么问题来了，知道怎么执行命令但是正则怎么绕，从这个正则很容易知道只要我们在开头或者结尾加入其他字符就可以绕过了，bp来fuzz一波，发现%5c可以绕过。</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215175639-b78733c6-004f-1.png" alt="image.png"><br>为什么在函数前面加一个”\”也能执行呢，这里涉及到了php的全局命名空间，<code>\create_function</code>就是调用全局的<code>create_function</code>函数</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215175719-cf670570-004f-1.png" alt="image.png"><br>看一下手册中的例子就大概知道是什么意思了<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215195500-4007efe6-0060-1.png" alt="image.png"></p>
+<p>既然正则可以绕过了，那么就可以愉快的getflag了</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215175811-ee3aa3bc-004f-1.png" alt="image.png"></p>
+<h1 id="2-easy-pcrewaf"><a href="#2-easy-pcrewaf" class="headerlink" title="2.easy - pcrewaf"></a>2.easy - pcrewaf</h1><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token keyword">function</span> <span class="token function">is_php</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token function">preg_match</span><span class="token punctuation">(</span><span class="token string">'/&lt;\?.*[(`;?>].*/is'</span><span class="token punctuation">,</span> <span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$_FILES</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token function">show_source</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token variable">$user_dir</span> <span class="token operator">=</span> <span class="token string">'data/'</span> <span class="token punctuation">.</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token variable">$_SERVER</span><span class="token punctuation">[</span><span class="token string">'REMOTE_ADDR'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$data</span> <span class="token operator">=</span> <span class="token function">file_get_contents</span><span class="token punctuation">(</span><span class="token variable">$_FILES</span><span class="token punctuation">[</span><span class="token string">'file'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'tmp_name'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">is_php</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">echo</span> <span class="token string">"bad request"</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+    @<span class="token function">mkdir</span><span class="token punctuation">(</span><span class="token variable">$user_dir</span><span class="token punctuation">,</span> <span class="token number">0755</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token variable">$path</span> <span class="token operator">=</span> <span class="token variable">$user_dir</span> <span class="token punctuation">.</span> <span class="token string">'/'</span> <span class="token punctuation">.</span> <span class="token function">random_int</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span> <span class="token punctuation">.</span> <span class="token string">'.php'</span><span class="token punctuation">;</span>
+    <span class="token function">move_uploaded_file</span><span class="token punctuation">(</span><span class="token variable">$_FILES</span><span class="token punctuation">[</span><span class="token string">'file'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'tmp_name'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token variable">$path</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">header</span><span class="token punctuation">(</span><span class="token string">"Location: $path"</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">,</span> <span class="token number">303</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>  <span class="token number">1</span>
+</code></pre>
+<p>之前看过Ph师傅<a href="https://www.leavesongs.com/PENETRATION/use-pcre-backtrack-limit-to-bypass-restrict.html" title="这篇文章" target="_blank" rel="noopener">这篇文章</a>，所以这题做起来会很轻松。用php中正则的最大回溯次数<code>（pcre.backtrack_limit）</code>使正则失效，从而导致<code>is_php()</code>返回false。</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180103-54ff9b3e-0050-1.png" alt="image.png"></p>
+<p>PHP中的正则回溯最大次数是100w次，只要超过这个值，正则匹配就会执行失败</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215201327-d3c742e8-0062-1.png" alt="image.png"><br>那么解题的思路就很清晰了，只要上传一个超长的字符串的文件，就可以绕过这个正则表达式了。</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180121-5f9bd224-0050-1.png" alt="image.png"></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180201-775945b8-0050-1.png" alt="image.png"></p>
+<h1 id="3-easy-phpmagic"><a href="#3-easy-phpmagic" class="headerlink" title="3.easy - phpmagic"></a>3.easy - phpmagic</h1><pre class=" language-php"><code class="language-php"><span class="token comment" spellcheck="true">//代码段1：</span>
+<span class="token delimiter">&lt;?php</span>
+<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'read-source'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">exit</span><span class="token punctuation">(</span><span class="token function">show_source</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token function">define</span><span class="token punctuation">(</span><span class="token string">'DATA_DIR'</span><span class="token punctuation">,</span> <span class="token function">dirname</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span> <span class="token punctuation">.</span> <span class="token string">'/data/'</span> <span class="token punctuation">.</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token variable">$_SERVER</span><span class="token punctuation">[</span><span class="token string">'REMOTE_ADDR'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">is_dir</span><span class="token punctuation">(</span><span class="token constant">DATA_DIR</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">mkdir</span><span class="token punctuation">(</span><span class="token constant">DATA_DIR</span><span class="token punctuation">,</span> <span class="token number">0755</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token function">chdir</span><span class="token punctuation">(</span><span class="token constant">DATA_DIR</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$domain</span> <span class="token operator">=</span> <span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'domain'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'domain'</span><span class="token punctuation">]</span> <span class="token punctuation">:</span> <span class="token string">''</span><span class="token punctuation">;</span>
+<span class="token variable">$log_name</span> <span class="token operator">=</span> <span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'log'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'log'</span><span class="token punctuation">]</span> <span class="token punctuation">:</span> <span class="token function">date</span><span class="token punctuation">(</span><span class="token string">'-Y-m-d'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token delimiter">?></span>
+<span class="token comment" spellcheck="true">//代码段2：</span>
+<span class="token delimiter">&lt;?php</span> <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$_POST</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token variable">$domain</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token variable">$command</span> <span class="token operator">=</span> <span class="token function">sprintf</span><span class="token punctuation">(</span><span class="token string">"dig -t A -q %s"</span><span class="token punctuation">,</span> <span class="token function">escapeshellarg</span><span class="token punctuation">(</span><span class="token variable">$domain</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token variable">$output</span> <span class="token operator">=</span> <span class="token function">shell_exec</span><span class="token punctuation">(</span><span class="token variable">$command</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token variable">$output</span> <span class="token operator">=</span> <span class="token function">htmlspecialchars</span><span class="token punctuation">(</span><span class="token variable">$output</span><span class="token punctuation">,</span> <span class="token constant">ENT_HTML401</span> <span class="token operator">|</span> <span class="token constant">ENT_QUOTES</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token variable">$log_name</span> <span class="token operator">=</span> <span class="token variable">$_SERVER</span><span class="token punctuation">[</span><span class="token string">'SERVER_NAME'</span><span class="token punctuation">]</span> <span class="token punctuation">.</span> <span class="token variable">$log_name</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">in_array</span><span class="token punctuation">(</span><span class="token function">pathinfo</span><span class="token punctuation">(</span><span class="token variable">$log_name</span><span class="token punctuation">,</span> <span class="token constant">PATHINFO_EXTENSION</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">'php'</span><span class="token punctuation">,</span> <span class="token string">'php3'</span><span class="token punctuation">,</span> <span class="token string">'php4'</span><span class="token punctuation">,</span> <span class="token string">'php5'</span><span class="token punctuation">,</span> <span class="token string">'phtml'</span><span class="token punctuation">,</span> <span class="token string">'pht'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                    <span class="token function">file_put_contents</span><span class="token punctuation">(</span><span class="token variable">$log_name</span><span class="token punctuation">,</span> <span class="token variable">$output</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">echo</span> <span class="token variable">$output</span><span class="token punctuation">;</span>
+            <span class="token keyword">endif</span><span class="token punctuation">;</span> <span class="token delimiter">?></span>
+</code></pre>
+<p>$domain那里用了<code>escapeshellarg()</code>，命令注入这条走不通。</p>
+<p>文件内容我们可控，但是$output被<code>htmlspecialchars</code>转化为html实体，&lt;&gt;被干掉了，直接写shell不行，而且后缀限制得要死。</p>
+<p>翻了以前的笔记：php在做路径处理的时候，会递归的删除掉路径中存在的“/.”。<a href="http://wonderkun.cc/index.html/?p=626" title="详情看这里" target="_blank" rel="noopener">详情看这里</a>，所以我们只要在后缀后面加上/. pathifo就取不到后缀名了，并且我们可以正常上传一个php文件。<br>那么后缀限制就可以绕过了，写文件我们可以用伪协议流</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180507-e69ed62c-0050-1.png" alt="image.png"></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180514-ea606424-0050-1.png" alt="image.png"><br>但是$log_name前面被加上了<code>$_SERVER['SERVER_NAME']</code>，查看了手册之后发现这个值我们是可控的</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180528-f2fd4af2-0050-1.png" alt="image.png"><br>在本地尝试了一波，发现这个值是取http响应头的host值。</p>
+<p>最后一个问题是我们怎么控制base64的长度呢，我们知道base64编码之后一定是4的倍数，解码也是按4位4位来解的，那么我们只要控制好$output的值使得我们shell可以正常解码就可以了</p>
+<p>还有一个trick：就是php在进行base64解码的时候如果遇到不是base64编码的字符会直接跳过</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180618-107d17ce-0051-1.png" alt="image.png"><br>发现我们是可以正常解码的。<br>然后我们再判断我们shell前面符合base64编码有多少就可以了，不够可以填充，不过刚好是符合4的倍数，无需填充</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180706-2d128720-0051-1.png" alt="image.png"><br>思路都ok了，那么我们就写shell吧<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180801-4e69462a-0051-1.png" alt=""></p>
+<p>可以成功上传<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180825-5c5603c2-0051-1.png" alt=""><br>getflag<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215180900-7132ab38-0051-1.png" alt=""></p>
+<h1 id="4-easy-phplimit"><a href="#4-easy-phplimit" class="headerlink" title="4.easy - phplimit"></a>4.easy - phplimit</h1><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token string">';'</span> <span class="token operator">===</span> <span class="token function">preg_replace</span><span class="token punctuation">(</span><span class="token string">'/[^\W]+\((?R)?\)/'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'code'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>    
+    <span class="token function">eval</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'code'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+    <span class="token function">show_source</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>这里涉及到了PHP正则表达式的递归模式，不清楚什么是递归模式可以看这里 <a href="http://php.net/manual/zh/regexp.reference.recursive.php" title="http://php.net/manual/zh/regexp.reference.recursive.php" target="_blank" rel="noopener">http://php.net/manual/zh/regexp.reference.recursive.php</a>，</p>
+<p>题目中的正则表达式中的关键点是<code>(?R)?</code>，<code>(?R)</code>的作用就是递归地替换它所在的整条正则表达式. 在每次迭代时, PHP语法分析器都会将<code>(?R)</code>替换为 <code>'/[^\W]+\((?R)?\)/'</code>。</p>
+<p>那么上面真正表达式就一目了然了，就是传入的必须是函数，而且这个函数不能带入参数，类似于这种：func1(func2(func3()))，递归模式会一直递归匹配括号的内容下去。</p>
+<p>正则知道怎么走了，那么现在就用PHP不带参数的函数一把梭吧，在本地用了N个函数测试，最终payload：</p>
+<pre class=" language-php"><code class="language-php">code<span class="token operator">=</span><span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token function">file_get_contents</span><span class="token punctuation">(</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token function">array_reverse</span><span class="token punctuation">(</span><span class="token function">scandir</span><span class="token punctuation">(</span><span class="token function">dirname</span><span class="token punctuation">(</span><span class="token function">chdir</span><span class="token punctuation">(</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token function">scandir</span><span class="token punctuation">(</span><span class="token function">getcwd</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215181715-98893016-0052-1.png" alt="image.png"></p>
+<p>还有另一种解法是利用：<code>get_defined_vars()</code></p>
+<pre class=" language-php"><code class="language-php"><span class="token function">get_defined_vars</span><span class="token punctuation">(</span><span class="token punctuation">)</span>，此函数返回一个包含所有已定义变量列表的多维数组，这些变量包括环境变量、服务器变量和用户定义的变量。
+</code></pre>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215181306-04007e40-0052-1.png" alt="image.png"><br>那么我们可以再提交一个参数过去，再用<code>get_defined_vars()</code>函数去获取</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215181731-a1c399be-0052-1.png" alt="image.png"></p>
+<h1 id="5-easy-nodechr"><a href="#5-easy-nodechr" class="headerlink" title="5.easy - nodechr"></a>5.easy - nodechr</h1><p>代码太长了，这里就贴出关键代码吧</p>
+<pre class=" language-javascript"><code class="language-javascript"><span class="token comment" spellcheck="true">//关键代码1：</span>
+<span class="token keyword">function</span> <span class="token function">safeKeyword</span><span class="token punctuation">(</span>keyword<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">isString</span><span class="token punctuation">(</span>keyword<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>keyword<span class="token punctuation">.</span><span class="token function">match</span><span class="token punctuation">(</span><span class="token operator">/</span><span class="token punctuation">(</span>union<span class="token operator">|</span>select<span class="token operator">|</span><span class="token punctuation">;</span><span class="token operator">|</span>\<span class="token operator">-</span>\<span class="token operator">-</span><span class="token punctuation">)</span><span class="token operator">/</span>is<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> keyword
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> undefined
+<span class="token punctuation">}</span>
+<span class="token comment" spellcheck="true">//关键代码2：</span>
+<span class="token keyword">let</span> username <span class="token operator">=</span> <span class="token function">safeKeyword</span><span class="token punctuation">(</span>ctx<span class="token punctuation">.</span>request<span class="token punctuation">.</span>body<span class="token punctuation">[</span><span class="token string">'username'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">let</span> password <span class="token operator">=</span> <span class="token function">safeKeyword</span><span class="token punctuation">(</span>ctx<span class="token punctuation">.</span>request<span class="token punctuation">.</span>body<span class="token punctuation">[</span><span class="token string">'password'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token keyword">let</span> jump <span class="token operator">=</span> ctx<span class="token punctuation">.</span>router<span class="token punctuation">.</span><span class="token function">url</span><span class="token punctuation">(</span><span class="token string">'login'</span><span class="token punctuation">)</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span>username <span class="token operator">&amp;&amp;</span> password<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> user <span class="token operator">=</span> <span class="token keyword">await</span> ctx<span class="token punctuation">.</span>db<span class="token punctuation">.</span><span class="token keyword">get</span><span class="token punctuation">(</span><span class="token template-string"><span class="token string">`SELECT * FROM "users" WHERE "username" = '</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>username<span class="token punctuation">.</span><span class="token function">toUpperCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">' AND "password" = '</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>password<span class="token punctuation">.</span><span class="token function">toUpperCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">'`</span></span><span class="token punctuation">)</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>user<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        ctx<span class="token punctuation">.</span>session<span class="token punctuation">.</span>user <span class="token operator">=</span> user
+
+        jump <span class="token operator">=</span> ctx<span class="token punctuation">.</span>router<span class="token punctuation">.</span><span class="token function">url</span><span class="token punctuation">(</span><span class="token string">'admin'</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+
+<span class="token punctuation">}</span>
+</code></pre>
+<p>很明显的sql注入，但是union，select被ban了，看着toUpperCase()这个很是诡异，再加上ph师傅给的tips，百度之，然后就百度到了ph师傅<a href="https://www.leavesongs.com/HTML/javascript-up-low-ercase-tip.html" title="这篇文章" target="_blank" rel="noopener">这篇文章</a><br>要点如下：</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215191314-6a367202-005a-1.png" alt="image.png"><br>那么思路很清晰了，unıon.toUpperCase()==UNION，ſelect.toUpperCase()==SELECT</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215191754-11386b46-005b-1.png" alt="image.png"></p>
+<p>接下来就是简单的注入了</p>
+<pre><code>username=admin&amp;password=1%27 un%C4%B1on %C5%BFelect null,(%C5%BFelect flag from flags),'null
+</code></pre><p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215194640-16261d0c-005f-1.png" alt="image.png"></p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20181215194703-23cd9624-005f-1.png" alt="image.png"></p>
+<h1 id="后记："><a href="#后记：" class="headerlink" title="后记："></a>后记：</h1><p>这几道题目考察很多有意思的东西，也感谢ph师傅出这几道很Nice的题目，涨了不少姿势。</p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2019-05-14T16:29:53.551Z" itemprop="dateUpdated">2019-05-15 00:29:53</time>
+</span><br>
+
+
+        
+        know it then hack it
+        
+    </div>
+    
+    <footer>
+        <a href="https://byqiyou.github.io">
+            <img src="/img/avatar.jpg" alt="七友">
+            七友
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ctf/">ctf</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代码审计/">代码审计</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Code-Breaking-Puzzles做题记录》 — 七友&url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2018/12/24/Phar的一些利用姿势/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Phar的一些利用姿势</h4>
+      </a>
+    </div>
+  
+
+  
+</nav>
+
+
+
+    
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'true';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        Thinks
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/2.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/2.png" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>七友 &copy; 2015 - 2019</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Code-Breaking-Puzzles做题记录》 — 七友&url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

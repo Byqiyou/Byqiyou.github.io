@@ -17,6 +17,8 @@
     <title>七友 | 路漫漫其修远兮，吾将上下而求索</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
+    <meta name="theme-color" content="#3F51B5">
+    
     
     <meta name="keywords" content="路漫漫其修远兮，吾将上下而求索">
     <meta name="description" content="路漫漫其修远兮，吾将上下而求索">
@@ -31,8 +33,8 @@
 <meta name="twitter:title" content="七友">
 <meta name="twitter:description" content="路漫漫其修远兮，吾将上下而求索">
     
-    <link rel="shortcut icon" href="/">
-    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
     <script>window.lazyScripts=[]</script>
 
     <!-- custom head -->
@@ -48,10 +50,10 @@
     <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
         <i class="icon icon-lg icon-close"></i>
     </a>
-    <div class="brand-wrap" style="background-image:url(/)">
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
       <div class="brand">
         <a href="/" class="avatar waves-effect waves-circle waves-light">
-          <img src="/">
+          <img src="/img/avatar.jpg">
         </a>
         <hgroup class="introduce">
           <h5 class="nickname">七友</h5>
@@ -61,6 +63,55 @@
     </div>
     <div class="scroll-wrap flex-col">
       <ul class="nav">
+        
+            <li class="waves-block waves-effect active">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
         
       </ul>
     </div>
@@ -85,6 +136,10 @@
             </a>
         </div>
         
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
         
     </div>
 </header>
@@ -136,7 +191,14 @@
 
     
         
-文章首发于先知社区：https://xz.aliyu...
+文章首发于先知社区：https://xz.aliyun.com/t/6461
+
+前言当我们通过各种方法拿到一个服务器的权限的时候，我们下一步要做的就是后渗透了，而后门持久化也是我们后渗透很重要的一部分，下面我来总结一下windows下常见的后门持久化的方法
+
+后门持久化我的操作环境是：
+
+无AV、管理员权限（提权、免杀等是后门持久化的铺垫，当然有的方法也并不是全部需要这些铺垫）
+操作系统：...
     
 
         <a href="/2019/10/02/windows中常见后门持久化方法总结/" class="post-more waves-effect waves-button">
@@ -181,7 +243,11 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言前几天打了一下由tokyowesterns举办的T...
+        前言前几天打了一下由tokyowesterns举办的TWCTF，感觉phpnote这题还是不错的，一个全新的知识点，比赛的时候没有解出来，赛后问了一下梅子酒才知道这个是用windows-defender测信道攻击，下面记录一下解题过程
+前置知识Windows Defender介绍
+来自WIKI
+
+Windows Defender（Windows 10创意者更新后名为Windows Defen...
     
 
         <a href="/2019/09/08/从一道CTF题了解Windows-Defender侧信道攻击/" class="post-more waves-effect waves-button">
@@ -226,7 +292,13 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        Pentest N1ctf2019.lab(step1...
+        Pentest N1ctf2019.lab(step1)链接：http://47.52.129.242/web页面啥也没有，用nmap扫一波
+nmap -sS -P0 -T4 47.52.129.242 -vv
+
+扫描结果
+PORT   STATE SERVICE REASON
+21/tcp open  ftp     syn-ack ttl 128
+22/tcp open  ssh    ...
     
 
         <a href="/2019/09/08/N1CTF2019渗透题题解/" class="post-more waves-effect waves-button">
@@ -271,7 +343,14 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言正逢暑假的闲暇之余，和De1ta的师傅们打了一下s...
+        前言正逢暑假的闲暇之余，和De1ta的师傅们打了一下suctf2019，下面记录一下web的题解
+webCheckIn简单地看一下它过滤，大概有3个点：
+
+不能上传ph结尾的文件，
+上传的文件内容不能有&lt;?，
+用exif_imagetype函数检测上传文件是否为图片文件
+
+第一反应是上传一个.htaccess，把其它文件格式解析为php文件，但是发现并不行，应该是apache的Allo...
     
 
         <a href="/2019/08/20/SUCTF2019-WEB-WP/" class="post-more waves-effect waves-button">
@@ -316,7 +395,9 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        SSRF介绍SSRF，服务器端请求伪造，服务器请求伪造...
+        SSRF介绍SSRF，服务器端请求伪造，服务器请求伪造，是由攻击者构造的漏洞，用于形成服务器发起的请求。通常，SSRF攻击的目标是外部网络无法访问的内部系统。这里我们要介绍的是关于redis中SSRF的利用，如果有什么错误的地方还请师傅们不吝赐教/握拳。
+前置知识文章中的数据包构造会涉及到redis的RESP协议，所以我们这里先科普一下，了解RESP协议的师傅可以跳过=。=
+RESP协议Re...
     
 
         <a href="/2019/07/15/浅析Redis中SSRF的利用/" class="post-more waves-effect waves-button">
@@ -361,7 +442,16 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言延时注入无论是在实战中还是在CTF中还是比较常见的...
+        前言延时注入无论是在实战中还是在CTF中还是比较常见的，下面我总结一下延时注入的一些套路
+利用方法sleep最简单直接准确的方式是用sleep
+mysql&gt; select sleep(5);
++----------+
+| sleep(5) |
++----------+
+|        0 |
++----------+
+1 row in set (5.00 sec)
+benchmark...
     
 
         <a href="/2019/06/26/mysql中延时注入的5种姿势/" class="post-more waves-effect waves-button">
@@ -406,7 +496,17 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言下面介绍的两个姿势都是先知群里面get到的，这里记...
+        前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。
+绕过思路假设我们有一个这样的代码
+&lt;?php
+include($_GET["shell"]);
+?>
+
+我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off
+
+用常规的方法直接包含一个远程文件肯定是不行的
+
+所以我们得想办法绕过allow_ur...
     
 
         <a href="/2019/05/15/bypass-RFI限制的一些思路/" class="post-more waves-effect waves-button">
@@ -452,7 +552,9 @@
 
     
         
-文章首发于先知社区https://xz.aliyun...
+文章首发于先知社区https://xz.aliyun.com/t/4704
+
+简介Scapy是一种用于计算机网络的数据包处理工具，由Philippe Biondi 用Python编写。它可以伪造或解码数据包，在线路上发送它们，捕获它们，并匹配请求和回复。它还可以处理扫描，跟踪路由，探测，单元测试，攻击和网络发现等任务。可以说Scpay非常强大如果您并不是很了解Scapy，可以自行去看一下官...
     
 
         <a href="/2019/04/09/运用Scapy编写类似于Nmap的端口扫描脚本/" class="post-more waves-effect waves-button">
@@ -498,7 +600,11 @@
 
     
         
-文章首发于先知社区https://xz.aliyun...
+文章首发于先知社区https://xz.aliyun.com/t/4623
+
+简介PHP 的 disabled_functions主要是用于禁用一些危险的函数防止被一些攻击者利用
+Bypass思路利用LD_PRELOAD什么是LD_PRELOAD
+LD_PRELOAD是Linux系统的一个环境变量，用于动态库的加载，动态库加载的优先级最高，它可以影响程序的运行时的链接（Runtime li...
     
 
         <a href="/2019/04/04/Bypass-disabled-functions一些思路总结/" class="post-more waves-effect waves-button">
@@ -544,7 +650,9 @@
 
     
         
-文章首发于先知社区https://xz.aliyun...
+文章首发于先知社区https://xz.aliyun.com/t/4067
+
+简述XSS攻击通常指的是通过利用网页开发时留下的漏洞，通过巧妙的方法注入恶意指令代码到网页，使用户加载并执行攻击者恶意制造的网页程序。这些恶意网页程序通常是JavaScript，但实际上也可以包括Java，VBScript，ActiveX，Flash或者甚至是普通的HTML。攻击成功后，攻击者可能得到更高的权限（...
     
 
         <a href="/2019/02/16/xss总结/" class="post-more waves-effect waves-button">
@@ -577,6 +685,15 @@
         <footer class="footer">
     <div class="top">
         
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
 
         <p>
             
@@ -584,7 +701,7 @@
         </p>
     </div>
     <div class="bottom">
-        <p><span>七友 &copy; 2019</span>
+        <p><span>七友 &copy; 2015 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
@@ -598,14 +715,60 @@
 <a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
 
 
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/&title=七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/&title=七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=七友&url=https://byqiyou.github.io/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/" alt="微信分享二维码">
+</div>
+
+
+
+
     <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
 <script>
-var BLOG = { ROOT: '/', SHARE: , REWARD: false };
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 
 
 </script>
 
-<script src="/js/main.min.js?v=1.7.2"></script>
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
 
 
 <div class="search-panel" id="search-panel">
@@ -625,14 +788,33 @@ var BLOG = { ROOT: '/', SHARE: , REWARD: false };
 </li>
 </template>
 
-<script src="/js/search.min.js?v=1.7.2" async></script>
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
 
 
 
 
 
 
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
 
 
 
