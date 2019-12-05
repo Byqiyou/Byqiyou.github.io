@@ -14,7 +14,7 @@
     
     
     
-    <title>Code-Breaking-Puzzles做题记录 | 七友&#39;s Blog | 七友</title>
+    <title>Code-Breaking-Puzzles做题记录 | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
@@ -26,7 +26,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="Code-Breaking-Puzzles做题记录">
 <meta property="og:url" content="https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/index.html">
-<meta property="og:site_name" content="七友&#39;s Blog">
+<meta property="og:site_name" content="七友">
 <meta property="og:description" content="文章首发于先知社区https://xz.aliyun.com/t/3623  传送门：https://code-breaking.com  function PHP函数利用技巧 pcrewaf PHP正则特性 phpmagic PHP写文件技巧 phplimit PHP代码执行限制绕过 nodechr Javascript字符串特性  1.easy - function&amp;lt;?php $act">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20181215175639-b78733c6-004f-1.png">
@@ -125,14 +125,7 @@
             </li>
         
             <li class="waves-block waves-effect">
-              <a href="http://www.weibo.com/ysweb" target="_blank" >
-                <i class="icon icon-lg icon-weibo"></i>
-                Weibo
-              </a>
-            </li>
-        
-            <li class="waves-block waves-effect">
-              <a href="/custom"  >
+              <a href="/friends"  >
                 <i class="icon icon-lg icon-link"></i>
                 测试
               </a>
@@ -272,7 +265,7 @@
             </figure>
 <h1 id="2-easy-pcrewaf"><a href="#2-easy-pcrewaf" class="headerlink" title="2.easy - pcrewaf"></a>2.easy - pcrewaf</h1><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
 <span class="token keyword">function</span> <span class="token function">is_php</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
-    <span class="token keyword">return</span> <span class="token function">preg_match</span><span class="token punctuation">(</span><span class="token string">'/&lt;\?.*[(`;?&gt;].*/is'</span><span class="token punctuation">,</span> <span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token function">preg_match</span><span class="token punctuation">(</span><span class="token string">'/&lt;\?.*[(`;?>].*/is'</span><span class="token punctuation">,</span> <span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
 
 <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$_FILES</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
@@ -335,7 +328,7 @@
 <span class="token function">chdir</span><span class="token punctuation">(</span><span class="token constant">DATA_DIR</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token variable">$domain</span> <span class="token operator">=</span> <span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'domain'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'domain'</span><span class="token punctuation">]</span> <span class="token punctuation">:</span> <span class="token string">''</span><span class="token punctuation">;</span>
 <span class="token variable">$log_name</span> <span class="token operator">=</span> <span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'log'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'log'</span><span class="token punctuation">]</span> <span class="token punctuation">:</span> <span class="token function">date</span><span class="token punctuation">(</span><span class="token string">'-Y-m-d'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token delimiter">?&gt;</span>
+<span class="token delimiter">?></span>
 <span class="token comment" spellcheck="true">//代码段2：</span>
 <span class="token delimiter">&lt;?php</span> <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$_POST</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token variable">$domain</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
                 <span class="token variable">$command</span> <span class="token operator">=</span> <span class="token function">sprintf</span><span class="token punctuation">(</span><span class="token string">"dig -t A -q %s"</span><span class="token punctuation">,</span> <span class="token function">escapeshellarg</span><span class="token punctuation">(</span><span class="token variable">$domain</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -346,7 +339,7 @@
                     <span class="token function">file_put_contents</span><span class="token punctuation">(</span><span class="token variable">$log_name</span><span class="token punctuation">,</span> <span class="token variable">$output</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
                 <span class="token punctuation">}</span>
                 <span class="token keyword">echo</span> <span class="token variable">$output</span><span class="token punctuation">;</span>
-            <span class="token keyword">endif</span><span class="token punctuation">;</span> <span class="token delimiter">?&gt;</span>
+            <span class="token keyword">endif</span><span class="token punctuation">;</span> <span class="token delimiter">?></span>
 </code></pre>
 <p>$domain那里用了<code>escapeshellarg()</code>，命令注入这条走不通。</p>
 <p>文件内容我们可控，但是$output被<code>htmlspecialchars</code>转化为html实体，&lt;&gt;被干掉了，直接写shell不行，而且后缀限制得要死。</p>
@@ -538,7 +531,7 @@
 
 
         
-        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2018/12/20/Code-Breaking-Puzzles做题记录/" target="_blank" rel="external">https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/</a>
+        know it then hack it
         
     </div>
     
@@ -569,7 +562,7 @@
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -579,7 +572,7 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -589,7 +582,7 @@
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Code-Breaking-Puzzles做题记录》 — 七友's Blog&url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Code-Breaking-Puzzles做题记录》 — 七友&url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
@@ -728,7 +721,7 @@
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友's Blog&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -738,7 +731,7 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友's Blog&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&title=《Code-Breaking-Puzzles做题记录》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
@@ -748,7 +741,7 @@
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Code-Breaking-Puzzles做题记录》 — 七友's Blog&url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&via=https://byqiyou.github.io" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Code-Breaking-Puzzles做题记录》 — 七友&url=https://byqiyou.github.io/2018/12/20/Code-Breaking-Puzzles做题记录/&via=https://byqiyou.github.io" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
