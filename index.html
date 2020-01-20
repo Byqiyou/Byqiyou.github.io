@@ -163,6 +163,52 @@
     <ul class="post-list">
     
         <li class="post-list-item fade">
+            <article id="post-GORM学习笔记"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2020-01-20 09:39:18" datetime="2020-01-20T01:39:18.000Z"  itemprop="datePublished">2020-01-20</time>
+
+        
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2020/01/20/GORM学习笔记/">GORM学习</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        GORM学习大部分实例来自文档
+模型模型定义实例123456789101112type User struct {  gorm.Model  Name         string  Age          sql.NullInt64  Birthday     *time.Time  Email        string  `gorm:"type:varchar(100);unique...
+    
+
+        <a href="/2020/01/20/GORM学习笔记/" class="post-more waves-effect waves-button">
+            阅读全文…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GORM/">GORM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
             <article id="post-Gin学习笔记"
   class="article-card article-type-post" itemprop="blogPost">
 
@@ -487,58 +533,6 @@ Windows Defender（Windows 10创意者更新后名为Windows Defen...
     <div class="post-footer">
         
 	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ctf/">ctf</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/渗透/">渗透</a></li></ul>
-
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-SUCTF2019-WEB-WP"
-  class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-08-20 11:37:19" datetime="2019-08-20T03:37:19.000Z"  itemprop="datePublished">2019-08-20</time>
-
-        
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/08/20/SUCTF2019-WEB-WP/">SUCTF2019-WEB-WP</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        前言正逢暑假的闲暇之余，和De1ta的师傅们打了一下suctf2019，下面记录一下web的题解
-webCheckIn简单地看一下它过滤，大概有3个点：
-
-不能上传ph结尾的文件，
-上传的文件内容不能有&lt;?，
-用exif_imagetype函数检测上传文件是否为图片文件
-
-第一反应是上传一个.htaccess，把其它文件格式解析为php文件，但是发现并不行，应该是apache的Allo...
-    
-
-        <a href="/2019/08/20/SUCTF2019-WEB-WP/" class="post-more waves-effect waves-button">
-            阅读全文…
-        </a>
-    </div>
-    
-    <div class="post-footer">
-        
-	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ctf/">ctf</a></li></ul>
 
     </div>
     
