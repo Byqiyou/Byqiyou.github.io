@@ -41,8 +41,8 @@
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203200212-03339246-467d-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203170203-d8aa6d38-4663-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203202755-9ae8769e-4680-1.png">
-<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203202736-8f95d066-4680-1.png">
-<meta property="og:updated_time" content="2020-02-03T13:11:10.334Z">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200203234612-4e384812-469c-1.png">
+<meta property="og:updated_time" content="2020-02-03T15:47:20.943Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Windows——Access Control List">
 <meta name="twitter:description" content="ACL(Access Control List)ACL是一个windows中的表示用户（组）权限的列表。访问控制列表（ACL）是访问控制项（ACE）的列表。ACL中的每个ACE标识一个用户，并指定该用户允许、拒绝或审核的访问权限 ACL分为两类：  Discretionary Access Control List (DACL)  自由访问控制列表 System Access Control Li">
@@ -359,7 +359,6 @@
                 <div class="image-caption">image.png</div>
             </figure>
 <p>删除ACL<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Remove-DomainObjectAcl -TargetIdentity "DC=qiyou,DC=com" -PrincipalIdentity qiyou -Rights DCSync</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>但是我发现删除ACL之后还是依旧能获取hash，原因不明，先留一个坑</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
@@ -367,10 +366,11 @@
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
+<p>可以看到删除了ACL之后无法获取hash了</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203202736-8f95d066-4680-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200203234612-4e384812-469c-1.png" alt="image.png" title="">
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -403,7 +403,7 @@
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2020-02-03T13:11:10.334Z" itemprop="dateUpdated">2020-02-03 21:11:10</time>
+    最后更新时间：<time datetime="2020-02-03T15:47:20.943Z" itemprop="dateUpdated">2020-02-03 23:47:20</time>
 </span><br>
 
 
