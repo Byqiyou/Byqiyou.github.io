@@ -29,7 +29,7 @@
 <meta property="og:site_name" content="七友">
 <meta property="og:description" content="前置知识域委派是指将域内用户的权限委派给服务账号，使得服务账号能以用户的权限在域内展开活动 委派主要分为非约束委派(Unconstrained delegation)和约束委派(Constrained delegation)两个方式，还有一种是基于资源的约束委派（Resource Based Constrained Delegation）不过不是本文的重点，下面我们来分别介绍一下非约束委派和约束委">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211201956-d06fe498-4cc8-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211220455-7afcc3f0-4cd7-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200206162116-a4dd0f4e-48b9-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200206162614-56b431d4-48ba-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200206165316-1da1e568-48be-1.png">
@@ -46,11 +46,7 @@
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200206170357-9bafde5a-48bf-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200205223329-7a841d9a-4824-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200206130430-2805d11a-489e-1.png">
-<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200205225522-88d335fe-4827-1.png">
-<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200205225324-426c2242-4827-1.png">
-<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200205225745-de224496-4827-1.png">
-<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200205225823-f4ea142e-4827-1.png">
-<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200205231932-e91d15bc-482a-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229223822-22b87436-5b01-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211111033-1160a96c-4c7c-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211110803-b7eafc16-4c7b-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211112007-67121a34-4c7d-1.png">
@@ -90,11 +86,11 @@
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200208212926-06b9b3f2-4a77-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211095642-c04916c2-4c71-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211100913-7fa14af2-4c73-1.png">
-<meta property="og:updated_time" content="2020-02-11T14:15:05.329Z">
+<meta property="og:updated_time" content="2020-02-29T15:43:17.456Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="域渗透——Kerberos委派攻击">
 <meta name="twitter:description" content="前置知识域委派是指将域内用户的权限委派给服务账号，使得服务账号能以用户的权限在域内展开活动 委派主要分为非约束委派(Unconstrained delegation)和约束委派(Constrained delegation)两个方式，还有一种是基于资源的约束委派（Resource Based Constrained Delegation）不过不是本文的重点，下面我们来分别介绍一下非约束委派和约束委">
-<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211201956-d06fe498-4cc8-1.png">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200211220455-7afcc3f0-4cd7-1.png">
     
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
@@ -261,7 +257,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200211201956-d06fe498-4cc8-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200211220455-7afcc3f0-4cd7-1.png" alt="image.png" title="">
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -435,44 +431,12 @@
 <li>域控：windows server 2008R2，主机名：<code>WIN-QFPHJSM1L7G</code>，IP：<code>192.168.141.145</code>，用户：<code>administrator</code></li>
 <li>域内主机：windows server 2008R2，主机名：<code>DM2008</code>，IP：<code>192.168.141.183</code>，用户：<code>qiyou</code></li>
 </ul>
-<p><strong>注</strong>：在Windows系统中，只有服务账号和主机账号的属性才有委派功能，普通用户默认没有，如下图所示：</p>
-<p>普通用户：</p>
+<p><strong>注</strong>：在Windows系统中，只有服务账号和主机账号的属性才有委派功能，普通用户默认是没有的</p>
+<p>现在我们将<code>DM2008</code>这个主机用户设置为非约束委派（注意是：主机用户而不是服务用户，多谢先知评论区的<code>3t2ugg1e</code>师傅指正）</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200205225522-88d335fe-4827-1.png" alt="image.png" title="">
-                </div>
-                <div class="image-caption">image.png</div>
-            </figure>
-<p>注册了服务的用户</p>
-<figure class="image-bubble">
-                <div class="img-lightbox">
-                    <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200205225324-426c2242-4827-1.png" alt="image.png" title="">
-                </div>
-                <div class="image-caption">image.png</div>
-            </figure>
-<p>把普通账号test注册为服务账号：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setspn.exe -U -A test/test test</span><br></pre></td></tr></tbody></table></figure>
-<figure class="image-bubble">
-                <div class="img-lightbox">
-                    <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200205225745-de224496-4827-1.png" alt="image.png" title="">
-                </div>
-                <div class="image-caption">image.png</div>
-            </figure>
-<figure class="image-bubble">
-                <div class="img-lightbox">
-                    <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200205225823-f4ea142e-4827-1.png" alt="image.png" title="">
-                </div>
-                <div class="image-caption">image.png</div>
-            </figure>
-<p>言归正传，现在我们将qiyou这个用户设置为非约束委派</p>
-<figure class="image-bubble">
-                <div class="img-lightbox">
-                    <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200205231932-e91d15bc-482a-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229223822-22b87436-5b01-1.png" alt="image.png" title="">
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -923,7 +887,7 @@
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2020-02-11T14:15:05.329Z" itemprop="dateUpdated">2020-02-11 22:15:05</time>
+    最后更新时间：<time datetime="2020-02-29T15:43:17.456Z" itemprop="dateUpdated">2020-02-29 23:43:17</time>
 </span><br>
 
 

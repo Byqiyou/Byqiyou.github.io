@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>利用BloodHound分析域中的攻击路径 | 七友</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="pentest">
+    <meta name="description" content="BloodHound参考：https://github.com/BloodHoundAD/BloodHound/wiki BloodHound是一个单页的JavaScript的Web应用程序，构建在Linkurious上，用Electron编译，使用的数据库是Neo4j BloodHound使用可视化图来显示Active Directory环境中隐藏的、通常是无意的关系。攻击者可以使用BloodH">
+<meta name="keywords" content="pentest">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用BloodHound分析域中的攻击路径">
+<meta property="og:url" content="https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/index.html">
+<meta property="og:site_name" content="七友">
+<meta property="og:description" content="BloodHound参考：https://github.com/BloodHoundAD/BloodHound/wiki BloodHound是一个单页的JavaScript的Web应用程序，构建在Linkurious上，用Electron编译，使用的数据库是Neo4j BloodHound使用可视化图来显示Active Directory环境中隐藏的、通常是无意的关系。攻击者可以使用BloodH">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228211834-d2bf463c-5a2c-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228135101-4ce77374-59ee-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228135836-5c347d80-59ef-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228203654-00945bac-5a27-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228161545-84c93278-5a02-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228162135-55a53194-5a03-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228162505-d2b81f2a-5a03-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228140627-75036906-59f0-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228204614-4e31afa8-5a28-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228163731-8f756e46-5a05-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228163922-d1a9c79e-5a05-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229112428-fe7a5034-5aa2-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228164034-fca6a5fc-5a05-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228164519-a63b36dc-5a06-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229000632-49bed48e-5a44-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228164743-fc399ea2-5a06-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229001326-4033103c-5a45-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229000851-9c055d62-5a44-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229092725-a3ff5e52-5a92-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229092746-b07d1dae-5a92-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229170834-1046899c-5ad3-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229170722-e5883aa2-5ad2-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229171247-a7312a88-5ad3-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229171610-1fc20eae-5ad4-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229171123-74da2828-5ad3-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228215936-8db7e778-5a32-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229171908-89ddca62-5ad4-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228234046-aff8367c-5a40-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229100223-86a8dbe4-5a97-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229100728-3c7f01e6-5a98-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229102001-fd306c08-5a99-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229210337-e62969d8-5af3-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229210241-c4febd30-5af3-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200229211928-1d49d23e-5af6-1.png">
+<meta property="og:updated_time" content="2020-02-29T15:42:04.832Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用BloodHound分析域中的攻击路径">
+<meta name="twitter:description" content="BloodHound参考：https://github.com/BloodHoundAD/BloodHound/wiki BloodHound是一个单页的JavaScript的Web应用程序，构建在Linkurious上，用Electron编译，使用的数据库是Neo4j BloodHound使用可视化图来显示Active Directory环境中隐藏的、通常是无意的关系。攻击者可以使用BloodH">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200228211834-d2bf463c-5a2c-1.png">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname"></h5>
+          <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">利用BloodHound分析域中的攻击路径</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">利用BloodHound分析域中的攻击路径</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-02-29T15:42:01.000Z" itemprop="datePublished" class="page-time">
+  2020-02-29
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#BloodHound"><span class="post-toc-number">1.</span> <span class="post-toc-text">BloodHound</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#安装"><span class="post-toc-number">1.1.</span> <span class="post-toc-text">安装</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#数据采集"><span class="post-toc-number">1.2.</span> <span class="post-toc-text">数据采集</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#最短到达域管理员路径"><span class="post-toc-number">1.3.</span> <span class="post-toc-text">最短到达域管理员路径</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#到达无约束委托系统的最短路径"><span class="post-toc-number">1.4.</span> <span class="post-toc-text">到达无约束委托系统的最短路径</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#到达Kerberoastable用户的最短路径"><span class="post-toc-number">1.5.</span> <span class="post-toc-text">到达Kerberoastable用户的最短路径</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#查找具有DCSync权限的主体"><span class="post-toc-number">1.6.</span> <span class="post-toc-text">查找具有DCSync权限的主体</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#other"><span class="post-toc-number">1.7.</span> <span class="post-toc-text">other</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#后记"><span class="post-toc-number">2.</span> <span class="post-toc-text">后记</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#Reference"><span class="post-toc-number">3.</span> <span class="post-toc-text">Reference</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-利用BloodHound分析域中的攻击路径"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">利用BloodHound分析域中的攻击路径</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-02-29 23:42:01" datetime="2020-02-29T15:42:01.000Z"  itemprop="datePublished">2020-02-29</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="BloodHound"><a href="#BloodHound" class="headerlink" title="BloodHound"></a>BloodHound</h1><p>参考：<a href="https://github.com/BloodHoundAD/BloodHound/wiki" target="_blank" rel="noopener">https://github.com/BloodHoundAD/BloodHound/wiki</a></p>
+<p><code>BloodHound</code>是一个单页的<code>JavaScript</code>的Web应用程序，构建在<code>Linkurious</code>上，用<code>Electron</code>编译，使用的数据库是<code>Neo4j</code></p>
+<p><code>BloodHound</code>使用可视化图来显示<code>Active Directory</code>环境中隐藏的、通常是无意的关系。攻击者可以使用BloodHound轻松识别高度复杂的攻击路径，否则这些攻击路径无法快速识别。防御者可以使用<code>BloodHound</code>来识别和防御那些相同的攻击路径。蓝队和红队都可以使用<code>BloodHound</code>轻松深入了解<code>Active Directory</code>环境中的权限关系。</p>
+<p><code>BloodHound</code>在域渗透信息收集之中可谓是利器，下面讲一下BloodHound的基本使用</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228211834-d2bf463c-5a2c-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<blockquote>
+<p>图来源于：<a href="https://github.com/BloodHoundAD/BloodHound/wiki" target="_blank" rel="noopener">BloodHound wiki</a></p>
+</blockquote>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>BloodHound是依赖于<code>Neo4j</code>数据库的，所以开始先安装<code>Neo4j</code>，<code>Neo4j</code>需要安装最新JDK，如果不是最新JDK那么将会报错</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228135101-4ce77374-59ee-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>下载地址：<a href="https://neo4j.com/download-center/#community" target="_blank" rel="noopener">https://neo4j.com/download-center/#community</a></p>
+<p>下载完成之后到bin目录运行如下命令</p>
+<p>windows：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">neo4j.bat console</span><br></pre></td></tr></tbody></table></figure>
+<p>linux</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./neo4j console</span><br></pre></td></tr></tbody></table></figure>
+<p>运行之后</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228135836-5c347d80-59ef-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>Neo4j默认是只能本地登陆的，如果你想远程登陆的话请修改一下配置文件，配置文件在conf目录下的<code>neo4j.conf</code></p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dbms.default_listen_address=0.0.0.0</span><br><span class="line">dbms.default_advertised_address=0.0.0.0</span><br><span class="line">dbms.connector.bolt.listen_address=0.0.0.0:7687</span><br><span class="line">dbms.connector.http.listen_address=0.0.0.0:7474</span><br></pre></td></tr></tbody></table></figure>
+<p>登陆后台<code>http://localhost:7474</code></p>
+<p>URL为：<code>neo4j://localhost:7687</code></p>
+<p>用户名默认为：<code>neo4j</code></p>
+<p>密码默认为：<code>neo4j</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228203654-00945bac-5a27-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>登陆之后里面长这样</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228161545-84c93278-5a02-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>neo4j安装好了，那么下一步就是下载BloodHound：<a href="https://github.com/BloodHoundAD/BloodHound/releases" target="_blank" rel="noopener">https://github.com/BloodHoundAD/BloodHound/releases</a></p>
+<p>如果是kali的话，可以不用下载直接使用<code>apt-get</code>就可以安装，<code>BloodHound</code>依赖于<code>neo4j</code>，所以<code>neo4j</code>也会安装</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-get update</span><br><span class="line">apt-get dist-upgrade</span><br><span class="line">apt-get install bloodhound</span><br></pre></td></tr></tbody></table></figure>
+<p>下载完成之后，如下命令启动</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./BloodHound --no-sandbox</span><br></pre></td></tr></tbody></table></figure>
+<p>输入数据库地址、用户名以及密码即可</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228162135-55a53194-5a03-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>登陆进去里面大概长这样子</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228162505-d2b81f2a-5a03-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>面板上有三个选项，分别为数据库信息、节点信息、查询模块。</p>
+<p>现在里面什么都没有，因为我们没有上传数据，下面说一下数据收集</p>
+<h2 id="数据采集"><a href="#数据采集" class="headerlink" title="数据采集"></a>数据采集</h2><p>数据采集我们可以用SharpHound：<a href="https://github.com/BloodHoundAD/SharpHound" target="_blank" rel="noopener">地址</a>，一个C#写的程序</p>
+<p>然后到域上用<code>SharpHound</code>进行信息收集，支持<code>Group, LocalGroup, GPOLocalGroup, Session, LoggedOn, ObjectProps, ACL, ComputerOnly, Trusts, Default, RDP, DCOM, DCOnly</code>等信息的收集，默认导出所有的信息，具体请看github提供的手册。</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SharpHound.exe -c all</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228140627-75036906-59f0-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>导出之后解压会有多个json文件，里面保存着域内的各种关系</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228204614-4e31afa8-5a28-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后到BloodHound上传数据，点最右边第四个上传按钮，把所有json文件逐个上传即可</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228163731-8f756e46-5a05-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>上传之后就可以在左上角看到域内的一些信息了</p>
+<p>第一个数据库信息</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228163922-d1a9c79e-5a05-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>可以看到域上一共有6个用户、3个主机、52组、一个会话、489条ACL，546个关系</p>
+<p>第二个为结点信息，你点一下节点，它会显示这个结点的一些信息，这里我们显示域管理员的一些信息</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229112428-fe7a5034-5aa2-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>第三个<code>Queries</code>为查询模块，有如下选项</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228164034-fca6a5fc-5a05-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<ol>
+<li><p>查找所有域管理员</p>
+</li>
+<li><p>查找到域管理员的最短路径</p>
+</li>
+<li><p>查找具有DCSync权限的主体</p>
+</li>
+<li><p>具有外部域组成员身份的用户</p>
+</li>
+<li><p>具有外部域组成员身份的组</p>
+</li>
+<li><p>域信任地图</p>
+</li>
+<li><p>达到无约束委托系统的最短路径</p>
+</li>
+<li><p>到达<code>Kerberoastable</code>用户的最短路径</p>
+</li>
+<li><p>从<code>Kerberoastable</code>用户到域管理员的最短路径</p>
+</li>
+<li><p>到达自拥有主体的最短路径</p>
+</li>
+<li><p>从拥有的主体到域管理员的最短路径</p>
+</li>
+<li><p>到达高价值目标的最短路径</p>
+</li>
+</ol>
+<p>下面我来挑几个模块来讲一下</p>
+<h2 id="最短到达域管理员路径"><a href="#最短到达域管理员路径" class="headerlink" title="最短到达域管理员路径"></a>最短到达域管理员路径</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228164519-a63b36dc-5a06-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p><strong>注：</strong> 路径由粗到细的那边，就是xx对xx具有的权限或者说关系</p>
+<p>这里可以看到，有2条最短路径可以达到域管理权限，一个是通过约束委派（test用户），一个是通过<code>SID History</code>（qiyou用户），路径上都有说明</p>
+<p>首先先看一下用户qiyou的<code>SID History</code>，可以从下图中看到这个<code>SID History</code>的RID部分为500的，也就是这个为域管理员的SID，那么当KDC为<code>QIYOU</code>这个用户创建kerberos票证时，它将包含<code>ADMINISTRATOR</code>的SID，因此授予<code>QIYOU</code>与<code>ADMINISTRATOR</code>相同的权限。</p>
+<p>从<code>Node Info</code>中可以得到<code>SID History</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229000632-49bed48e-5a44-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>回到域上验证一下</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228164743-fc399ea2-5a06-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后可以以这个用户尝试一下访问域控</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229001326-4033103c-5a45-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>另外一条路径是通过约束委派，用户test对主机<code>DM2012.TEST.LOCAL</code>中的某个服务具有约束委派的权限，而<code>administrator</code>在<code>DM2012.TEST.LOCAL</code>主机上有一个会话，也就是说如果用户可能通过约束委派得到主机<code>DM2012.TEST.LOCAL</code>的权限，那么就有可能从内存中dump出用户administrator的凭证。用户test具有的委派的权限点击用户test即可看到</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229000851-9c055d62-5a44-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>还要注意一点就是用户test是一个在域中注册了spn的服务账户，也就是说这个用户是<code>Kerberoastable</code>，所以如果我们没有这个用户的权限，我们可以通过<code>Kerberoasting</code>得到这个用户的hash，然后爆破它的密码。如果想枚举出域中<code>Kerberoastable</code>用户的关系，可以使用模块<code>Shortest Paths from Kerberoastable Users</code>。</p>
+<p>还有一个tips是你右键路径描述，它会给出一些利用的信息以及学习参考资料方便你进行下一步操作</p>
+<p>利用信息</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229092725-a3ff5e52-5a92-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>参考资料</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229092746-b07d1dae-5a92-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="到达无约束委托系统的最短路径"><a href="#到达无约束委托系统的最短路径" class="headerlink" title="到达无约束委托系统的最短路径"></a>到达无约束委托系统的最短路径</h2><p>模块为<code>Shortest Paths to Unconstrained Delegation Systems</code>，点击一下即可看到路径</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229170834-1046899c-5ad3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>因为这个域上的关系结构比较简单，所有看起来也不是很复杂，我们这里以域用户<code>qiyou</code>为例吧，可以把鼠标放在这个用户图标上，然后与它相关的路径都会变红，如下图</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229170722-e5883aa2-5ad2-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>有两个具有非约束委派的系统，一个是<code>win10</code>一个是<code>windows server 2008R2</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229171247-a7312a88-5ad3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229171610-1fc20eae-5ad4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>首先看到第一条路径，用户<code>qiyou</code>是对<code>Default Domain Policy</code>具有委派权限的，权限为<code>GenericWrite</code>，也就是说用户qiyou对这个GPO具有修改权限的，那么我们就可以通过这个用户来修改域上默认组策略的一些设置，比如设置计划任务，<code>Default Domain Policy</code>这个GPO默认是链接到域本身的，也就说这个GPO的计划任务是对域内所有机器生效，通过命令行来注册GPO计划任务可以参考三好学生师傅这个篇文章：<a href="https://3gstudent.github.io/3gstudent.github.io/%E5%9F%9F%E6%B8%97%E9%80%8F-%E5%88%A9%E7%94%A8GPO%E4%B8%AD%E7%9A%84%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1%E5%AE%9E%E7%8E%B0%E8%BF%9C%E7%A8%8B%E6%89%A7%E8%A1%8C(%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E4%B8%8E%E8%84%9A%E6%9C%AC%E7%BB%86%E8%8A%82" target="_blank" rel="noopener">地址</a>/)，因为不是这里重点就不多赘述了</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229171123-74da2828-5ad3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>回到域控验证用户qiyou对该GPO是否具有委派权限</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228215936-8db7e778-5a32-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>第二条路径，如下图所示</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229171908-89ddca62-5ad4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>路径的大概描述是：用户qiyou对test具有<code>GenericAll</code>权限（完全控制权限），而<code>test</code>对主机<code>DM2012.TEST.LOCAL</code>具有某个服务的约束委派权限，那么就有可能通过约束委派得到<code>DM2012.TEST.LOCAL</code>的权限，而用户administrator又在主机<code>DM2012.TEST.LOCAL</code>上有一个会话，那么就有可能从内存中dump出用户administrator的凭证，而用户<code>administrator</code>又属于<code>DOMAIN ADMINS</code>组，<code>DOMAIN ADMINS</code>组又对该非约束委派的主机具有完全控制权限。</p>
+<p>用户qiyou对test具有完全控制权限，那么用户qiyou可以给用户test注册spn、修改密码等等</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200228234046-aff8367c-5a40-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="到达Kerberoastable用户的最短路径"><a href="#到达Kerberoastable用户的最短路径" class="headerlink" title="到达Kerberoastable用户的最短路径"></a>到达<code>Kerberoastable</code>用户的最短路径</h2><p>这个就比较简单了，也不用多讲了上面也说过了用户test是<code>Kerberoastable</code>，域上的所有用户都是可以通过<code>Kerberoasting</code>得到<code>Kerberoastable</code>用户hash的</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229100223-86a8dbe4-5a97-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>注册的SPN可以在左侧<code>Node Info</code>看到，为<code>test/test.local</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229100728-3c7f01e6-5a98-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p><code>Kerberoasting</code>可以得到用户hash，然后<code>hashcat</code>枚举口令即可</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229102001-fd306c08-5a99-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="查找具有DCSync权限的主体"><a href="#查找具有DCSync权限的主体" class="headerlink" title="查找具有DCSync权限的主体"></a>查找具有DCSync权限的主体</h2><blockquote>
+<p>这个模块会列出域中所有具有DCsync权限的主体（包括用户和计算机）</p>
+</blockquote>
+<p>DCsync大致原理是通过<code>GetNCChanges</code>请求域控制器（利用<code>Directory Replication Service</code>协议）复制用户凭据。</p>
+<p>运行DCSync需要特殊权限，<code>Administrators</code>组、<code>Domain Admins</code>组或<code>Enterprise Admins</code>组以及域控中的任何成员都通过DCSync来提取用户凭证。如果配置不当，可导致普通用户也能具有DCsync权限</p>
+<p>这里为了可以看到效果，就给普通用户qiyou添加个DCsync权限</p>
+<p>如果普通用户想具有DCsync权限，可以给对象添加以下三条ACE：</p>
+<ul>
+<li><p><code>DS-Replication-Get-Changes</code>，对应GUID为：<code>1131f6aa-9c07-11d1-f79f-00c04fc2dcd2</code></p>
+</li>
+<li><p><code>DS-Replication-Get-Changes-All</code>，对应GUID为：<code>1131f6ad-9c07-11d1-f79f-00c04fc2dcd2</code></p>
+</li>
+<li><p><code>DS-Replication-Get-Changes-In-Filtered-Set</code>，对应GUID为：<code>89e95b76-444d-4c62-991a-0facbeda640c</code></p>
+</li>
+</ul>
+<p>powerview模块集成了添加<code>DCsync</code>权限的方法，所以我们不需要一个一个添加了</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Add-DomainObjectAcl -TargetIdentity "DC=test,DC=local" -PrincipalIdentity qiyou -Rights DCSync -Verbose</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229210337-e62969d8-5af3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>回到BloodHound上看一下</p>
+<p>可以看到箭头上有两个明显标志：GetChangesAll（<code>DS-Replication-Get-Changes-All</code>）和GetChanges（<code>DS-Replication-Get-Changes</code>）</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229210241-c4febd30-5af3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>利用用户qiyou即可dump出域内所有用户的hash</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200229211928-1d49d23e-5af6-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="other"><a href="#other" class="headerlink" title="other"></a>other</h2><p>因为我这个域环境比较简单，其它模块和上面的大同小异，所以我们这里就不多演示了，有兴趣的同学可以自己搭建一个域环境或者网上下载靶机自己模拟一下，我上写得可能比较乱，不清楚的同学可以多看一下<a href="https://github.com/BloodHoundAD/BloodHound/wiki" target="_blank" rel="noopener">官方文档</a></p>
+<h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>无论是对红队还是蓝队来说<code>BloodHound</code>确实是一款非常nice的工具，它可以帮助我们节省很大的时间和精力。因为我这个是本地测试域比较小，而且一些域内的关系是我故意设计，所以很容易找出对应的关系，但是如果到大型很复杂的域环境中，那么这个就不是那么简单了，毕竟<code>BloodHound</code>只是辅助工具，最终还是需要人来分析的</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://www.freebuf.com/sectool/179002.html" target="_blank" rel="noopener">https://www.freebuf.com/sectool/179002.html</a></p>
+<p><a href="https://github.com/BloodHoundAD/BloodHound/wiki" target="_blank" rel="noopener">https://github.com/BloodHoundAD/BloodHound/wiki</a></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-02-29T15:42:04.832Z" itemprop="dateUpdated">2020-02-29 23:42:04</time>
+</span><br>
+
+
+        
+        know it then hack it
+        
+    </div>
+    
+    <footer>
+        <a href="https://byqiyou.github.io">
+            <img src="/img/avatar.jpg" alt="">
+            
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pentest/">pentest</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/&title=《利用BloodHound分析域中的攻击路径》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/&title=《利用BloodHound分析域中的攻击路径》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《利用BloodHound分析域中的攻击路径》 — 七友&url=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/02/25/域渗透——SeEnableDelegationPrivilege的利用/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">域渗透——SeEnableDelegationPrivilege的利用</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'true';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        Thinks
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/2.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/2.png" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span> &copy; 2018 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/&title=《利用BloodHound分析域中的攻击路径》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/&title=《利用BloodHound分析域中的攻击路径》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《利用BloodHound分析域中的攻击路径》 — 七友&url=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/2020/02/29/利用BloodHound分析域中的攻击路径/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = 'Leave';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'Come back';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
