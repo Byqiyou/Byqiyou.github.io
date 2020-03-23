@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514224804-47be592e-7657-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190514222633-460cdae0-7654-1.png">
 <meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20190515001220-0d01bde2-7663-1.png">
-<meta property="og:updated_time" content="2019-06-26T08:03:46.096Z">
+<meta property="og:updated_time" content="2020-03-23T02:07:12.576Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="bypass-RFI限制的一些思路">
 <meta name="twitter:description" content="前言下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。 绕过思路假设我们有一个这样的代码123&amp;lt;?phpinclude($_GET[&quot;shell&quot;]);?&amp;gt; 我们发现通过phpinfo发现allow_url_fopen=Off和allow_url_include=Off">
@@ -255,6 +255,7 @@
             </figure>
 <h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>这种方法还是比较局限的，因为这种<code>unc</code>只能是在windows下使用，而且国内的运营商对<code>smb</code>还是比较敏感的，毕竟被勒索病毒搞怕了/捂脸。。。。。</p>
 <h2 id="第二种姿势：利用webdav"><a href="#第二种姿势：利用webdav" class="headerlink" title="第二种姿势：利用webdav"></a>第二种姿势：利用webdav</h2><p><strong> PS：这个思路是Lz1y师傅在ph师傅小密圈提到的，tql </strong></p>
+<p>利用条件：依赖于Windows的webclient服务，需要在目标环境开启sc start webclient服务才能利用</p>
 <p>用docker启动一个webdav服务器（ph师傅给的）<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -v ~/webdav:/var/lib/dav -e ANONYMOUS_METHODS=GET,OPTIONS,PROPFIND -e LOCATION=/webdav -p 80:80 --rm --name webdav bytemark/webdav</span><br></pre></td></tr></tbody></table></figure><p></p>
 <p>然后把php文件放到<code>~/webdav/data</code>里面</p>
 <p>尝试包含，包含成功<br></p><figure class="image-bubble">
@@ -291,7 +292,7 @@
     <div class="content">
         
 <span class="post-time">
-    最后更新时间：<time datetime="2019-06-26T08:03:46.096Z" itemprop="dateUpdated">2019-06-26 16:03:46</time>
+    最后更新时间：<time datetime="2020-03-23T02:07:12.576Z" itemprop="dateUpdated">2020-03-23 10:07:12</time>
 </span><br>
 
 

