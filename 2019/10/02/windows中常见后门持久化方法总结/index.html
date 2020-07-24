@@ -257,7 +257,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001233211-a300dd9e-e460-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001233211-a300dd9e-e460-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -277,26 +277,26 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190917230148-12cf0e8a-d95c-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190917230148-12cf0e8a-d95c-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190917230303-3f489c88-d95c-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190917230303-3f489c88-d95c-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <h2 id="映像劫持"><a href="#映像劫持" class="headerlink" title="映像劫持"></a>映像劫持</h2><p>这个和shift后门差不多，只不过在低版本的windows中，我们可以简单地替换程序，但是在高版本的windows版本中替换的文件受到了系统的保护，所以这里我们要使用另外一个知识点：映像劫持。</p>
 <p>“映像劫持”，也被称为”IFEO”（Image File Execution Options）</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">就是Image File Execution Options（其实应该称为"image Hijack"。）是为一些在默认系统环境中运行时可能引发错误的程序执行体提供特殊的环境设定。由于这个项主要是用来调试程序用的，对一般用户意义不大。默认是只有管理员和local system有权读写修改。</span><br><span class="line">PS：来自百度百科</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">就是Image File Execution Options（其实应该称为&quot;image Hijack&quot;。）是为一些在默认系统环境中运行时可能引发错误的程序执行体提供特殊的环境设定。由于这个项主要是用来调试程序用的，对一般用户意义不大。默认是只有管理员和local system有权读写修改。</span><br><span class="line">PS：来自百度百科</span><br></pre></td></tr></table></figure>
 <p>简单来说就是当目标程序被映像劫持时，当我们启动目标程序时，启动的是劫持后的程序而不是原来的程序</p>
 <p>操作也很简单，在注册表的<code>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Option</code>下添加一个项<code>sethc.exe</code>，然后在<code>sethc.exe</code>这个项中添加<code>debugger</code>键，键值为我们恶意程序的路径，如下图</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918082823-394420d8-d9ab-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918082823-394420d8-d9ab-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -304,7 +304,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918082909-54c98e6a-d9ab-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918082909-54c98e6a-d9ab-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -316,45 +316,45 @@
 </li>
 </ol>
 <p>常见注册表启动项键的位置：</p>
-<p>用户级<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run</span><br><span class="line">\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>系统级<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run</span><br><span class="line">\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce</span><br><span class="line">\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run</span><br><span class="line">\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\RunOnce</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>修改一下：<br></p><figure class="image-bubble">
+<p>用户级<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run</span><br><span class="line">\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce</span><br></pre></td></tr></table></figure></p>
+<p>系统级<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run</span><br><span class="line">\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce</span><br><span class="line">\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run</span><br><span class="line">\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\RunOnce</span><br></pre></td></tr></table></figure></p>
+<p>修改一下：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918083813-98e4f322-d9ac-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918083813-98e4f322-d9ac-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
-            </figure><p></p>
-<p>执行结果：<br></p><figure class="image-bubble">
+            </figure></p>
+<p>执行结果：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918085725-475ca3e4-d9af-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918085725-475ca3e4-d9af-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <h2 id="定时任务"><a href="#定时任务" class="headerlink" title="定时任务"></a>定时任务</h2><p>windows下定时任务的命令有两个分别是：<code>at</code>和<code>schtasks</code>，他们两者主要区别是<code>at</code>命令在<code>win7</code>、<code>08</code>等高版本的windows中是不能将任务在前台执行的，也就是只会打开一个后台进程，而<code>schtasks</code>是将定时的任务在前台执行，下面我们逐个看看</p>
-<p><code>at</code>的一些参数<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AT [\\computername] time [/INTERACTIVE]</span><br><span class="line">    [ /EVERY:date[,...] | /NEXT:date[,...]] "command"</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p><code>at</code>的执行如下：<br></p><figure class="image-bubble">
+<p><code>at</code>的一些参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AT [\\computername] time [/INTERACTIVE]</span><br><span class="line">    [ /EVERY:date[,...] | /NEXT:date[,...]] &quot;command&quot;</span><br></pre></td></tr></table></figure></p>
+<p><code>at</code>的执行如下：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918215623-1959734c-da1c-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918215623-1959734c-da1c-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
-<p><code>schtasks</code>一些参数：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">schtasks /create /tn TaskName /tr TaskRun /sc schedule [/mo modifier] [/d day] [/m month[,month...] [/i IdleTime] [/st StartTime] [/sd StartDate] [/ed EndDate] [/s computer [/u [domain\]user /p password]] [/ru {[Domain\]User | "System"} [/rp Password]] /?</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p><code>schtasks</code>的执行如下：<br></p><figure class="image-bubble">
+            </figure></p>
+<p><code>schtasks</code>一些参数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">schtasks /create /tn TaskName /tr TaskRun /sc schedule [/mo modifier] [/d day] [/m month[,month...] [/i IdleTime] [/st StartTime] [/sd StartDate] [/ed EndDate] [/s computer [/u [domain\]user /p password]] [/ru &#123;[Domain\]User | &quot;System&quot;&#125; [/rp Password]] /?</span><br></pre></td></tr></table></figure></p>
+<p><code>schtasks</code>的执行如下：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918220600-71adc952-da1d-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190918220600-71adc952-da1d-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <h2 id="用户登陆初始化"><a href="#用户登陆初始化" class="headerlink" title="用户登陆初始化"></a>用户登陆初始化</h2><p><code>Userinit</code>的作用是用户在进行登陆初始化设置时，<code>WinLogon</code>进程会执行指定的<code>login scripts</code>，所以我们可以修改它的键值来添加我们要执行的程序</p>
 <p>注册表路径为：<code>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit</code>，我们添加一个我们启动的程序，多个程序用逗号隔开</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190921093213-a3475d9a-dc0f-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190921093213-a3475d9a-dc0f-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -362,7 +362,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190921093624-390759f2-dc10-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190921093624-390759f2-dc10-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
             </figure>
@@ -371,17 +371,17 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190921092903-31fe94fa-dc0f-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190921092903-31fe94fa-dc0f-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>效果如下：<br></p><figure class="image-bubble">
+<p>效果如下：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190921092825-1bb19288-dc0f-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190921092825-1bb19288-dc0f-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <h2 id="屏幕保护程序"><a href="#屏幕保护程序" class="headerlink" title="屏幕保护程序"></a>屏幕保护程序</h2><p>在对方开启屏幕保护的情况下，我们可以修改屏保程序为我们的恶意程序从而达到后门持久化的目的<br>其中屏幕保护的配置存储在注册表中，其位置为：<code>HKEY_CURRENT_USER\Control Panel\Desktop</code>，关键键值如下：</p>
 <ol>
 <li><p><code>SCRNSAVE.EXE</code> - 默认屏幕保护程序，我们可以把这个键值改为我们的恶意程序</p>
@@ -391,28 +391,28 @@
 <li><p><code>ScreenSaverTimeout</code> - 指定屏幕保护程序启动前系统的空闲事件，单位为秒，默认为900（15分钟）</p>
 </li>
 </ol>
-<p>设置如下：<br></p><figure class="image-bubble">
+<p>设置如下：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190920172700-ccb37e20-db88-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190920172700-ccb37e20-db88-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
-            </figure><p></p>
+            </figure></p>
 <p>效果图：</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190920172852-0f332750-db89-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190920172852-0f332750-db89-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <h2 id="自启动服务"><a href="#自启动服务" class="headerlink" title="自启动服务"></a>自启动服务</h2><p>自启动服务一般是在电脑启动后在后台加载指定的服务程序，我们可以将<code>exe</code>文件注册为服务，也可以将<code>dll</code>文件注册为服务</p>
 <p>为了方便起见我们可以直接用<code>Metasploit</code>来注册一个服务</p>
-<figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meterpreter &gt; run metsvc -A</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meterpreter &gt; run metsvc -A</span><br></pre></td></tr></table></figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927125532-09484cc6-e0e3-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927125532-09484cc6-e0e3-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -420,7 +420,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927125725-4cab43a6-e0e3-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927125725-4cab43a6-e0e3-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -428,25 +428,25 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927125854-81895838-e0e3-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927125854-81895838-e0e3-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927131321-85fb6012-e0e5-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927131321-85fb6012-e0e5-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>如果想删除服务，可以执行<br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meterpreter &gt; run metsvc -r</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>如果想删除服务，可以执行<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meterpreter &gt; run metsvc -r</span><br></pre></td></tr></table></figure></p>
 <h2 id="影子用户"><a href="#影子用户" class="headerlink" title="影子用户"></a>影子用户</h2><p>影子用户顾名思义就是一个隐藏用户，只能通过注册表查看这个用户，其它方式是找不到这个用户的信息的</p>
-<p>在用户名后面加一个<code>$</code>可以创建一个匿名用户，创建完毕后我们再把这个用户添加到administrator组<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net user test$ test /add</span><br><span class="line">net localgroup administrators test$ /add</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>在用户名后面加一个<code>$</code>可以创建一个匿名用户，创建完毕后我们再把这个用户添加到administrator组<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net user test$ test /add</span><br><span class="line">net localgroup administrators test$ /add</span><br></pre></td></tr></table></figure></p>
 <p>可以看到<code>net user</code>是看不到我们创建的用户，但是计算机管理-用户和组中可以看到</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927202719-25c6764a-e122-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927202719-25c6764a-e122-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -455,7 +455,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927160157-13cfe2d4-e0fd-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927160157-13cfe2d4-e0fd-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -463,63 +463,63 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927160710-ce3ec374-e0fd-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927160710-ce3ec374-e0fd-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>然后我们将<code>test$</code>删除掉<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net user test$ /del</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>然后我们将<code>test$</code>删除掉<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net user test$ /del</span><br></pre></td></tr></table></figure></p>
 <p>然后再双击导出的注册表文件，然后我们再看一下</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927161853-71985b2e-e0ff-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190927161853-71985b2e-e0ff-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <p><code>net user</code>和计算机管理-用户和组中都查看不到用户了，但是我们可以用<code>net user test$</code>查看用户信息</p>
 <p>这个时候我们再用<code>net user test$ /del</code>是删除不掉这个用户的，只能通过注册表来删除。</p>
-<h2 id="waitfor"><a href="#waitfor" class="headerlink" title="waitfor"></a>waitfor</h2><p>关于<code>waitfor</code>手册中是这么解释的：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在系统上发送或等待信号。waitfor可用于跨网络同步计算机。</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p><code>waitfor</code>的语法<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">waitfor [/s &lt;Computer&gt; [/u [&lt;Domain&gt;\]&lt;User&gt; [/p [&lt;Password&gt;]]]] /si &lt;SignalName&gt;</span><br><span class="line">waitfor [/t &lt;Timeout&gt;] &lt;SignalName&gt;</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>参数解释：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/s &lt;Computer&gt;  指定远程计算机的名称或IP地址，默认为本地计算机</span><br><span class="line">/u [&lt;Domain&gt;]&lt;user&gt;    使用指定用户帐户的凭据运行脚本。默认是使用当前用户的凭据。</span><br><span class="line">/p &lt;Password&gt;  指定/u参数中指定的用户帐户的密码。</span><br><span class="line">/si 		   发送指定激活信号。</span><br><span class="line">/t			   指定等待信号的秒数。默认为无限期等待。 </span><br><span class="line">&lt;SignalName&gt;    指定等待或发送的信号，不区分大小写，长度不能超过225个字符</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="waitfor"><a href="#waitfor" class="headerlink" title="waitfor"></a>waitfor</h2><p>关于<code>waitfor</code>手册中是这么解释的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在系统上发送或等待信号。waitfor可用于跨网络同步计算机。</span><br></pre></td></tr></table></figure></p>
+<p><code>waitfor</code>的语法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">waitfor [/s &lt;Computer&gt; [/u [&lt;Domain&gt;\]&lt;User&gt; [/p [&lt;Password&gt;]]]] /si &lt;SignalName&gt;</span><br><span class="line">waitfor [/t &lt;Timeout&gt;] &lt;SignalName&gt;</span><br></pre></td></tr></table></figure></p>
+<p>参数解释：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/s &lt;Computer&gt;  指定远程计算机的名称或IP地址，默认为本地计算机</span><br><span class="line">/u [&lt;Domain&gt;]&lt;user&gt;    使用指定用户帐户的凭据运行脚本。默认是使用当前用户的凭据。</span><br><span class="line">/p &lt;Password&gt;  指定/u参数中指定的用户帐户的密码。</span><br><span class="line">/si 		   发送指定激活信号。</span><br><span class="line">/t			   指定等待信号的秒数。默认为无限期等待。 </span><br><span class="line">&lt;SignalName&gt;    指定等待或发送的信号，不区分大小写，长度不能超过225个字符</span><br></pre></td></tr></table></figure></p>
 <p>关于<code>waitfor</code>更多的信息可以看一下微软提供的手册：<a href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/waitfor" title="链接" target="_blank" rel="noopener">链接</a></p>
-<p>我们来测试一下看看<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">waitfor test &amp;&amp; calc 表示接收信号成功后执行计算器</span><br><span class="line"></span><br><span class="line">waitfor /s 192.168.163.143 /u qiyou /p qiyou /si test</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>结果如下<br></p><figure class="image-bubble">
+<p>我们来测试一下看看<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">waitfor test &amp;&amp; calc 表示接收信号成功后执行计算器</span><br><span class="line"></span><br><span class="line">waitfor /s 192.168.163.143 /u qiyou /p qiyou /si test</span><br></pre></td></tr></table></figure></p>
+<p>结果如下<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190929165512-d935c59e-e296-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190929165512-d935c59e-e296-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <p>但是这样只能执行一次，这对我们后门持久化很不利，所以我们得想办法让它持久化。</p>
 <p>这里就要借用一下三好师傅的<code>powershell</code>脚本：<a href="https://github.com/3gstudent/Waitfor-Persistence/blob/master/Waitfor-Persistence.ps1" title="链接" target="_blank" rel="noopener">链接</a>，三好师傅的分析：<a href="https://3gstudent.github.io/3gstudent.github.io/Use-Waitfor.exe-to-maintain-persistence/" title="链接" target="_blank" rel="noopener">链接</a></p>
 <p>执行效果如下：</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190929173253-1cad2d30-e29c-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190929173253-1cad2d30-e29c-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
             </figure>
 <p>该方法的优点就是能主动激活，但是缺点也明显就是只能在同一网段才能接收和发送激活信号、服务器重启之后就不行了。</p>
-<h2 id="CLR"><a href="#CLR" class="headerlink" title="CLR"></a>CLR</h2><p>CLR的简述（来自百度百科）<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLR(公共语言运行库,Common Language Runtime)和Java虚拟机一样也是一个运行时环境，是一个可由多种编程语言使用的运行环境。CLR的核心功能包括：内存管理、程序集加载、安全性、异常处理和线程同步，可由面向CLR的所有语言使用。并保证应用和底层操作系统之间必要的分离。CLR是.NET Framework的主要执行引擎。</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="CLR"><a href="#CLR" class="headerlink" title="CLR"></a>CLR</h2><p>CLR的简述（来自百度百科）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLR(公共语言运行库,Common Language Runtime)和Java虚拟机一样也是一个运行时环境，是一个可由多种编程语言使用的运行环境。CLR的核心功能包括：内存管理、程序集加载、安全性、异常处理和线程同步，可由面向CLR的所有语言使用。并保证应用和底层操作系统之间必要的分离。CLR是.NET Framework的主要执行引擎。</span><br></pre></td></tr></table></figure></p>
 <p>需要注意的是<code>CLR</code>能够劫持系统中全部<code>.net</code>程序，而且系统默认会调用<code>.net</code>程序，从而导致我们的后门自动触发，这是我们后门持久化的一个好的思路，下面来实现一下</p>
 <p>修改一下注册表，注册表路径：<code>HKEY_CURRENT_USER\Software\Classes\CLSID\</code>，新建子项<code>{11111111-1111-1111-1111-111111111111}</code>（名字随便，只要不与注册表中存在的名称冲突就行），然后再新建子项<code>InProcServer32</code>，新建一个键<code>ThreadingModel</code>，键值为：<code>Apartment</code>，默认的键值为我们<code>dll</code>的路径</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190929221919-2094e730-e2c4-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190929221919-2094e730-e2c4-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>然后在cmd下设置一下：<br><strong> PS：要注册为全局变量，不然只能在当前cmd窗口劫持.net程序 </strong><br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SETX COR_ENABLE_PROFILING=1 /M</span><br><span class="line">SETX COR_PROFILER={11111111-1111-1111-1111-111111111111} /M</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>然后执行一波，效果如下，可以看到已经成功劫持了<br></p><figure class="image-bubble">
+<p>然后在cmd下设置一下：<br><strong> PS：要注册为全局变量，不然只能在当前cmd窗口劫持.net程序 </strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SETX COR_ENABLE_PROFILING=1 /M</span><br><span class="line">SETX COR_PROFILER=&#123;11111111-1111-1111-1111-111111111111&#125; /M</span><br></pre></td></tr></table></figure></p>
+<p>然后执行一波，效果如下，可以看到已经成功劫持了<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190929222618-19c9d3d8-e2c5-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190929222618-19c9d3d8-e2c5-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
-<h2 id="Hijack-CAccPropServicesClass-and-MMDeviceEnumerator"><a href="#Hijack-CAccPropServicesClass-and-MMDeviceEnumerator" class="headerlink" title="Hijack CAccPropServicesClass and MMDeviceEnumerator"></a>Hijack CAccPropServicesClass and MMDeviceEnumerator</h2><p>什么是<code>COM</code>（来自<code>WIKI</code>）<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">组件对象模型（英语：Component Object Model，缩写COM）是微软的一套软件组件的二进制接口标准。这使得跨编程语言的进程间通信、动态对象创建成为可能。COM是多项微软技术与框架的基础，包括OLE、OLE自动化、ActiveX、COM+、DCOM、Windows shell、DirectX、Windows Runtime。</span><br></pre></td></tr></tbody></table></figure><p></p>
+            </figure></p>
+<h2 id="Hijack-CAccPropServicesClass-and-MMDeviceEnumerator"><a href="#Hijack-CAccPropServicesClass-and-MMDeviceEnumerator" class="headerlink" title="Hijack CAccPropServicesClass and MMDeviceEnumerator"></a>Hijack CAccPropServicesClass and MMDeviceEnumerator</h2><p>什么是<code>COM</code>（来自<code>WIKI</code>）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">组件对象模型（英语：Component Object Model，缩写COM）是微软的一套软件组件的二进制接口标准。这使得跨编程语言的进程间通信、动态对象创建成为可能。COM是多项微软技术与框架的基础，包括OLE、OLE自动化、ActiveX、COM+、DCOM、Windows shell、DirectX、Windows Runtime。</span><br></pre></td></tr></table></figure></p>
 <p>这个和<code>CRL</code>劫持<code>.NET</code>程序类似，也是通过修改<code>CLSID</code>下的注册表键值，实现对<code>CAccPropServicesClass</code>和<code>MMDeviceEnumerator</code>的劫持，而系统很多正常程序启动时需要调用这两个实例，所以这个很适合我们的后门持久化。</p>
 <p>经测试貌似64位系统下不行（或许是我姿势的问题），但是32位系统下可以，下面说一下32位系统利用方法：</p>
 <p>在<code>%APPDATA%\Microsoft\Installer\{BCDE0395-E52F-467C-8E3D-C4579291692E}\</code>下放入我们的后门<code>dll</code>，重命名为<code>test._dl</code></p>
@@ -527,7 +527,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001095735-d67385fe-e3ee-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001095735-d67385fe-e3ee-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -535,7 +535,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001095821-f245a168-e3ee-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001095821-f245a168-e3ee-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -543,7 +543,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001085159-ac9898fe-e3e5-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001085159-ac9898fe-e3e5-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
             </figure>
@@ -552,7 +552,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001125534-b4008ec2-e407-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001125534-b4008ec2-e407-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -560,7 +560,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001131924-0809de80-e40b-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001131924-0809de80-e40b-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -568,41 +568,41 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001125010-f2d4a292-e406-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001125010-f2d4a292-e406-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
             </figure>
 <h2 id="office系列"><a href="#office系列" class="headerlink" title="office系列"></a>office系列</h2><h3 id="Word-WLL"><a href="#Word-WLL" class="headerlink" title="Word WLL"></a>Word WLL</h3><p>把dll文件保存在<code>%APPDATA%\Microsoft\Word\Startup</code>，然后把后缀名改为<code>wll</code><br>PS：<code>Startup</code>支持启动多个<code>wll</code></p>
-<p>打开<code>word</code>，成功弹框<br></p><figure class="image-bubble">
+<p>打开<code>word</code>，成功弹框<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001133551-54429768-e40d-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001133551-54429768-e40d-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <h3 id="Excel-XLL"><a href="#Excel-XLL" class="headerlink" title="Excel XLL"></a>Excel XLL</h3><p><code>Excel dll</code>的编写可以参考三好师傅这个项目：<a href="https://github.com/3gstudent/Add-Dll-Exports" title="链接" target="_blank" rel="noopener">链接</a><br>用三好师傅powershell脚本生成现成的<code>Excel dll</code>：<a href="https://github.com/3gstudent/Office-Persistence" title="链接" target="_blank" rel="noopener">链接</a></p>
 <p>将生成的DLL文件复制到<code>%appdata%\Microsoft\AddIns</code>目录下，然后再修改一下注册表，<code>office</code>版本对应的注册表位置如下：</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">office2003 — HKEY_CURRENT_USER\Software\Microsoft\Office\11.0\</span><br><span class="line">office2007 — HKEY_CURRENT_USER\Software\Microsoft\Office\12.0\</span><br><span class="line">office2010 — HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\</span><br><span class="line">office2013 — HKEY_CURRENT_USER\Software\Microsoft\Office\15.0\</span><br><span class="line">office2016 — HKEY_CURRENT_USER\Software\Microsoft\Office\16.0\</span><br></pre></td></tr></tbody></table></figure>
-<p>我这里使用的2010的，所以我们要修改的是<code>HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\Excel\Options</code>，添加一个键<code>OPEN</code>，键值为：<code>/R test.dll</code><br></p><figure class="image-bubble">
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">office2003 — HKEY_CURRENT_USER\Software\Microsoft\Office\11.0\</span><br><span class="line">office2007 — HKEY_CURRENT_USER\Software\Microsoft\Office\12.0\</span><br><span class="line">office2010 — HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\</span><br><span class="line">office2013 — HKEY_CURRENT_USER\Software\Microsoft\Office\15.0\</span><br><span class="line">office2016 — HKEY_CURRENT_USER\Software\Microsoft\Office\16.0\</span><br></pre></td></tr></table></figure>
+<p>我这里使用的2010的，所以我们要修改的是<code>HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\Excel\Options</code>，添加一个键<code>OPEN</code>，键值为：<code>/R test.dll</code><br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002103416-20f5a9ee-e4bd-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002103416-20f5a9ee-e4bd-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
-            </figure><p></p>
-<p>然后打开<code>Excel</code>，发现成功弹出计算器<br></p><figure class="image-bubble">
+            </figure></p>
+<p>然后打开<code>Excel</code>，发现成功弹出计算器<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002104125-208531fe-e4be-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002104125-208531fe-e4be-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <h3 id="PowerPoint-VBA-add-ins"><a href="#PowerPoint-VBA-add-ins" class="headerlink" title="PowerPoint VBA add-ins"></a>PowerPoint VBA add-ins</h3><p>用三好师傅powershell脚本生成现成的<code>PowerPoint dll</code>：<a href="https://github.com/3gstudent/Office-Persistence" title="链接" target="_blank" rel="noopener">链接</a></p>
 <p>将生成的DLL文件复制到<code>%appdata%\Microsoft\AddIns</code>目录下，然后参考前面我给出的<code>office</code>版本对应的注册表位置，在<code>HKEY_CURRENT_USER\Software\Microsoft\Office\14.0\PowerPoint</code>下新建一个子项：<code>AddIns</code>，然后在<code>AddIns</code>下面新建一个子项<code>test</code>，新建一个键为<code>Autoload</code>，类型为<code>DWORD</code>，键值为：<code>1</code>；新建一个键为<code>Path</code>，类型为<code>SZ</code>，键值为我们<code>dll</code>文件的路径</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002105858-943571ac-e4c0-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002105858-943571ac-e4c0-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -610,16 +610,16 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002105242-b402a514-e4bf-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002105242-b402a514-e4bf-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
             </figure>
-<h2 id="文件关联"><a href="#文件关联" class="headerlink" title="文件关联"></a>文件关联</h2><p>什么是文件关联<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">文件关联就是将一种类型的文件与一个可以打开它的程序建立起一种依存关系。一个文件可以与多个应用程序发生关联。可以利用文件的“打开方式”进行关联选择。</span><br><span class="line">举个例子来说，位图文件（BMP文件）在Windows中的默认关联程序是“图片”，如果将其默认关联改为用ACDSee程序来打开，那么ACDSee就成了它的默认关联程序。</span><br><span class="line">PS：来自百度百科</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="文件关联"><a href="#文件关联" class="headerlink" title="文件关联"></a>文件关联</h2><p>什么是文件关联<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">文件关联就是将一种类型的文件与一个可以打开它的程序建立起一种依存关系。一个文件可以与多个应用程序发生关联。可以利用文件的“打开方式”进行关联选择。</span><br><span class="line">举个例子来说，位图文件（BMP文件）在Windows中的默认关联程序是“图片”，如果将其默认关联改为用ACDSee程序来打开，那么ACDSee就成了它的默认关联程序。</span><br><span class="line">PS：来自百度百科</span><br></pre></td></tr></table></figure></p>
 <p>我们可以用<code>assoc</code>命令显示或修改文件扩展名关联，我们可以看一下<code>.txt</code>文件的关联</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001162736-52ffa11c-e425-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001162736-52ffa11c-e425-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -627,16 +627,16 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001162853-80bfbde4-e425-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001162853-80bfbde4-e425-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>相关注册表<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HKEY_CURRENT_USER\Software\Classe    //保存了当前用户的类注册和文件扩展名信息</span><br><span class="line">HKEY_LOCAL_MACHINE\Software\Classe   //保存了系统所有用户用户的类注册和文件扩展名信息</span><br><span class="line">HKEY_CLASS_ROOT                      //HKEY_CLASSES_ROOT项提供合并来自上面两个的信息的注册表的视图</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>相关注册表<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HKEY_CURRENT_USER\Software\Classe    //保存了当前用户的类注册和文件扩展名信息</span><br><span class="line">HKEY_LOCAL_MACHINE\Software\Classe   //保存了系统所有用户用户的类注册和文件扩展名信息</span><br><span class="line">HKEY_CLASS_ROOT                      //HKEY_CLASSES_ROOT项提供合并来自上面两个的信息的注册表的视图</span><br></pre></td></tr></table></figure></p>
 <p>我们以<code>.txt</code>为例，通过文件关联来修改它默认打开的程序。<br>修改<code>\HKEY_CLASS_ROOT\txtfile\shell\open\command</code>的默认值为我们要执行的程序</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001162337-c48ba0ac-e424-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001162337-c48ba0ac-e424-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -644,7 +644,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001162354-ce321c4e-e424-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001162354-ce321c4e-e424-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
             </figure>
@@ -653,7 +653,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001214220-4a922a0a-e451-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001214220-4a922a0a-e451-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -661,7 +661,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001170559-afad93d8-e42a-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001170559-afad93d8-e42a-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
             </figure>
@@ -669,13 +669,13 @@
 <p>添加自定义<code>helper dll</code><br>关于<code>helper dll</code>的编写可以参考这个项目：<a href="https://github.com/outflanknl/NetshHelperBeacon" title="链接" target="_blank" rel="noopener">链接</a></p>
 <p>我们可以使用两种方式来添加helper：</p>
 <ol>
-<li>通过cmd添加helper<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh add helper test.dll</span><br></pre></td></tr></tbody></table></figure>
+<li>通过cmd添加helper<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh add helper test.dll</span><br></pre></td></tr></table></figure>
 </li>
 </ol>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001203540-fa73fbe2-e447-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001203540-fa73fbe2-e447-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -685,33 +685,33 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001203821-5a58bf84-e448-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001203821-5a58bf84-e448-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p>效果如下：<br></p><figure class="image-bubble">
+<p>效果如下：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001202702-c54eb4c6-e446-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001202702-c54eb4c6-e446-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <h2 id="利用BITS"><a href="#利用BITS" class="headerlink" title="利用BITS"></a>利用BITS</h2><p><code>BITS</code> (后台智能传送服务) 是一个 Windows 组件，它可以在前台或后台异步传输文件，为保证其他网络应用程序获得响应而调整传输速度，并在重新启动计算机或重新建立网络连接之后自动恢复文件传输。</p>
 <p><code>bitsadmin</code>是一个命令行工具，用于创建下载或上传任务并监视其进度。你可以执行<code>bitsadmin /?</code>或<code>bitsadmin /HELP</code>获取帮助列表。</p>
-<p>常见的<code>bitsadmin</code>命令<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">bitsadmin /create [type] DisplayName //创建一个任务</span><br><span class="line">bitsadmin /cancel &lt;Job&gt; //删除一个任务</span><br><span class="line">bitsadmin /list /allusers /verbose //列出所有任务</span><br><span class="line">bitsadmin /AddFile &lt;Job&gt; &lt;RemoteURL&gt; &lt;LocalName&gt; //给任务test添加一个下载文件</span><br><span class="line">bitsadmin /SetNotifyCmdLine &lt;Job&gt; &lt;ProgramName&gt; [ProgramParameters] //设置在任务完成传输时或任务进入状态时将运行的命令行命令。</span><br><span class="line">bitsadmin /Resume &lt;Job&gt; //激活传输队列中的新任务或挂起的任务。</span><br><span class="line">bitsadmin /cancel &lt;Job&gt; //删除某个任务</span><br><span class="line">bitsadmin /reset /allusers //删除所有任务</span><br><span class="line">bitsadmin /complete &lt;Job&gt; //完成某个任务</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>下面我们来测试一下：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bitsadmin /create test</span><br><span class="line">bitsadmin /addfile test c:\windows\system32\calc.exe c:\Users\qiyou\Desktop\calc.exe //为了方便起见我们直接复制本地文件</span><br><span class="line">bitsadmin /SetNotifyCmdLine test cmd.exe "cmd.exe /c calc.exe"</span><br><span class="line">bitsadmin /resume test</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>效果如下：<br></p><figure class="image-bubble">
+<p>常见的<code>bitsadmin</code>命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">bitsadmin /create [type] DisplayName //创建一个任务</span><br><span class="line">bitsadmin /cancel &lt;Job&gt; //删除一个任务</span><br><span class="line">bitsadmin /list /allusers /verbose //列出所有任务</span><br><span class="line">bitsadmin /AddFile &lt;Job&gt; &lt;RemoteURL&gt; &lt;LocalName&gt; //给任务test添加一个下载文件</span><br><span class="line">bitsadmin /SetNotifyCmdLine &lt;Job&gt; &lt;ProgramName&gt; [ProgramParameters] //设置在任务完成传输时或任务进入状态时将运行的命令行命令。</span><br><span class="line">bitsadmin /Resume &lt;Job&gt; //激活传输队列中的新任务或挂起的任务。</span><br><span class="line">bitsadmin /cancel &lt;Job&gt; //删除某个任务</span><br><span class="line">bitsadmin /reset /allusers //删除所有任务</span><br><span class="line">bitsadmin /complete &lt;Job&gt; //完成某个任务</span><br></pre></td></tr></table></figure></p>
+<p>下面我们来测试一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bitsadmin /create test</span><br><span class="line">bitsadmin /addfile test c:\windows\system32\calc.exe c:\Users\qiyou\Desktop\calc.exe //为了方便起见我们直接复制本地文件</span><br><span class="line">bitsadmin /SetNotifyCmdLine test cmd.exe &quot;cmd.exe /c calc.exe&quot;</span><br><span class="line">bitsadmin /resume test</span><br></pre></td></tr></table></figure></p>
+<p>效果如下：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001230101-48ae2f94-e45c-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001230101-48ae2f94-e45c-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <p>重启电脑之后任务还是存在</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001231945-e6861220-e45e-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001231945-e6861220-e45e-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -719,7 +719,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001232648-e24882f0-e45f-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001232648-e24882f0-e45f-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -727,22 +727,22 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001232952-5022a8be-e460-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191001232952-5022a8be-e460-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<h2 id="利用inf文件实现后门"><a href="#利用inf文件实现后门" class="headerlink" title="利用inf文件实现后门"></a>利用inf文件实现后门</h2><p><code>inf</code>文件<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INF文件或安装信息文件是Microsoft Windows用于安装软件和驱动程序的纯文本文件。INF文件最常用于安装硬件组件的设备驱动程序。Windows包含用于创建基于INF的安装的IExpress工具。INF文件是Windows安装程序API及其后续版本Windows Installer的一部分。</span><br><span class="line">PS：来自WIKI</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="利用inf文件实现后门"><a href="#利用inf文件实现后门" class="headerlink" title="利用inf文件实现后门"></a>利用inf文件实现后门</h2><p><code>inf</code>文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INF文件或安装信息文件是Microsoft Windows用于安装软件和驱动程序的纯文本文件。INF文件最常用于安装硬件组件的设备驱动程序。Windows包含用于创建基于INF的安装的IExpress工具。INF文件是Windows安装程序API及其后续版本Windows Installer的一部分。</span><br><span class="line">PS：来自WIKI</span><br></pre></td></tr></table></figure></p>
 <p><code>inf</code>文件的结构<br>想了解更多可以看一下微软的手册：<code>https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc939869(v=technet.10)#information-inf-file-entries</code></p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1. DefaultInstall节（来自WIKI）</span><br><span class="line">INF文件的结构与INI文件的结构非常类似; 它包含用于指定要复制的文件，对注册表的更改等的各个部分。所有INF文件都包含一个[Version]带有Signature 键值对的部分，用于指定INF文件所针对的Windows版本。签名通常是$CHICAGO$（对于Windows 9x）或$WINDOWS NT$（对于Windows NT / 2K / XP）。其余大多数部分是用户定义的，并且包含特定于要安装的组件的信息。</span><br><span class="line"></span><br><span class="line">2. DefaultInstall节（来自微软的手册）</span><br><span class="line">	RunPreSetupCommands-本节中指定的命令在安装服务配置文件之前运行。</span><br><span class="line">	RunPostSetupCommands-本节中指定的命令在安装程序完成服务配置文件后运行。</span><br><span class="line">	RunPreUnInstCommands-本节中指定的命令在卸载程序开始之前运行。</span><br><span class="line">	RunPostUnInstCommands-本节中指定的命令在卸载程序运行后运行。</span><br></pre></td></tr></tbody></table></figure>
-<p>下面举一个<code>calc.inf</code>弹计算器的例子<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[Version]</span><br><span class="line">Signature="$CHICAGO$"</span><br><span class="line">AdvancedINF=2.5,"test"</span><br><span class="line">[DefaultInstall]</span><br><span class="line">RunPreSetupCommands=Command1</span><br><span class="line">[Command1]</span><br><span class="line">C:\windows\system32\calc.exe</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>命令行下执行：<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rundll32.exe advpack.dll,LaunchINFSection calc.inf,DefaultInstall</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>效果如下：<br></p><figure class="image-bubble">
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1. DefaultInstall节（来自WIKI）</span><br><span class="line">INF文件的结构与INI文件的结构非常类似; 它包含用于指定要复制的文件，对注册表的更改等的各个部分。所有INF文件都包含一个[Version]带有Signature 键值对的部分，用于指定INF文件所针对的Windows版本。签名通常是$CHICAGO$（对于Windows 9x）或$WINDOWS NT$（对于Windows NT / 2K / XP）。其余大多数部分是用户定义的，并且包含特定于要安装的组件的信息。</span><br><span class="line"></span><br><span class="line">2. DefaultInstall节（来自微软的手册）</span><br><span class="line">	RunPreSetupCommands-本节中指定的命令在安装服务配置文件之前运行。</span><br><span class="line">	RunPostSetupCommands-本节中指定的命令在安装程序完成服务配置文件后运行。</span><br><span class="line">	RunPreUnInstCommands-本节中指定的命令在卸载程序开始之前运行。</span><br><span class="line">	RunPostUnInstCommands-本节中指定的命令在卸载程序运行后运行。</span><br></pre></td></tr></table></figure>
+<p>下面举一个<code>calc.inf</code>弹计算器的例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[Version]</span><br><span class="line">Signature=&quot;$CHICAGO$&quot;</span><br><span class="line">AdvancedINF=2.5,&quot;test&quot;</span><br><span class="line">[DefaultInstall]</span><br><span class="line">RunPreSetupCommands=Command1</span><br><span class="line">[Command1]</span><br><span class="line">C:\windows\system32\calc.exe</span><br></pre></td></tr></table></figure></p>
+<p>命令行下执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rundll32.exe advpack.dll,LaunchINFSection calc.inf,DefaultInstall</span><br></pre></td></tr></table></figure></p>
+<p>效果如下：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002090015-fe9a4128-e4af-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002090015-fe9a4128-e4af-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
-            </figure><p></p>
+            </figure></p>
 <p>后门实现：<br>在注册表<code>HKEY_CURRENT_USER\Software\Microsoft\</code>处依次新建子项<code>\IEAK\GroupPolicy\PendingGPOs</code>，然后再新建几个键，如下：</p>
 <ol>
 <li><p>键：<code>Count</code>，类型：<code>REG_DWORD</code>，键值：<code>1</code></p>
@@ -752,18 +752,18 @@
 <li><p>键：<code>Section1</code>，类型：<code>REG_SZ</code>，键值：<code>DefaultInstall</code></p>
 </li>
 </ol>
-<p>如下图所示：<br></p><figure class="image-bubble">
+<p>如下图所示：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002090940-4f8d53d0-e4b1-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002090940-4f8d53d0-e4b1-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
-            </figure><p></p>
+            </figure></p>
 <p>重启电脑之后成功弹出计算器</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002090304-636386dc-e4b0-1.gif" alt="" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002090304-636386dc-e4b0-1.gif" alt title>
                 </div>
                 <div class="image-caption"></div>
             </figure>
@@ -771,7 +771,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002091420-f688d38a-e4b1-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20191002091420-f688d38a-e4b1-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -779,25 +779,7 @@
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://github.com/Ridter/Intranet_Penetration_Tips" title="https://github.com/Ridter/Intranet_Penetration_Tips" target="_blank" rel="noopener">https://github.com/Ridter/Intranet_Penetration_Tips</a></p>
 <p><a href="https://paper.seebug.org/1007/" title="https://paper.seebug.org/1007/" target="_blank" rel="noopener">https://paper.seebug.org/1007/</a></p>
 <p><a href="https://3gstudent.github.io/" title="https://3gstudent.github.io/" target="_blank" rel="noopener">https://3gstudent.github.io/</a></p>
-<script>
-        document.querySelectorAll('.github-emoji')
-          .forEach(el => {
-            if (!el.dataset.src) { return; }
-            const img = document.createElement('img');
-            img.style = 'display:none !important;';
-            img.src = el.dataset.src;
-            img.addEventListener('error', () => {
-              img.remove();
-              el.style.color = 'inherit';
-              el.style.backgroundImage = 'none';
-              el.style.background = 'none';
-            });
-            img.addEventListener('load', () => {
-              img.remove();
-            });
-            document.body.appendChild(img);
-          });
-      </script>
+
         </div>
 
         <blockquote class="post-copyright">

