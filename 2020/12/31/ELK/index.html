@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>初探ELK和集中式日志管理系统 | 七友</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="ELK,Elasticsearch">
+    <meta name="description" content="前言一般我们需要进行日志分析场景：直接在日志文件中 grep、awk 就可以获得自己想要的信息。但在规模较大的场景中，此方法效率低下，面临问题包括日志量太大如何归档、文本搜索太慢怎么办、如何多维度查询。需要集中化的日志管理，所有服务器上的日志收集汇总。常见解决思路是建立集中式日志收集系统，将所有节点上的日志统一收集，管理，访问。ELK提供了一整套解决方案，并且都是开源软件，之间互相配合使用，完美衔">
+<meta name="keywords" content="ELK,Elasticsearch">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初探ELK和集中式日志管理系统">
+<meta property="og:url" content="https://byqiyou.github.io/2020/12/31/ELK/index.html">
+<meta property="og:site_name" content="七友">
+<meta property="og:description" content="前言一般我们需要进行日志分析场景：直接在日志文件中 grep、awk 就可以获得自己想要的信息。但在规模较大的场景中，此方法效率低下，面临问题包括日志量太大如何归档、文本搜索太慢怎么办、如何多维度查询。需要集中化的日志管理，所有服务器上的日志收集汇总。常见解决思路是建立集中式日志收集系统，将所有节点上的日志统一收集，管理，访问。ELK提供了一整套解决方案，并且都是开源软件，之间互相配合使用，完美衔">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://images.contentstack.io/v3/assets/bltefdd0b53724fa2ce/blt745c7c0288922a62/5c11edccdf09df047814db29/elk-stack-3-elks-stacked.svg">
+<meta property="og:image" content="https://i.loli.net/2020/12/18/FRn4wCaQPjg5Ob1.png">
+<meta property="og:image" content="https://www.elastic.co/guide/en/logstash/current/static/images/logstash.png">
+<meta property="og:image" content="https://www.elastic.co/guide/en/logstash/current/static/images/basic_logstash_pipeline.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/dx1CkBZuGea5pRI.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/18/hbkKnGjz2F3A6i7.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/18/LzNVRr2tfapwx9Y.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/18/MuLgISq4fcKb9pO.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/18/RpziMeXuKLh2msd.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/wu7ro1AODTyWUFH.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/18/jUDfEGxbVw29AoY.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/AmU6QR1uNvWFVTG.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/DJ6oeAOwFGc5fC2.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/uhxkKRTm8SrD4JX.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/5BoXEr43JSQt2sf.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/6GR1g8itNxUrsMZ.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/rzjOLFWvhNnPx1t.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/19/JAodzi7cyufIF6P.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/25/MZl8yxkPbsJLw9G.png">
+<meta property="og:image" content="https://i.loli.net/2020/12/25/3OjC6chnesAMtXz.png">
+<meta property="og:updated_time" content="2020-12-31T08:57:01.934Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="初探ELK和集中式日志管理系统">
+<meta name="twitter:description" content="前言一般我们需要进行日志分析场景：直接在日志文件中 grep、awk 就可以获得自己想要的信息。但在规模较大的场景中，此方法效率低下，面临问题包括日志量太大如何归档、文本搜索太慢怎么办、如何多维度查询。需要集中化的日志管理，所有服务器上的日志收集汇总。常见解决思路是建立集中式日志收集系统，将所有节点上的日志统一收集，管理，访问。ELK提供了一整套解决方案，并且都是开源软件，之间互相配合使用，完美衔">
+<meta name="twitter:image" content="https://images.contentstack.io/v3/assets/bltefdd0b53724fa2ce/blt745c7c0288922a62/5c11edccdf09df047814db29/elk-stack-3-elks-stacked.svg">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname"></h5>
+          <a href="mailto:hack2fun@foxmail.com" title="hack2fun@foxmail.com" class="mail">hack2fun@foxmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/byqiyou" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/friends"  >
+                <i class="icon icon-lg icon-friends"></i>
+                Friends
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/about"  >
+                <i class="icon icon-lg icon-about"></i>
+                About
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">初探ELK和集中式日志管理系统</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">初探ELK和集中式日志管理系统</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-12-31T08:57:01.000Z" itemprop="datePublished" class="page-time">
+  2020-12-31
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#前言"><span class="post-toc-number">1.</span> <span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#ELK"><span class="post-toc-number">2.</span> <span class="post-toc-text">ELK</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Elasticsearch"><span class="post-toc-number">2.1.</span> <span class="post-toc-text">Elasticsearch</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#配置"><span class="post-toc-number">2.1.1.</span> <span class="post-toc-text">配置</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#测试"><span class="post-toc-number">2.1.2.</span> <span class="post-toc-text">测试</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Logstash"><span class="post-toc-number">2.2.</span> <span class="post-toc-text">Logstash</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#配置-1"><span class="post-toc-number">2.2.1.</span> <span class="post-toc-text">配置</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#input插件"><span class="post-toc-number">2.2.1.1.</span> <span class="post-toc-text">input插件</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#output插件"><span class="post-toc-number">2.2.1.2.</span> <span class="post-toc-text">output插件</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#filter过滤器插件"><span class="post-toc-number">2.2.1.3.</span> <span class="post-toc-text">filter过滤器插件</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#测试-1"><span class="post-toc-number">2.2.2.</span> <span class="post-toc-text">测试</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Kibana"><span class="post-toc-number">2.3.</span> <span class="post-toc-text">Kibana</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#配置-2"><span class="post-toc-number">2.3.1.</span> <span class="post-toc-text">配置</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#测试-2"><span class="post-toc-number">2.3.2.</span> <span class="post-toc-text">测试</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#ELK实战"><span class="post-toc-number">2.4.</span> <span class="post-toc-text">ELK实战</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#收集apache日志文件"><span class="post-toc-number">2.4.1.</span> <span class="post-toc-text">收集apache日志文件</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#收集nginx日志文件"><span class="post-toc-number">2.4.2.</span> <span class="post-toc-text">收集nginx日志文件</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#收集所有用户的历史命令"><span class="post-toc-number">2.4.3.</span> <span class="post-toc-text">收集所有用户的历史命令</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#收集ssh的登陆信息"><span class="post-toc-number">2.4.4.</span> <span class="post-toc-text">收集ssh的登陆信息</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#整合"><span class="post-toc-number">2.4.5.</span> <span class="post-toc-text">整合</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#收集Windows日志"><span class="post-toc-number">3.</span> <span class="post-toc-text">收集Windows日志</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#配置-3"><span class="post-toc-number">3.1.</span> <span class="post-toc-text">配置</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Output"><span class="post-toc-number">3.1.1.</span> <span class="post-toc-text">Output</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Kibana-1"><span class="post-toc-number">3.1.2.</span> <span class="post-toc-text">Kibana</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Winlogbeat配置文件项"><span class="post-toc-number">3.1.3.</span> <span class="post-toc-text">Winlogbeat配置文件项</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#测试-3"><span class="post-toc-number">3.2.</span> <span class="post-toc-text">测试</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#Reference"><span class="post-toc-number">4.</span> <span class="post-toc-text">Reference</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-ELK"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">初探ELK和集中式日志管理系统</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-12-31 16:57:01" datetime="2020-12-31T08:57:01.000Z"  itemprop="datePublished">2020-12-31</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>一般我们需要进行日志分析场景：直接在日志文件中 <code>grep</code>、<code>awk</code> 就可以获得自己想要的信息。但在规模较大的场景中，此方法效率低下，面临问题包括日志量太大如何归档、文本搜索太慢怎么办、如何多维度查询。需要集中化的日志管理，所有服务器上的日志收集汇总。常见解决思路是建立集中式日志收集系统，将所有节点上的日志统一收集，管理，访问。ELK提供了一整套解决方案，并且都是开源软件，之间互相配合使用，完美衔接，高效的满足了很多场合的应用。</p>
+<h1 id="ELK"><a href="#ELK" class="headerlink" title="ELK"></a>ELK</h1><p><code>ELK</code>是三个开源项目的首字母缩写，这三个项目分别是：<code>Elasticsearch</code>、<code>Logstash</code> 和<code>Kibana</code>。<code>Elasticsearch</code> 是一个搜索和分析引擎。<code>Logstash</code> 是服务器端数据处理管道，能够同时从多个来源采集数据，转换数据，然后将数据发送到诸如 Elasticsearch 等“存储库”中。<code>Kibana</code> 则可以让用户在<code>Elasticsearch</code> 中使用图形和图表对数据进行可视化。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://images.contentstack.io/v3/assets/bltefdd0b53724fa2ce/blt745c7c0288922a62/5c11edccdf09df047814db29/elk-stack-3-elks-stacked.svg" alt="https://images.contentstack.io/v3/assets/bltefdd0b53724fa2ce/blt745c7c0288922a62/5c11edccdf09df047814db29/elk-stack-3-elks-stacked.svg" title>
+                </div>
+                <div class="image-caption">https://images.contentstack.io/v3/assets/bltefdd0b53724fa2ce/blt745c7c0288922a62/5c11edccdf09df047814db29/elk-stack-3-elks-stacked.svg</div>
+            </figure>
+<h2 id="Elasticsearch"><a href="#Elasticsearch" class="headerlink" title="Elasticsearch"></a>Elasticsearch</h2><p><code>Elasticsearch</code> 是一个实时的分布式搜索分析引擎，它能让你以前所未有的速度和规模去检索你的数据。</p>
+<p>下载地址：<a href="https://www.elastic.co/cn/downloads/elasticsearch" target="_blank" rel="noopener">https://www.elastic.co/cn/downloads/elasticsearch</a></p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>下面列举一下常见的配置项</p>
+<ul>
+<li><code>cluster.name</code>：集群名称，默认为<code>elasticsearch</code>。</li>
+<li><code>node.master</code>：该节点是否可以作为主节点（注意这里只是有资格作为主节点，不代表该节点一定就是master），默认为<code>true</code></li>
+<li><code>node.name</code>：节点名称，如果不配置es则会自动获取</li>
+<li><code>path.conf</code>：配置文件路径，默认为es根目录的config文件夹</li>
+<li><code>path.data</code>：配置索引数据的文件路径，默认是es根目录下的data文件夹，可以设置多个存储路径，用逗号隔开</li>
+<li><code>path.logs</code>：配置日志文件路径，默认是es根目录下的logs文件夹</li>
+<li><code>path.plugins</code>：配置es插件路径，默认是es根目录下的plugins文件夹</li>
+<li><code>http.port</code>：es的http端口，默认为9200</li>
+<li><code>transport.tcp.port</code>：与其它节点交互的端口，默认为9300</li>
+<li><code>transport.tcp.compress</code>：配置是否压缩tcp传输时的数据，默认为false，不压缩。</li>
+<li><code>network.bind_host</code>：配置绑定地址，默认为0.0.0.0</li>
+<li><code>network.publish_host</code>：设置其他节点连接此节点的ip地址，如果不设置的话，则自动获取，<code>publish_host</code>的地址必须为真实地址</li>
+<li><code>network.host</code>：同时设置<code>bind_host</code>和<code>publish_host</code>这两个参数</li>
+<li><code>http.enabled</code>：是否对外使用http协议，默认为true</li>
+<li><code>index.number_of_replicas</code>：设置索引副本个数，默认为1</li>
+<li><code>http.cors.enabled</code>：是否支持跨域，默认为false</li>
+<li><code>http.cors.allow-origin</code>：当设置允许跨域，默认为*</li>
+</ul>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>了解的配置文件项之后我们可以来进行简单的配置</p>
+<p><code>vim config/elasticsearch.yml</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">cluster.name: master</span><br><span class="line"></span><br><span class="line">node.name: elk-1</span><br><span class="line"></span><br><span class="line">path.data: /data/es</span><br><span class="line"></span><br><span class="line">path.logs: /var/log/es/</span><br><span class="line"></span><br><span class="line">bootstrap.memory_lock: true</span><br><span class="line"></span><br><span class="line">network.host: 0.0.0.0</span><br><span class="line"></span><br><span class="line">http.port: 9200</span><br><span class="line"></span><br><span class="line">http.cors.enabled: true</span><br><span class="line"></span><br><span class="line">http.cors.allow-origin: &quot;*&quot;</span><br></pre></td></tr></table></figure>
+<p>然后启动es</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/elasticsearch</span><br></pre></td></tr></table></figure>
+<p>检查服务端口是否正常监听</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[qiyou@example es]$ netstat -utnl|grep -E &quot;9200|9300&quot;</span><br><span class="line">tcp6       0      0 127.0.0.1:9200          :::*                    LISTEN     </span><br><span class="line">tcp6       0      0 ::1:9200                :::*                    LISTEN     </span><br><span class="line">tcp6       0      0 127.0.0.1:9300          :::*                    LISTEN     </span><br><span class="line">tcp6       0      0 ::1:9300                :::*                    LISTEN</span><br></pre></td></tr></table></figure>
+<p>检查es是否正常工作，可以看到是正常工作的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[qiyou@example es]$ curl -i -XGET &apos;localhost:9200/_count?pretty&apos; </span><br><span class="line">HTTP/1.1 200 OK</span><br><span class="line">content-type: application/json; charset=UTF-8</span><br><span class="line">content-length: 114</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  &quot;count&quot; : 0,</span><br><span class="line">  &quot;_shards&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 0,</span><br><span class="line">    &quot;successful&quot; : 0,</span><br><span class="line">    &quot;skipped&quot; : 0,</span><br><span class="line">    &quot;failed&quot; : 0</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面用命令检索数据来是不是感觉麻烦，我们可以安装es插件<code>elasticsearch-head</code>，项目链接：<a href="https://github.com/mobz/elasticsearch-head" target="_blank" rel="noopener">https://github.com/mobz/elasticsearch-head</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone git://github.com/mobz/elasticsearch-head.git</span><br><span class="line">cd elasticsearch-head</span><br><span class="line">npm install</span><br><span class="line">npm run start</span><br></pre></td></tr></table></figure>
+<p>检查是否正常启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">netstat -untl|grep 9100</span><br><span class="line">tcp        0      0 0.0.0.0:9100            0.0.0.0:*               LISTEN</span><br></pre></td></tr></table></figure>
+<p>然后访问<code>http://localhost:9100/</code>即可</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/18/FRn4wCaQPjg5Ob1.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="Logstash"><a href="#Logstash" class="headerlink" title="Logstash"></a>Logstash</h2><p><code>Logstash</code>是一个实时的管道式开源日志收集引擎。<code>Logstash</code>可以动态的将不同来源的数据进行归一并且将格式化的数据存储到你选择的位置。对你的所有做数据清洗和大众化处理，以便做数据分析和可视化。<code>Logstash</code>通过输入、过滤和输出插件<code>Logstash</code>可以对任何类型的事件丰富和转换，通过本地编码器还可以进一步简化此过程。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://www.elastic.co/guide/en/logstash/current/static/images/logstash.png" alt="https://www.elastic.co/guide/en/logstash/current/static/images/logstash.png" title>
+                </div>
+                <div class="image-caption">https://www.elastic.co/guide/en/logstash/current/static/images/logstash.png</div>
+            </figure>
+<p><code>logstash</code>下载地址：<a href="https://www.elastic.co/cn/downloads/logstash" target="_blank" rel="noopener">https://www.elastic.co/cn/downloads/logstash</a></p>
+<p><code>logstash</code>的基本目录结构如下及其含义：</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>Default Location</th>
+<th>Setting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>home</td>
+<td>logstash安装的目录</td>
+<td><code>{extract.path}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>bin</td>
+<td>logstash的二进制脚本以及插件</td>
+<td><code>{extract.path}/bin</code></td>
+<td></td>
+</tr>
+<tr>
+<td>settings</td>
+<td>配置文件, 包含<code>logstash.yml</code>和<code>jvm.options</code></td>
+<td><code>{extract.path}/config</code></td>
+<td><code>path.settings</code></td>
+</tr>
+<tr>
+<td>logs</td>
+<td>日志文件</td>
+<td><code>{extract.path}/logs</code></td>
+<td><code>path.logs</code></td>
+</tr>
+<tr>
+<td>plugins</td>
+<td>插件存放的目录，每个插件都包含在一个子目录中</td>
+<td><code>{extract.path}/plugins</code></td>
+<td><code>path.plugins</code></td>
+</tr>
+<tr>
+<td>data</td>
+<td>logstash及其插件为任何持久性需求所使用的数据文件</td>
+<td><code>{extract.path}/data</code></td>
+<td><code>path.data</code></td>
+</tr>
+</tbody>
+</table>
+<p>一个<code>Logstash</code>管道有两个必须的组件，<code>input</code>和<code>output</code>，除此之外还有一个可选的组件<code>filter</code>。<code>input</code>插件将数据从源读入，<code>filter</code>插件按照你的定义处理数据，最后通过<code>output</code>插件写入到目的地。</p>
+<p><code>Logstash</code>支持的<code>input</code>插件：<a href="https://www.elastic.co/guide/en/logstash/current/input-plugins.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/logstash/current/input-plugins.html</a></p>
+<p><code>Logstash</code>支持的<code>output</code>插件：<a href="https://www.elastic.co/guide/en/logstash/current/output-plugins.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/logstash/current/input-plugins.html</a></p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://www.elastic.co/guide/en/logstash/current/static/images/basic_logstash_pipeline.png" alt="https://www.elastic.co/guide/en/logstash/current/static/images/basic_logstash_pipeline.png" title>
+                </div>
+                <div class="image-caption">https://www.elastic.co/guide/en/logstash/current/static/images/basic_logstash_pipeline.png</div>
+            </figure>
+<p>注：有的插件默认是没有安装的，可以使用<code>logstash-plugin list</code>列出所有已经安装的插件</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/dx1CkBZuGea5pRI.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h3 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h3><h4 id="input插件"><a href="#input插件" class="headerlink" title="input插件"></a>input插件</h4><blockquote>
+<p>可以指定logstash的事件源</p>
+</blockquote>
+<p>下面列举几种常见的事件源</p>
+<ul>
+<li><code>stdin</code>：标准输入</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">input &#123; </span><br><span class="line">    stdin &#123; &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>file</code>：从文件中读取</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">file &#123;</span><br><span class="line">    path =&gt; &quot;/var/log/secure&quot; </span><br><span class="line">    type =&gt; &quot;logstash_log&quot; # 定义类型，一般用于过滤器中</span><br><span class="line">    start_position =&gt; &quot;beginning&quot; # 表示从文件开头读取，默认为end</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>syslog</code>：从syslog传输过来的事件中读取</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">syslog&#123;</span><br><span class="line">    port =&gt;&quot;514&quot; # 监听的端口，syslog配置文件中配置：*.* @ip:514 即可</span><br><span class="line">    type =&gt; &quot;syslog&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>beats</code>：从<code>Elastic beats</code>接收事件</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">beats &#123;</span><br><span class="line">    port =&gt; 5044   # 监听的端口</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">然后在beat进行如下配置即可</span><br><span class="line">output.logstash:</span><br><span class="line">    hosts: [&quot;localhost:5044&quot;]</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>Redis</code>：从redis中获取事件</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">redis &#123;</span><br><span class="line">                host =&gt; &quot;127.0.0.1&quot;</span><br><span class="line">                port =&gt; &quot;6379&quot;</span><br><span class="line">                password =&gt; &quot;passwd&quot;</span><br><span class="line">                db =&gt; &quot;1&quot;</span><br><span class="line">                data_type =&gt; &quot;list&quot;</span><br><span class="line">                key =&gt; &quot;redis_key&quot;</span><br><span class="line">                batch_count =&gt; 1 </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="output插件"><a href="#output插件" class="headerlink" title="output插件"></a>output插件</h4><blockquote>
+<p>指定logstash事件的接收源</p>
+</blockquote>
+<p>下面列举几种常见的接受源</p>
+<ul>
+<li><code>stdout</code>：标准输出</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">output&#123;</span><br><span class="line">    stdout&#123;</span><br><span class="line">        codec =&gt; &quot;rubydebug&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>file</code>：将事件保存到文件中</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">file &#123;</span><br><span class="line">   path =&gt; &quot;/var/log/logstash/%&#123;host&#125;/&#123;application&#125;</span><br><span class="line">   codec =&gt; line &#123; format =&gt; &quot;%&#123;message&#125;&quot;&#125; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>kafka</code>：将事件发送到kafka</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kafka&#123;</span><br><span class="line">    bootstrap_servers =&gt; &quot;localhost:9092&quot;</span><br><span class="line">    topic_id =&gt; &quot;logstash_log&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>elasticseach</code>：将事件发送到es中</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">elasticsearch &#123;</span><br><span class="line">    hosts =&gt; &quot;localhost:9200&quot;</span><br><span class="line">    index =&gt; &quot;logstash-%&#123;+YYYY.MM.dd&#125;&quot;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>redis</code>：将事件发送到redis</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">redis &#123;</span><br><span class="line">        data_type =&gt; &quot;list&quot;</span><br><span class="line">        host =&gt; &quot;127.0.0.1&quot;</span><br><span class="line">        port =&gt; &quot;6379&quot;</span><br><span class="line">        db =&gt; &quot;1&quot;</span><br><span class="line">        password =&gt; &quot;passwd&quot;</span><br><span class="line">        key =&gt; &quot;redis_key&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="filter过滤器插件"><a href="#filter过滤器插件" class="headerlink" title="filter过滤器插件"></a>filter过滤器插件</h4><blockquote>
+<p>对事件进行中间处理，<code>filter</code>过滤器这里只列举gork</p>
+</blockquote>
+<p><code>gork</code>可以将非结构化日志数据解析为结构化和可查询的数据，<code>gork</code>的基本语法为：<code>%{SYNTAX:SEMANTIC}</code></p>
+<ul>
+<li><code>SYNTAX</code>：<code>SYNTAX</code>是与文本匹配的模式的名称，如<code>123</code>可以匹配的是<code>NUMBER</code>，<code>127.0.0.1</code>可以匹配的是<code>IP</code></li>
+</ul>
+<p><strong>注：<code>NUMBER</code>和<code>IP</code>都是<code>gork</code>默认内置的字段，不需要我们额外编写正则表达式，<code>gork</code>默认内置120个预定义匹配字段：<a href="https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns" target="_blank" rel="noopener">https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns</a></strong></p>
+<ul>
+<li><code>SYNTAX</code>：<code>SYNTAX</code>是要匹配的文本片段的标识符</li>
+</ul>
+<p>简单的例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1 GET /index.php 87344 0.061</span><br></pre></td></tr></table></figure>
+<p>gork表达式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%&#123;IP:client&#125; %&#123;WORD:method&#125; %&#123;URIPATHPARAM:path&#125; %&#123;NUMBER:bytes&#125; %&#123;NUMBER:duration&#125;</span><br></pre></td></tr></table></figure>
+<p>写入配置文件为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">  file &#123;</span><br><span class="line">    path =&gt; &quot;/path/to/file&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">filter &#123;</span><br><span class="line">  grok &#123;</span><br><span class="line">    match =&gt; &#123; &quot;message&quot; =&gt; &quot;%&#123;IP:client&#125; %&#123;WORD:method&#125; %&#123;URIPATHPARAM:path&#125; %&#123;NUMBER:bytes&#125; %&#123;NUMBER:duration&#125;&quot; &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output&#123;</span><br><span class="line">    stdout&#123; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终匹配如下：</p>
+<ul>
+<li><code>client</code>: 127.0.0.1</li>
+<li><code>method</code>: GET</li>
+<li><code>path</code>: /index.php</li>
+<li><code>bytes</code>: 87344</li>
+<li><code>duration</code>: 0.061</li>
+</ul>
+<p>我们可以使用<a href="https://grokdebug.herokuapp.com/" target="_blank" rel="noopener">Grok表达式在线调试</a>进行调试表达式，这样我们就不用每次都去重启<code>logstash</code>测试表达式了</p>
+<h3 id="测试-1"><a href="#测试-1" class="headerlink" title="测试"></a>测试</h3><p>简单的实例：</p>
+<p>使用-e选项允许你在命令行快速配置而不必修改配置文件，这个示例将从标准输入来读取你的输入，并将输出以结构化的方式输出至标准输出。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/logstash -e &apos;input &#123; stdin &#123; &#125; &#125; output &#123; stdout &#123;&#125; &#125;&apos;</span><br></pre></td></tr></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/18/hbkKnGjz2F3A6i7.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>现在我们吧output源设为es，同时配置好我们的es的http地址，将标准输入的收集到es上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/logstash -e &apos;input &#123; stdin &#123; &#125; &#125; output &#123; elasticsearch &#123; hosts =&gt; [&quot;127.0.0.1:9200&quot;] &#125; stdout &#123; codec =&gt; rubydebug &#125;&#125;&apos;</span><br></pre></td></tr></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/18/LzNVRr2tfapwx9Y.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后就可以在es看到我们输入的数据了</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/18/MuLgISq4fcKb9pO.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>现在将输入源改为file，路径为：<code>/var/log/secure</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">    file &#123;</span><br><span class="line">        path =&gt; &quot;/var/log/secure&quot;</span><br><span class="line">        type =&gt; &quot;auth&quot;</span><br><span class="line">        start_position =&gt; &quot;beginning&quot;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">output &#123;    </span><br><span class="line">         elasticsearch &#123;</span><br><span class="line">                hosts =&gt; [&quot;127.0.0.1:9200&quot;]</span><br><span class="line">                index =&gt; &quot;system-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">            &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后可以看到我们的日志已经收集到es上了</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/18/RpziMeXuKLh2msd.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="Kibana"><a href="#Kibana" class="headerlink" title="Kibana"></a>Kibana</h2><p>Kibana 是一款开源的数据分析和可视化平台，它是<code>Elastic Stack</code> 成员之一，设计用于和 Elasticsearch 协作。您可以使用 Kibana 对 Elasticsearch 索引中的数据进行搜索、查看、交互操作。您可以很方便的利用图表、表格及地图对数据进行多元化的分析和呈现。Kibana 可以使大数据通俗易懂。它很简单，基于浏览器的界面便于您快速创建和分享动态数据仪表板来追踪 Elasticsearch 的实时数据变化。</p>
+<p><code>kibana</code>下载地址：<a href="https://www.elastic.co/cn/downloads/kibana" target="_blank" rel="noopener">https://www.elastic.co/cn/downloads/kibana</a></p>
+<h3 id="配置-2"><a href="#配置-2" class="headerlink" title="配置"></a>配置</h3><p>常见配置项，参考自<a href="https://www.elastic.co/guide/cn/kibana/current/settings.html" target="_blank" rel="noopener">官网手册</a></p>
+<ul>
+<li><code>server.port</code>：配置Kibana的端口，默认为5601</li>
+<li><code>server.host</code>：指定后端服务器的主机地址</li>
+<li><code>server.name</code>：配置<code>Kibana</code>对外展示的名称</li>
+<li><code>server.MaxPayloadBytes</code>：服务器请求的最大负载，单位字节</li>
+<li><code>elasticsearch.url</code>：<code>Elasticsearch</code>实例的url，默认值为：<code>http://localhost:9200</code></li>
+<li><code>elasticsearch.username</code>和 <code>elasticsearch.password</code>：若es配置了权限认证，该配置项提供了用户名和密码。</li>
+<li><code>server.ssl.enabled</code>：是否启用SSL，默认为false，如果为true，则需要配置<code>server.ssl.certificate</code>和 <code>server.ssl.key</code></li>
+<li><code>server.ssl.certificate</code> 和 <code>server.ssl.key</code>：SSL 证书和 SSL 密钥文件的路径。</li>
+<li><code>server.ssl.keyPassphrase</code>：解密私钥的口令，该设置项可选，因为密钥可能没有加密。</li>
+<li><code>server.ssl.certificateAuthorities</code>：可信任 PEM 编码的证书文件路径列表。</li>
+<li><code>kibana.index</code>：<code>Kibana</code>在es建立的索引名称，默认为<code>.Kibana</code></li>
+<li><code>logging.dest</code>：Kibana日志输出的文件，默认为：<code>stdout</code></li>
+<li><code>logging.silent</code>：是否设置为静默模式，如果为true，则禁止所有日志输出，默认为false</li>
+<li><code>logging.quiet</code>：默认值: false 该值设为 true 时，禁止除错误信息除外的所有日志输出。</li>
+<li><code>logging.verbose</code>：默认值: false 该值设为 true 时，记下所有事件包括系统使用信息和所有请求的日志。</li>
+</ul>
+<h3 id="测试-2"><a href="#测试-2" class="headerlink" title="测试"></a>测试</h3><p>简单配置一下<code>kibana</code></p>
+<p><code>vim config/kibana.yml</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">server.port: 5601</span><br><span class="line"></span><br><span class="line">server.host: &quot;0.0.0.0&quot;</span><br><span class="line"></span><br><span class="line">elasticsearch.hosts: [&quot;http://127.0.0.1:9200&quot;]</span><br><span class="line"></span><br><span class="line">kibana.index: &quot;.kibana&quot;</span><br></pre></td></tr></table></figure>
+<p>启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/kibana</span><br></pre></td></tr></table></figure>
+<p>检查服务是否正常启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[qiyou@hack2fun config]$ netstat -unlt|grep 5601</span><br><span class="line">tcp        0      0 0.0.0.0:5601            0.0.0.0:*               LISTEN</span><br></pre></td></tr></table></figure>
+<p>然后就可以通过<code>http://IP:5601</code>访问到<code>kibana</code>了</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/wu7ro1AODTyWUFH.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后配置一下索引，就可以看到我们刚刚收集到es上的日志了</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/18/jUDfEGxbVw29AoY.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后我们可以通过Kibana筛选功能筛选出你想要内容，如：筛选出ssh登陆失败的日志</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/AmU6QR1uNvWFVTG.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h2 id="ELK实战"><a href="#ELK实战" class="headerlink" title="ELK实战"></a>ELK实战</h2><p>基本了解了ELK之后，我们可以使用ELK来进行收集我们的日志，这里以<code>apache</code>、<code>nginx</code>、<code>ssh</code>以及<code>history</code>为例</p>
+<h3 id="收集apache日志文件"><a href="#收集apache日志文件" class="headerlink" title="收集apache日志文件"></a>收集apache日志文件</h3><p>修改<code>apache</code>配置文件如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">LogFormat &quot;&#123; \</span><br><span class="line">        \&quot;@timestamp\&quot;: \&quot;%&#123;%Y-%m-%dT%H:%M:%S%z&#125;t\&quot;, \</span><br><span class="line">        \&quot;@version\&quot;: \&quot;1\&quot;, \</span><br><span class="line">        \&quot;tags\&quot;:[\&quot;apache\&quot;], \</span><br><span class="line">        \&quot;message\&quot;: \&quot;%h %l %u %t \\\&quot;%r\\\&quot; %&gt;s %b\&quot;, \</span><br><span class="line">        \&quot;clientip\&quot;: \&quot;%a\&quot;, \</span><br><span class="line">        \&quot;duration\&quot;: %D, \</span><br><span class="line">        \&quot;status\&quot;: %&gt;s, \</span><br><span class="line">        \&quot;request\&quot;: \&quot;%U%q\&quot;, \</span><br><span class="line">        \&quot;urlpath\&quot;: \&quot;%U\&quot;, \</span><br><span class="line">        \&quot;urlquery\&quot;: \&quot;%q\&quot;, \</span><br><span class="line">        \&quot;bytes\&quot;: %B, \</span><br><span class="line">        \&quot;method\&quot;: \&quot;%m\&quot;, \</span><br><span class="line">        \&quot;site\&quot;: \&quot;%&#123;Host&#125;i\&quot;, \</span><br><span class="line">        \&quot;referer\&quot;: \&quot;%&#123;Referer&#125;i\&quot;, \</span><br><span class="line">        \&quot;useragent\&quot;: \&quot;%&#123;User-agent&#125;i\&quot; \</span><br><span class="line">&#125;&quot; json</span><br><span class="line"></span><br><span class="line">CustomLog &quot;logs/access_log&quot; json</span><br></pre></td></tr></table></figure>
+<p>此时查看apache的日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@hack2fun httpd]# cat access_log </span><br><span class="line">&#123;         &quot;@timestamp&quot;: &quot;2020-12-19T00:06:37-0800&quot;,         &quot;@version&quot;: &quot;1&quot;,         &quot;tags&quot;:[&quot;apache&quot;],         &quot;message&quot;: &quot;::1 - - [19/Dec/2020:00:06:37 -0800] \&quot;GET / HTTP/1.1\&quot; 403 4897&quot;,         &quot;clientip&quot;: &quot;::1&quot;,         &quot;duration&quot;: 111368,         &quot;status&quot;: 403,         &quot;request&quot;: &quot;/&quot;,         &quot;urlpath&quot;: &quot;/&quot;,         &quot;urlquery&quot;: &quot;&quot;,         &quot;bytes&quot;: 4897,         &quot;method&quot;: &quot;GET&quot;,         &quot;site&quot;: &quot;localhost&quot;,         &quot;referer&quot;: &quot;-&quot;,         &quot;useragent&quot;: &quot;curl/7.29.0&quot;        &#125;</span><br><span class="line">&#123;         &quot;@timestamp&quot;: &quot;2020-12-19T00:09:04-0800&quot;,         &quot;@version&quot;: &quot;1&quot;,         &quot;tags&quot;:[&quot;apache&quot;],         &quot;message&quot;: &quot;::1 - - [19/Dec/2020:00:09:04 -0800] \&quot;GET / HTTP/1.1\&quot; 403 4897&quot;,         &quot;clientip&quot;: &quot;::1&quot;,         &quot;duration&quot;: 862,         &quot;status&quot;: 403,         &quot;request&quot;: &quot;/&quot;,         &quot;urlpath&quot;: &quot;/&quot;,         &quot;urlquery&quot;: &quot;&quot;,         &quot;bytes&quot;: 4897,         &quot;method&quot;: &quot;GET&quot;,         &quot;site&quot;: &quot;localhost&quot;,         &quot;referer&quot;: &quot;-&quot;,         &quot;useragent&quot;: &quot;curl/7.29.0&quot;        &#125;</span><br></pre></td></tr></table></figure>
+<p>用<code>logstash</code>测试</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/DJ6oeAOwFGc5fC2.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>如果想保留apache默认的日志格式，我们也可以不用修改，可以直接使用官方提供的gork规则来进行匹配即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">HTTPDUSER %&#123;EMAILADDRESS&#125;|%&#123;USER&#125;</span><br><span class="line">HTTPDERROR_DATE %&#123;DAY&#125; %&#123;MONTH&#125; %&#123;MONTHDAY&#125; %&#123;TIME&#125; %&#123;YEAR&#125;</span><br><span class="line"></span><br><span class="line"># Log formats</span><br><span class="line">HTTPD_COMMONLOG %&#123;IPORHOST:clientip&#125; %&#123;HTTPDUSER:ident&#125; %&#123;HTTPDUSER:auth&#125; \[%&#123;HTTPDATE:timestamp&#125;\] &quot;(?:%&#123;WORD:verb&#125; %&#123;NOTSPACE:request&#125;(?: HTTP/%&#123;NUMBER:httpversion&#125;)?|%&#123;DATA:rawrequest&#125;)&quot; (?:-|%&#123;NUMBER:response&#125;) (?:-|%&#123;NUMBER:bytes&#125;)</span><br><span class="line">HTTPD_COMBINEDLOG %&#123;HTTPD_COMMONLOG&#125; %&#123;QS:referrer&#125; %&#123;QS:agent&#125;</span><br><span class="line"></span><br><span class="line"># Error logs</span><br><span class="line">HTTPD20_ERRORLOG \[%&#123;HTTPDERROR_DATE:timestamp&#125;\] \[%&#123;LOGLEVEL:loglevel&#125;\] (?:\[client %&#123;IPORHOST:clientip&#125;\] )&#123;0,1&#125;%&#123;GREEDYDATA:message&#125;</span><br><span class="line">HTTPD24_ERRORLOG \[%&#123;HTTPDERROR_DATE:timestamp&#125;\] \[%&#123;WORD:module&#125;:%&#123;LOGLEVEL:loglevel&#125;\] \[pid %&#123;POSINT:pid&#125;(:tid %&#123;NUMBER:tid&#125;)?\]( \(%&#123;POSINT:proxy_errorcode&#125;\)%&#123;DATA:proxy_message&#125;:)?( \[client %&#123;IPORHOST:clientip&#125;:%&#123;POSINT:clientport&#125;\])?( %&#123;DATA:errorcode&#125;:)? %&#123;GREEDYDATA:message&#125;</span><br><span class="line">HTTPD_ERRORLOG %&#123;HTTPD20_ERRORLOG&#125;|%&#123;HTTPD24_ERRORLOG&#125;</span><br><span class="line"></span><br><span class="line"># Deprecated</span><br><span class="line">COMMONAPACHELOG %&#123;HTTPD_COMMONLOG&#125;</span><br><span class="line">COMBINEDAPACHELOG %&#123;HTTPD_COMBINEDLOG&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="收集nginx日志文件"><a href="#收集nginx日志文件" class="headerlink" title="收集nginx日志文件"></a>收集nginx日志文件</h3><p>修改<code>nginx</code>配置文件如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">http块配置</span><br><span class="line">log_format json &apos;&#123;&quot;@timestamp&quot;:&quot;$time_iso8601&quot;,&apos;</span><br><span class="line">               &apos;&quot;@version&quot;:&quot;1&quot;,&apos;</span><br><span class="line">               &apos;&quot;client&quot;:&quot;$remote_addr&quot;,&apos;</span><br><span class="line">               &apos;&quot;url&quot;:&quot;$uri&quot;,&apos;</span><br><span class="line">               &apos;&quot;status&quot;:&quot;$status&quot;,&apos;</span><br><span class="line">               &apos;&quot;domain&quot;:&quot;$host&quot;,&apos;</span><br><span class="line">               &apos;&quot;host&quot;:&quot;$server_addr&quot;,&apos;</span><br><span class="line">               &apos;&quot;size&quot;:$body_bytes_sent,&apos;</span><br><span class="line">               &apos;&quot;responsetime&quot;:$request_time,&apos;</span><br><span class="line">               &apos;&quot;referer&quot;: &quot;$http_referer&quot;,&apos;</span><br><span class="line">               &apos;&quot;ua&quot;: &quot;$http_user_agent&quot;&apos;</span><br><span class="line">&apos;&#125;&apos;;</span><br><span class="line"></span><br><span class="line">server块配置：</span><br><span class="line">access_log /var/log/nginx/access_json.log json;</span><br></pre></td></tr></table></figure>
+<p>此时查看nginx的日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@hack2fun qiyou]# cat /var/log/nginx/access.log </span><br><span class="line">&#123;&quot;@timestamp&quot;:&quot;2020-12-18T23:29:18-08:00&quot;,&quot;@version&quot;:&quot;1&quot;,&quot;client&quot;:&quot;127.0.0.1&quot;,&quot;url&quot;:&quot;/index.html&quot;,&quot;status&quot;:&quot;200&quot;,&quot;domain&quot;:&quot;localhost&quot;,&quot;host&quot;:&quot;127.0.0.1&quot;,&quot;size&quot;:612,&quot;responsetime&quot;:0.000,&quot;referer&quot;: &quot;-&quot;,&quot;ua&quot;: &quot;curl/7.29.0&quot;&#125;</span><br><span class="line">&#123;&quot;@timestamp&quot;:&quot;2020-12-18T23:40:41-08:00&quot;,&quot;@version&quot;:&quot;1&quot;,&quot;client&quot;:&quot;127.0.0.1&quot;,&quot;url&quot;:&quot;/index.html&quot;,&quot;status&quot;:&quot;200&quot;,&quot;domain&quot;:&quot;localhost&quot;,&quot;host&quot;:&quot;127.0.0.1&quot;,&quot;size&quot;:612,&quot;responsetime&quot;:0.000,&quot;referer&quot;: &quot;-&quot;,&quot;ua&quot;: &quot;curl/7.29.0&quot;&#125;</span><br></pre></td></tr></table></figure>
+<p>用<code>logstash</code>测试一下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">   file &#123;</span><br><span class="line">      path =&gt; &quot;/var/log/nginx/access.log&quot;</span><br><span class="line">      codec =&gt; &quot;json&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">output &#123;</span><br><span class="line">   stdout &#123;</span><br><span class="line">      codec =&gt; &quot;rubydebug&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>效果如下：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/uhxkKRTm8SrD4JX.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h3 id="收集所有用户的历史命令"><a href="#收集所有用户的历史命令" class="headerlink" title="收集所有用户的历史命令"></a>收集所有用户的历史命令</h3><p><code>vim /etc/bashrc</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">HISTDIR=&apos;/var/log/command.log&apos;</span><br><span class="line">if [ ! -f $HISTDIR ];then</span><br><span class="line">touch $HISTDIR</span><br><span class="line">chmod 666 $HISTDIR</span><br><span class="line">fi</span><br><span class="line">export HISTTIMEFORMAT=&quot;&#123;\&quot;TIME\&quot;:\&quot;%F %T\&quot;,\&quot;HOSTNAME\&quot;:\&quot;$HOSTNAME\&quot;,\&quot;LOGIN_IP\&quot;:\&quot;$(who -u am i 2&gt;/dev/null| awk &apos;&#123;print $NF&#125;&apos;|sed -e &apos;s/[()]//g&apos;)\&quot;,\&quot;LOGIN_USER\&quot;:\&quot;$(who am i|awk &apos;&#123;print $1&#125;&apos;)\&quot;,\&quot;CURRENT_USER\&quot;:\&quot;$&#123;USER&#125;\&quot;,\&quot;CMD\&quot;:\&quot;&quot;</span><br><span class="line">export PROMPT_COMMAND=&apos;history 1|tail -1|sed &quot;s/^[ ]\+[0-9]\+  //&quot;|sed &quot;s/$/\&quot;&#125;/&quot;&gt;&gt; /var/log/command.log&apos;</span><br></pre></td></tr></table></figure>
+<p>用<code>logstash</code>测试</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/5BoXEr43JSQt2sf.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h3 id="收集ssh的登陆信息"><a href="#收集ssh的登陆信息" class="headerlink" title="收集ssh的登陆信息"></a>收集ssh的登陆信息</h3><p>Linux认证的日志默认保存在：<code>/var/log/secure</code>（<code>debian/Ubuntu</code>保存在<code>/var/log/auth.log</code>）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">authpriv.*                                              /var/log/secure</span><br></pre></td></tr></table></figure>
+<p>我们可以将ssh的日志分离出来，修改ssh配置文件，日志收集类型改为用户自定义的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SyslogFacility local6</span><br></pre></td></tr></table></figure>
+<p>修改rsyslog配置文件，自定义ssh日志文件路径，然后重启<code>rsyslog</code>和<code>ssh</code>即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">local6.*                                                /var/log/sshd.log</span><br></pre></td></tr></table></figure>
+<p>因为<code>ssh</code>没有像<code>apache</code>、<code>nginx</code>那样可以自定义日志输出格式，所以我们得自己写一个<code>filter</code>，我这里就直接套用了<a href="https://gist.github.com/tsaarni/bb54e158fd453cb6d7cb" target="_blank" rel="noopener">这里</a>的filter了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:date&#125; %&#123;SYSLOGHOST:host&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; password for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">&quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:date&#125; %&#123;SYSLOGHOST:host&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT&#125;\])?: message repeated 2 times: \[ %&#123;WORD:login&#125; password for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">&quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:date&#125; %&#123;SYSLOGHOST:host&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; password for invalid user %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">&quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:date&#125; %&#123;SYSLOGHOST:host&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; %&#123;WORD:auth_method&#125; for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;</span><br></pre></td></tr></table></figure>
+<p>logstash配置文件如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">   file &#123;</span><br><span class="line">      path =&gt; &quot;/var/log/sshd.log&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">  grok &#123;</span><br><span class="line">    match =&gt; [</span><br><span class="line">      &quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:date&#125; %&#123;SYSLOGHOST:host&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; password for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">      &quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:date&#125; %&#123;SYSLOGHOST:host&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT&#125;\])?: message repeated 2 times: \[ %&#123;WORD:login&#125; password for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">      &quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:date&#125; %&#123;SYSLOGHOST:host&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; password for invalid user %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">      &quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:date&#125; %&#123;SYSLOGHOST:host&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; %&#123;WORD:auth_method&#125; for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">   stdout &#123;</span><br><span class="line">      codec =&gt; &quot;rubydebug&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时尝试登陆，可以看到登陆失败和登陆成功的都被记录下来了</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/6GR1g8itNxUrsMZ.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h3 id="整合"><a href="#整合" class="headerlink" title="整合"></a>整合</h3><p>最后将上面的配置整合一下，形成最终配置文件如下：</p>
+<p>注：如果想收集之前的日志的话，可以在所有input块加上<code>start_position =&gt; &quot;beginning&quot;</code>即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">   file &#123;</span><br><span class="line">      path =&gt; &quot;/var/log/nginx/access.log&quot;</span><br><span class="line">      type =&gt; &quot;nginx&quot;</span><br><span class="line">      codec =&gt; &quot;json&quot;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">    file &#123;</span><br><span class="line">      path =&gt; &quot;/var/log/httpd/access_log&quot;</span><br><span class="line">      type =&gt; &quot;apache&quot;</span><br><span class="line">      codec =&gt; &quot;json&quot;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">    file &#123;</span><br><span class="line">      path =&gt; &quot;/var/log/command.log&quot;</span><br><span class="line">      type =&gt; &quot;history&quot;</span><br><span class="line">      codec =&gt; &quot;json&quot;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">    file &#123;</span><br><span class="line">      path =&gt; &quot;/var/log/sshd.log&quot;</span><br><span class="line">      type =&gt; &quot;ssh&quot;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">  grok &#123;</span><br><span class="line">    match =&gt; [</span><br><span class="line">      &quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:syslog_date&#125; %&#123;SYSLOGHOST:syslog_host&#125; %&#123;DATA:syslog_program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; password for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">      &quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:syslog_date&#125; %&#123;SYSLOGHOST:syslog_host&#125; %&#123;DATA:syslog_program&#125;(?:\[%&#123;POSINT&#125;\])?: message repeated 2 times: \[ %&#123;WORD:login&#125; password for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">      &quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:syslog_date&#125; %&#123;SYSLOGHOST:syslog_host&#125; %&#123;DATA:syslog_program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; password for invalid user %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;,</span><br><span class="line">      &quot;message&quot;, &quot;%&#123;SYSLOGTIMESTAMP:syslog_date&#125; %&#123;SYSLOGHOST:syslog_host&#125; %&#123;DATA:syslog_program&#125;(?:\[%&#123;POSINT&#125;\])?: %&#123;WORD:login&#125; %&#123;WORD:auth_method&#125; for %&#123;USERNAME:username&#125; from %&#123;IP:ip&#125; %&#123;GREEDYDATA&#125;&quot;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line"></span><br><span class="line">    if [type] == &quot;nginx&quot; &#123; </span><br><span class="line"></span><br><span class="line">        elasticsearch &#123;</span><br><span class="line">            hosts =&gt; [&quot;127.0.0.1:9200&quot;]</span><br><span class="line">            index =&gt; &quot;nginx-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">        &#125;       </span><br><span class="line">    &#125;   </span><br><span class="line"></span><br><span class="line">    if [type] == &quot;apache&quot; &#123;</span><br><span class="line"></span><br><span class="line">        elasticsearch &#123;</span><br><span class="line">            hosts =&gt; [&quot;127.0.0.1:9200&quot;]</span><br><span class="line">            index =&gt; &quot;apache-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if [type] == &quot;history&quot; &#123;</span><br><span class="line"></span><br><span class="line">        elasticsearch &#123;</span><br><span class="line">            hosts =&gt; [&quot;127.0.0.1:9200&quot;]</span><br><span class="line">            index =&gt; &quot;history-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if [type] == &quot;ssh&quot; &#123;</span><br><span class="line"></span><br><span class="line">        elasticsearch &#123;</span><br><span class="line">            hosts =&gt; [&quot;127.0.0.1:9200&quot;]</span><br><span class="line">            index =&gt; &quot;ssh-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后我们可以<code>logstash -t -f logstash.conf</code>来验证配置文件是否配置正确</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[2020-12-30T18:22:40,870][INFO ][logstash.runner          ] Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash</span><br></pre></td></tr></table></figure>
+<p>确认无误后启动<code>logstash</code>，然后我们到<code>es-head</code>上去查看索引是否创建成功，可以看到我们上面配置文件索引已经全部创建，接下来就去<code>Kibana</code>创建日志索引即可</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/rzjOLFWvhNnPx1t.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>这里拿<code>history</code>来举例，最终效果如下：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/19/JAodzi7cyufIF6P.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h1 id="收集Windows日志"><a href="#收集Windows日志" class="headerlink" title="收集Windows日志"></a>收集Windows日志</h1><p>收集Windows日志我们可以使用<code>Winlogbeat</code>，<code>Winlogbeat</code>是属于<code>beats</code>家族成员之一，主要用于收集<code>Windows</code>上的日志。<code>Winlogbeat</code>使用<code>Windows api</code>读取一个或多个事件日志，根据用户配置的条件筛选事件，然后将事件数据发送到配置的输出</p>
+<p><code>Winlogbeat</code>可以从系统上运行的任何事件日志中捕获事件数据。如：<code>Winlogbeat</code>可以捕获以下事件:</p>
+<ul>
+<li><p>应用程序事件（application）</p>
+</li>
+<li><p>硬件事件</p>
+</li>
+<li><p>安全事件（security）</p>
+</li>
+<li><p>系统事件（system）</p>
+</li>
+</ul>
+<p><code>Winlogbeat</code>下载：<a href="https://www.elastic.co/cn/downloads/beats/winlogbeat" target="_blank" rel="noopener">https://www.elastic.co/cn/downloads/beats/winlogbeat</a></p>
+<p>简单的安装配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.\install-service-winlogbeat.ps1</span><br><span class="line"> .\winlogbeat.exe setup</span><br></pre></td></tr></table></figure>
+<h2 id="配置-3"><a href="#配置-3" class="headerlink" title="配置"></a>配置</h2><h3 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h3><p>output可以指定一个输出点（只能定义一个输出点），下面列举一些常见的输出配置</p>
+<p>Redis</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">output.redis:</span><br><span class="line">  hosts: [&quot;localhost&quot;]</span><br><span class="line">  password: &quot;my_password&quot;</span><br><span class="line">  key: &quot;winlogbeat&quot;</span><br><span class="line">  db: 0</span><br><span class="line">  timeout: 5</span><br></pre></td></tr></table></figure>
+<p>logstash</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">output.logstash:</span><br><span class="line">  hosts: [&quot;127.0.0.1:5044&quot;]</span><br></pre></td></tr></table></figure>
+<p>ES</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">output.elasticsearch:</span><br><span class="line">  hosts: [&quot;https://myEShost:9200&quot;]</span><br></pre></td></tr></table></figure>
+<p>kafka</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">output.kafka:</span><br><span class="line">  # initial brokers for reading cluster metadata</span><br><span class="line">  hosts: [&quot;kafka1:9092&quot;, &quot;kafka2:9092&quot;, &quot;kafka3:9092&quot;]</span><br><span class="line"></span><br><span class="line">  # message topic selection + partitioning</span><br><span class="line">  topic: &apos;%&#123;[fields.log_topic]&#125;&apos;</span><br><span class="line">  partition.round_robin:</span><br><span class="line">    reachable_only: false</span><br><span class="line"></span><br><span class="line">  required_acks: 1</span><br><span class="line">  compression: gzip</span><br><span class="line">  max_message_bytes: 1000000</span><br></pre></td></tr></table></figure>
+<h3 id="Kibana-1"><a href="#Kibana-1" class="headerlink" title="Kibana"></a>Kibana</h3><p>Kibana配置项：</p>
+<ul>
+<li><code>setup.kibana.host</code>：<code>Kibana</code>地址</li>
+<li><code>setup.kibana.protocol</code>：<code>http</code>或<code>https</code>，默认值为<code>http</code>，但是如果<code>setup.kibana.host</code>中指定的URL，则该值会被URL中的指定的协议覆盖掉</li>
+<li><code>setup.kibana.username</code>：kibana用户名</li>
+<li><code>setup.kibana.password</code>：kibana密码</li>
+<li><code>setup.kibana.ssl.enabled</code>：启用SSL，如果配置的协议为HTTPS，则该值默认为<code>true</code>并且<code>Winlogbeat</code>会使用默认的SSL设置。</li>
+</ul>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">setup.kibana.host: &quot;https://192.0.2.255:5601&quot;</span><br><span class="line">setup.kibana.ssl.enabled: true</span><br><span class="line">setup.kibana.ssl.certificate_authorities: [&quot;/etc/pki/root/ca.pem&quot;]</span><br><span class="line">setup.kibana.ssl.certificate: &quot;/etc/pki/client/cert.pem&quot;</span><br><span class="line">setup.kibana.ssl.key: &quot;/etc/pki/client/cert.key</span><br></pre></td></tr></table></figure>
+<h3 id="Winlogbeat配置文件项"><a href="#Winlogbeat配置文件项" class="headerlink" title="Winlogbeat配置文件项"></a>Winlogbeat配置文件项</h3><ul>
+<li><p><code>event_logs</code>：指定要监视哪些事件日志，列表中的每个条目都定义了要监视的事件日志以及与事件日志关联的任何信息</p>
+</li>
+<li><p><code>event_logs.name</code>为<code>event_logs</code>必选项，指定要收集事件名，可以为日志名（可以使用<code>Get-WinEvent -ListLog *</code>获取Windows下所有的日志名），也可以为日志文件（需要注意的是路径必须为绝对路径，不能为相对路径）</p>
+</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">winlogbeat.event_logs:</span></span><br><span class="line"><span class="attr">  - name:</span> <span class="string">Application</span></span><br><span class="line">  <span class="comment">#- name: 'C:\winlogbeat\xxx.evtx'</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>event_logs.ignore_order</code>：如果指定了此选项，则Winlogbeat会过滤早于指定时间的事件，有效时间单位是”ns”, “us” (or “µs”), “ms”, “s”, “m”, “h”</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">winlogbeat.event_logs:</span><br><span class="line">  - name: Application</span><br><span class="line">    ignore_older: 168h</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>event_logs.event_id</code>：配置事件id的白名单和黑名单，事件id以逗号分隔，可以是单个id（如4624），可以是一个范围（4600-5000），如果排除某个事件id的话可以在id前面加个负号（如：-4625）</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">winlogbeat.event_logs:</span><br><span class="line">  - name: Security</span><br><span class="line">    event_id: 4624, 4625, 4700-4800, -4735</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>event_logs.index</code>：Winlogbeat的索引，如果es存在该日志的索引则会覆盖原来的索引。格式示例：<code>&quot;%{[agent.name]}-myindex-%{+yyyy.MM.dd}&quot;</code> -&gt; <code>winlogbeat-myindex-2019.12.13</code></li>
+<li><code>event_logs.level</code>：事件级别，多个值用逗号隔开</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>critical, crit</td>
+<td>1</td>
+</tr>
+<tr>
+<td>error, err</td>
+<td>2</td>
+</tr>
+<tr>
+<td>warning, warn</td>
+<td>3</td>
+</tr>
+<tr>
+<td>information, info</td>
+<td>0或4</td>
+</tr>
+<tr>
+<td>verbose</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>其余配置项见官网</li>
+</ul>
+<h2 id="测试-3"><a href="#测试-3" class="headerlink" title="测试"></a>测试</h2><p>修改配置文件<code>winlogbeat.yml</code>，<code>Kibana</code>和<code>elasticsearch</code>配成我们上面搭建好节点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">winlogbeat.event_logs:</span><br><span class="line">    - name: Application</span><br><span class="line">      provider:</span><br><span class="line">          - Application Error</span><br><span class="line">          - Application Hang</span><br><span class="line">          - Windows Error Reporting</span><br><span class="line">          - EMET</span><br><span class="line">    - name: Security</span><br><span class="line">      level: critical, error, warning</span><br><span class="line">      event_id: 4624, 4625, 4634, 4672, 4720</span><br><span class="line">    - name: System</span><br><span class="line">      ignore_older: 168h</span><br><span class="line"></span><br><span class="line">setup.kibana:</span><br><span class="line">    host: &quot;http://100.2.170.124:5601&quot;</span><br><span class="line"></span><br><span class="line">output.elasticsearch:</span><br><span class="line">    hosts: [&quot;100.2.170.124:9200&quot;]</span><br></pre></td></tr></table></figure>
+<p>然后启动服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net start winlogbeat</span><br></pre></td></tr></table></figure>
+<p>服务启动之后，到<code>es-head</code>上可以看到已经创建了索引，说明已经配置成功。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/25/MZl8yxkPbsJLw9G.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<p>然后我们可以通过<code>Kibana</code>对日志进行一系列分析了，如：筛选出登陆失败的用户名以及IP</p>
+<p><strong>注：<code>Winlogbeat</code>提供的字段是相当丰富的，这里就不进行列举了，具体请查阅<a href="https://www.elastic.co/guide/en/beats/winlogbeat/current/exported-fields.html" target="_blank" rel="noopener">官网手册</a></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">winlog.event_id: 4625</span><br></pre></td></tr></table></figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://i.loli.net/2020/12/25/3OjC6chnesAMtXz.png" alt="image.png" title>
+                </div>
+                <div class="image-caption">image.png</div>
+            </figure>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://www.zhihu.com/question/338932215/answer/777380560" target="_blank" rel="noopener">https://www.zhihu.com/question/338932215/answer/777380560</a></p>
+<p><a href="https://www.kancloud.cn/aiyinsi-tan/logstash/849546" target="_blank" rel="noopener">https://www.kancloud.cn/aiyinsi-tan/logstash/849546</a></p>
+<p><a href="https://blog.51cto.com/caochun/1715462" target="_blank" rel="noopener">https://blog.51cto.com/caochun/1715462</a></p>
+<p><a href="https://www.cnblogs.com/cheyunhua/p/11238489.html" target="_blank" rel="noopener">https://www.cnblogs.com/cheyunhua/p/11238489.html</a></p>
+<p><a href="https://www.cnblogs.com/kevingrace/p/5919021.html" target="_blank" rel="noopener">https://www.cnblogs.com/kevingrace/p/5919021.html</a></p>
+<p><a href="https://www.elastic.co/guide/en/beats/winlogbeat/current/configuration-winlogbeat-options.html#_event_logs_ignore_older" target="_blank" rel="noopener">https://www.elastic.co/guide/en/beats/winlogbeat/current/configuration-winlogbeat-options.html#_event_logs_ignore_older</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/41850863" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/41850863</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-12-31T08:57:01.934Z" itemprop="dateUpdated">2020-12-31 16:57:01</time>
+</span><br>
+
+
+        
+        know it then hack it
+        
+    </div>
+    
+    <footer>
+        <a href="https://byqiyou.github.io">
+            <img src="/img/avatar.jpg" alt="">
+            
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ELK/">ELK</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Elasticsearch/">Elasticsearch</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/12/31/ELK/&title=《初探ELK和集中式日志管理系统》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/12/31/ELK/&title=《初探ELK和集中式日志管理系统》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/12/31/ELK/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《初探ELK和集中式日志管理系统》 — 七友&url=https://byqiyou.github.io/2020/12/31/ELK/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/12/31/ELK/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/08/24/JNDI-Injection/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">JNDI注入学习</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'true';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+<section class="comments" id="comments">
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script src="http://v2.uyan.cc/code/uyan.js?uid=true"></script>
+    <!-- UY END -->
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        Thinks
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/2.png" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/2.png" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+            <span>博客内容遵循 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span> &copy; 2018 - 2020</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://byqiyou.github.io/2020/12/31/ELK/&title=《初探ELK和集中式日志管理系统》 — 七友&pic=https://byqiyou.github.io/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://byqiyou.github.io/2020/12/31/ELK/&title=《初探ELK和集中式日志管理系统》 — 七友&source=路漫漫其修远兮，吾将上下而求索" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://byqiyou.github.io/2020/12/31/ELK/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《初探ELK和集中式日志管理系统》 — 七友&url=https://byqiyou.github.io/2020/12/31/ELK/&via=https://byqiyou.github.io" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://byqiyou.github.io/2020/12/31/ELK/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://byqiyou.github.io/2020/12/31/ELK/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = 'Leave';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'Come back';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
